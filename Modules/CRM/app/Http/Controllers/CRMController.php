@@ -2,7 +2,7 @@
 
 namespace Modules\CRM\App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use Modules\CRM\App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 class CRMController extends Controller
@@ -54,3 +54,5 @@ class CRMController extends Controller
      */
     public function destroy($id) {}
 }
+
+

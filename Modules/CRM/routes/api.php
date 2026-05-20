@@ -1,8 +1,18 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Modules\CRM\Http\Controllers\CRMController;
+use Modules\CRM\App\Http\Controllers\API\BlogApiController;
+use Modules\CRM\App\Http\Controllers\API\WarrLeadController;
+use Modules\CRM\App\Http\Controllers\API\WarrServicePageApiController;
 
-Route::middleware(['auth:sanctum'])->prefix('v1')->group(function () {
-    Route::apiResource('crms', CRMController::class)->names('crm');
+// Public API routes (no auth required)
+Route::prefix('v1')->group(function () {
+    Route::get('/blogs', [BlogApiController::class, 'index']);
+    Route::get('/blogs/{slug}', [BlogApiController::class, 'show']);
+
+    Route::post('/warr-leads', [WarrLeadController::class, 'store']);
+
+    Route::get('/warr-service-pages', [WarrServicePageApiController::class, 'serviceSlugSitemap']);
+    Route::get('/warr-service-pages/{slug}', [WarrServicePageApiController::class, 'showBySlug']);
 });
+

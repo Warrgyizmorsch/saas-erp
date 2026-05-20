@@ -2,18 +2,20 @@
 
 use Illuminate\Support\Facades\Route;
 
+// Public tenant profile page
+Route::get('/', function () {
+
+    return view('tenantprofile', [
+        'tenant' => tenant()
+    ]);
+
+});
+
+// Protected routes
 Route::middleware([
     'auth',
     'verified'
 ])->group(function () {
-
-    Route::get('/', function () {
-
-        return view('tenantprofile', [
-            'tenant' => tenant()
-        ]);
-
-    });
 
     Route::get('/dashboard', function () {
 

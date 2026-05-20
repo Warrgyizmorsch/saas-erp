@@ -103,10 +103,29 @@
                     ERP SaaS
                 </a>
 
-                <div>
-                    <a href="{{ route('dashboard') }}" class="btn btn-outline-light rounded-pill px-4">
-                        Dashboard
-                    </a>
+                <div class="d-flex gap-2">
+                    @auth
+                        <a href="{{ route('dashboard') }}" class="btn btn-outline-light rounded-pill px-4">
+                            <i class="bi bi-speedometer2 me-2"></i>
+                            Dashboard
+                        </a>
+                        <form action="{{ route('logout') }}" method="POST" class="d-inline">
+                            @csrf
+                            <button type="submit" class="btn btn-outline-danger rounded-pill px-4">
+                                <i class="bi bi-box-arrow-right me-2"></i>
+                                Logout
+                            </button>
+                        </form>
+                    @else
+                        <a href="{{ route('register') }}" class="btn btn-outline-light rounded-pill px-4">
+                            <i class="bi bi-person-plus me-2"></i>
+                            Register
+                        </a>
+                        <a href="{{ route('login') }}" class="btn btn-outline-light rounded-pill px-4">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>
+                            Login
+                        </a>
+                    @endauth
                 </div>
             </div>
         </nav>
@@ -155,10 +174,23 @@
                     </p>
                 </div>
 
-                <a href="{{ route('dashboard') }}" class="btn dashboard-btn text-white">
-                    <i class="bi bi-speedometer2 me-2"></i>
-                    Go To Dashboard
-                </a>
+                @auth
+                    <a href="{{ route('dashboard') }}" class="btn dashboard-btn text-white">
+                        <i class="bi bi-speedometer2 me-2"></i>
+                        Go To Dashboard
+                    </a>
+                @else
+                    <div class="d-flex gap-2">
+                        <a href="{{ route('register') }}" class="btn dashboard-btn text-white">
+                            <i class="bi bi-person-plus me-2"></i>
+                            Register
+                        </a>
+                        <a href="{{ route('login') }}" class="btn dashboard-btn text-white">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>
+                            Login
+                        </a>
+                    </div>
+                @endauth
 
             </div>
 

@@ -118,7 +118,7 @@
                 ERP SaaS
             </a>
 
-            <div class="d-flex gap-2">
+            <!-- <div class="d-flex gap-2">
                 @if (Route::has('login'))
                     @auth
                         <a href="{{ url('/dashboard') }}" class="btn btn-outline-light rounded-pill px-4">
@@ -130,7 +130,7 @@
                         </a>
                     @endauth
                 @endif
-            </div>
+            </div> -->
         </div>
     </nav>
 

@@ -25,7 +25,7 @@
 
                 @php
                 // Aaj ka purana time DB se nikal rahe hain
-                $todayLog = \Modules\CRM\App\Models\UserWorkLog::where('user_id', auth()->id())
+                $todayLog = \Modules\Shared\App\Models\UserWorkLog::where('user_id', auth()->id())
                 ->whereDate('date', now()->toDateString())
                 ->first();
                 $existingSeconds = $todayLog ? $todayLog->active_seconds : 0;
@@ -187,7 +187,7 @@
                                     @endif
                                 </div>
                                 <div>
-                                    <h6 class="text-dark mb-0">{{ Auth::user()->name }} <span class="badge bg-soft-success text-success ms-1">{{ Auth::user()->role->name ?? 'No Role'}}</span></h6>
+                                    <h6 class="text-dark mb-0">{{ Auth::user()->name }} <span class="badge bg-soft-success text-success ms-1">{{ Auth::user()->role?->name ?? 'No Role'}}</span></h6>
                                     <span class="fs-12 fw-medium text-muted">{{ Auth::user()->email }}</span>
                                 </div>
                             </div>

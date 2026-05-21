@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\CRM\App\Models;
+namespace Modules\Shared\App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -21,7 +21,7 @@ class Menu extends Model
     /**
      * Get allowed menus for a specific user (role + user override)
      *
-     * @param \App\Models\User $user
+     * @param \Modules\Shared\App\Models\User $user
      * @return \Illuminate\Support\Collection
      */
     public static function getMenusForUser($user)
@@ -35,15 +35,15 @@ class Menu extends Model
             ->orderBy('sort_order')
             ->get();
 
-        // Recursive filter (declare type as Closure)
+        // Recursive filter
         $filterMenu = function ($menu) use ($user, $roleId, &$filterMenu) {
-            // 🔹 Check role permission
+            // Check role permission
             $rolePermission = $menu->rolePermissions()
                 ->where('role_id', $roleId)
                 ->where('is_allowed', 1)
                 ->exists();
 
-            // 🔹 Check user override
+            // Check user override
             $userPermission = $menu->userPermissions()
                 ->where('user_id', $user->id)
                 ->first();
@@ -52,10 +52,10 @@ class Menu extends Model
                 ? (bool) $userPermission->is_allowed
                 : $rolePermission;
 
-            // 🔹 Recurse into children
+            // Recurse into children
             $filteredChildren = collect();
             foreach ($menu->childrenRecursive as $child) {
-                $keep = $filterMenu($child); // ✅ now always callable
+                $keep = $filterMenu($child);
                 if ($keep) {
                     $filteredChildren->push($keep);
                 }
@@ -65,7 +65,7 @@ class Menu extends Model
             $menu->setRelation('children', $filteredChildren);
             $menu->setRelation('childrenRecursive', $filteredChildren);
 
-            // 🔹 Keep this menu if allowed OR has allowed children
+            // Keep this menu if allowed OR has allowed children
             if ($isAllowed || $filteredChildren->isNotEmpty()) {
                 if (!$isAllowed) {
                     $menu->setRelation('route', null);
@@ -82,7 +82,6 @@ class Menu extends Model
             ->filter()
             ->values();
     }
-
 
     /**
      * Parent Menu
@@ -107,7 +106,7 @@ class Menu extends Model
     {
         return $this->hasMany(Menu::class, 'parent_id')
             ->where('is_deleted', 0)
-            ->orderBy('sort_order', 'asc') // 👈 add ordering here
+            ->orderBy('sort_order', 'asc')
             ->with('childrenRecursive');
     }
 
@@ -118,13 +117,11 @@ class Menu extends Model
             ->where('is_deleted', 0);
     }
 
-    // In Menu.php model
     public function routesForPermission()
     {
         return $this->hasMany(Route::class, 'menu_id', 'id')
             ->where('is_deleted', 0);
     }
-
 
     // Menu has many RolePermissions
     public function rolePermissions()

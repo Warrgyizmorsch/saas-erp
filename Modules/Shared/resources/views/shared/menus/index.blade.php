@@ -145,7 +145,7 @@
                         <div class="col-md-3">
                             <select name="route_id" class="form-select" data-select2-selector="tag">
                                 <option value="">Select Route</option>
-                                @foreach(\App\Models\Route::where('is_deleted', 0)->get() as $route)
+                                @foreach(\Modules\Shared\App\Models\Route::where('is_deleted', 0)->get() as $route)
                                     <option value="{{ $route->id }}" {{ old('route_id', $editMenu->route_id ?? '') == $route->id ? 'selected' : '' }}>
                                         {{ $route->name }}
                                     </option>

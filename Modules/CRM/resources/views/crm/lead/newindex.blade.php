@@ -521,7 +521,7 @@
 
                                             <div>
                                                 <a href="javascript:void(0);">{{ $lead->owner->name ?? 'Unknown' }}</a>
-                                                <div class="fs-11 text-muted">{{ $lead->owner->role->name ?? 'Unknown' }}</div>
+                                                <div class="fs-11 text-muted">{{ $lead->owner->role?->name ?? 'Unknown' }}</div>
                                             </div>
                                         </div>
                                         @if(optional($lead->latestAssignHistory)->created_at)

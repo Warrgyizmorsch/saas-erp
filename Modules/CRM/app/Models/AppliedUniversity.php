@@ -4,6 +4,7 @@ namespace Modules\CRM\App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Modules\Shared\App\Models\User;
 
 class AppliedUniversity extends Model
 {

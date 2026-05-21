@@ -3,6 +3,7 @@
 namespace Modules\CRM\App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Modules\Shared\App\Models\User;
 
 class Leads extends Model
 {

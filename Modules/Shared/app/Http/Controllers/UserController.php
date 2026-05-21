@@ -1,15 +1,15 @@
 <?php
 
-namespace Modules\CRM\App\Http\Controllers;
+namespace Modules\Shared\App\Http\Controllers;
 
-use Modules\CRM\App\Models\Role;
-use Modules\CRM\App\Models\User;
-use Modules\CRM\App\Http\Controllers\Controller;
+use Modules\Shared\App\Models\Role;
+use Modules\Shared\App\Models\User;
+use Modules\Shared\App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Modules\CRM\App\Models\LoginHistory;
+use Modules\Shared\App\Models\LoginHistory;
 use Modules\CRM\App\Models\LeadHistory;
-use Modules\CRM\App\Models\UserWorkLog;
+use Modules\Shared\App\Models\UserWorkLog;
 use DB;
 
 class UserController extends Controller
@@ -35,23 +35,22 @@ class UserController extends Controller
 
         $users = $query->paginate(10);
 
-        $roles = Role::where('is_deleted', 0)->get();
+        $roles = Role::get();
 
-        $todayLog = \Modules\CRM\App\Models\UserWorkLog::where('user_id', auth()->id())
+        $todayLog = UserWorkLog::where('user_id', auth()->id())
             ->where('date', now('Asia/Kolkata')->toDateString())
             ->first();
 
         $existingSeconds = $todayLog ? $todayLog->active_seconds : 0;
 
-        return view('crm::crm.users.index', compact('users', 'roles', 'existingSeconds'));
+        return view('shared::shared.users.index', compact('users', 'roles', 'existingSeconds'));
     }
-
 
     public function create()
     {
-        $roles = Role::where('is_deleted', 0)->get();
+        $roles = Role::get();
 
-        return view('crm::crm.users.store', compact('roles'));
+        return view('shared::shared.users.store', compact('roles'));
     }
 
     public function store(Request $request)
@@ -80,8 +79,8 @@ class UserController extends Controller
 
     public function edit(User $user)
     {
-        $roles = Role::where('is_deleted', 0)->get();
-        return view('crm::crm.users.store', compact('roles', 'user'));
+        $roles = Role::get();
+        return view('shared::shared.users.store', compact('roles', 'user'));
     }
 
     public function update(Request $request, User $user)
@@ -119,12 +118,13 @@ class UserController extends Controller
         return redirect()->route('users.index')
             ->with('success', 'User deleted successfully');
     }
+
     public function indexLog(Request $request)
     {
         // Step 1: Get all session user_ids (currently logged-in users)
         $loggedInUserIds = DB::table('sessions')->pluck('user_id')->unique()->filter();
 
-        $userRole = Role::where('is_deleted', 0)->get();
+        $userRole = Role::get();
 
         // Step 2: Build user query with loginHistories
         $query = User::with('loginHistories');
@@ -157,7 +157,7 @@ class UserController extends Controller
 
         // Step 3: Apply ordering (push logged-in users to top, then latest users)
         $users = $query
-            ->orderByRaw("FIELD(id, " . $loggedInUserIds->implode(',') . ") DESC")
+            ->orderByRaw("FIELD(id, " . ($loggedInUserIds->isNotEmpty() ? $loggedInUserIds->implode(',') : '0') . ") DESC")
             ->latest()
             ->paginate(10)
             ->appends($request->query()); // keep filters in pagination links
@@ -173,9 +173,8 @@ class UserController extends Controller
             ->latest()
             ->paginate(10, ['*'], 'activity_page');
 
-        return view('crm::crm.users.loginHistory', compact('users', 'sessions', 'userRole', 'activityLogs'));
+        return view('shared::shared.users.loginHistory', compact('users', 'sessions', 'userRole', 'activityLogs'));
     }
-
 
     public function forceLogout(User $user)
     {
@@ -195,7 +194,6 @@ class UserController extends Controller
         return back()->with('success', 'User has been logged out.');
     }
 
-
     public function userHistory($userId)
     {
         $user = User::with([
@@ -206,8 +204,7 @@ class UserController extends Controller
 
         $sessions = DB::table('sessions')->get()->keyBy('user_id');
 
-
-        return view('crm::crm.users.history', compact('user', 'sessions'));
+        return view('shared::shared.users.history', compact('user', 'sessions'));
     }
 
     public function filterLoginHistory(Request $request)
@@ -215,7 +212,7 @@ class UserController extends Controller
         $loggedInUserIds = DB::table('sessions')->pluck('user_id')->unique()->filter();
 
         $query = User::with('loginHistories');
-        $userRole = Role::where('is_deleted', 0)->get();
+        $userRole = Role::get();
 
         // Conditionally apply role filter
         if ($request->filled('role_id')) {
@@ -244,7 +241,7 @@ class UserController extends Controller
         }
 
         $users = $query
-            ->orderByRaw("FIELD(id, " . $loggedInUserIds->implode(',') . ") DESC")
+            ->orderByRaw("FIELD(id, " . ($loggedInUserIds->isNotEmpty() ? $loggedInUserIds->implode(',') : '0') . ") DESC")
             ->latest()
             ->paginate(20)
             ->appends(request()->query());
@@ -252,8 +249,9 @@ class UserController extends Controller
         $userIds = $users->pluck('id');
         $sessions = DB::table('sessions')->whereIn('user_id', $userIds)->get()->keyBy('user_id');
 
-        return view('history.user.userList', compact('users', 'sessions', 'userRole'))->render();
+        return view('shared::shared.users.userList', compact('users', 'sessions', 'userRole'))->render();
     }
+
     public function leadHistory(Request $request, $userId)
     {
         $user = User::findOrFail($userId);
@@ -272,10 +270,9 @@ class UserController extends Controller
             ->orderBy('created_at', 'asc')
             ->get();
 
-        return view('crm::crm.users.leadHistory', compact('user', 'sessions', 'leadHistories', 'date'));
+        return view('shared::shared.users.leadHistory', compact('user', 'sessions', 'leadHistories', 'date'));
     }
 
-    // UserController.php ke andar
     public function saveWorkTime(Request $request)
     {
         try {
@@ -296,13 +293,11 @@ class UserController extends Controller
                 return response()->json(['status' => 'ignored', 'message' => "Outside working hours"], 200);
             }
 
-            // 🟢 FIX: Pehle record fetch karein ya create karein
-            $todayLog = \Modules\CRM\App\Models\UserWorkLog::firstOrCreate(
+            $todayLog = UserWorkLog::firstOrCreate(
                 ['user_id' => $userId, 'date' => $nowIST->toDateString()],
                 ['active_seconds' => 0]
             );
 
-            // 🟢 FIX: Time sirf tabhi update ho jab naya time purane se zyada ho (Tab conflict fix)
             if ($request->active_time_seconds > $todayLog->active_seconds) {
                 $todayLog->update(['active_seconds' => $request->active_time_seconds]);
                 return response()->json(['status' => 'success', 'time' => $request->active_time_seconds]);
@@ -328,5 +323,3 @@ class UserController extends Controller
         return back()->with('success', 'User status updated!');
     }
 }
-
-

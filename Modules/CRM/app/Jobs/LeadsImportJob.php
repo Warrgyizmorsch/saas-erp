@@ -2,7 +2,7 @@
 
 namespace Modules\CRM\App\Jobs;
 
-use Modules\CRM\App\Models\User;
+use Modules\Shared\App\Models\User;
 use Modules\CRM\App\Models\Leads;
 use Modules\CRM\App\Models\LeadImportJob;
 use Modules\CRM\App\Models\LeadAttribute;

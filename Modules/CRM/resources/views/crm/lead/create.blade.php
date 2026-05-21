@@ -7,7 +7,7 @@
                 <h5 class="m-b-10">Leads</h5>
             </div>
             <ul class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('crm.dashboard') }}">Home</a></li>
                 <li class="breadcrumb-item active">{{ $lead->exists ? 'Edit' : 'Create' }}</li>
             </ul>
         </div>
@@ -298,8 +298,8 @@
                                                 <div class="col-lg-4 mb-4">
                                                     <label
                                                         class="form-label">{{ ucwords(str_replace('_', ' ', $attr->field_name)) }}</label>
-                                                    <input type="text" name="attributes[{{ $attr->id }}]"
-                                                        value="{{ old('attributes.' . $attr->id, $attr->field_value) }}"
+                                                    <input type="text" name="attributes[{{ $attr->id ?? $attr->field_name }}]"
+                                                        value="{{ old('attributes.' . ($attr->id ?? $attr->field_name), $attr->field_value) }}"
                                                         class="form-control"
                                                         placeholder="{{ ucwords(str_replace('_', ' ', $attr->field_name)) }}">
                                                 </div>

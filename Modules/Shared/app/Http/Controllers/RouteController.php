@@ -1,10 +1,10 @@
 <?php
 
-namespace Modules\CRM\App\Http\Controllers;
+namespace Modules\Shared\App\Http\Controllers;
 
-use Modules\CRM\App\Http\Controllers\Controller;
-use Modules\CRM\App\Models\Route;
-use Modules\CRM\App\Models\Menu;
+use Modules\Shared\App\Http\Controllers\Controller;
+use Modules\Shared\App\Models\Route;
+use Modules\Shared\App\Models\Menu;
 use Illuminate\Http\Request;
 
 class RouteController extends Controller
@@ -59,13 +59,11 @@ class RouteController extends Controller
         $routes = $query->paginate(10);
         $flattenMenus = $this->getFlattenMenus();
 
-        return view('crm::crm.routes.index', compact('routes', 'flattenMenus'));
+        return view('shared::shared.routes.index', compact('routes', 'flattenMenus'));
     }
 
     public function store(Request $request)
     {
-
-
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'route_name' => 'required|string|max:255|unique:routes,route_name',
@@ -89,12 +87,11 @@ class RouteController extends Controller
         $routes = Route::where('is_deleted', 0)->paginate(10);
         $flattenMenus = $this->getFlattenMenus();
 
-        return view('crm::crm.routes.index', compact('routes', 'editRoute', 'flattenMenus'));
+        return view('shared::shared.routes.index', compact('routes', 'editRoute', 'flattenMenus'));
     }
 
     public function update(Request $request, Route $route)
     {
-        // dd($request->toArray(), $route);
         $request->validate([
             'name' => 'required|string|max:255',
             'route_name' => 'required|string|max:255|unique:routes,route_name,' . $route->id,
@@ -117,5 +114,3 @@ class RouteController extends Controller
         return redirect()->route('routes.index')->with('success', 'Route deleted successfully!');
     }
 }
-
-

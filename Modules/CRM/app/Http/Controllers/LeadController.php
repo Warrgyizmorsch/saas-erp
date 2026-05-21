@@ -2,12 +2,12 @@
 
 namespace Modules\CRM\App\Http\Controllers;
 
-use App\Exports\LeadsExcelExport;
+use Modules\CRM\App\Exports\LeadsExcelExport;
 use App\Http\Controllers\Controller;
 use Modules\CRM\App\Models\CallBack;
 use Modules\CRM\App\Models\Leads;
 use Modules\CRM\App\Models\Bucket;
-use Modules\CRM\App\Models\User;
+use Modules\Shared\App\Models\User;
 use Modules\CRM\App\Models\LeadHistory;
 use Modules\CRM\App\Models\LeadAttribute;
 use Modules\CRM\App\Models\LeadSource;
@@ -15,9 +15,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
-use App\Jobs\LeadsImportJob;
+use Modules\CRM\App\Jobs\LeadsImportJob;
 use Illuminate\Http\UploadedFile;
-use App\Exports\LeadsExport;
+use Modules\CRM\App\Exports\LeadsExport;
 use Modules\CRM\App\Models\LeadAssignHistory;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
@@ -467,17 +467,42 @@ class LeadController extends Controller
         $attributes = $request->input('attributes', []);
 
         if (!empty($attributes) && is_array($attributes)) {
-            foreach ($attributes as $attrId => $value) {
+            foreach ($attributes as $key => $value) {
                 if ($value === null)
                     continue;
 
-                // Find existing attribute by ID and lead_id
-                $attr = LeadAttribute::where('id', $attrId)
-                    ->where('lead_id', $lead->id)
-                    ->first();
+                if (is_numeric($key)) {
+                    // Find existing attribute by ID and lead_id
+                    $attr = LeadAttribute::where('id', $key)
+                        ->where('lead_id', $lead->id)
+                        ->first();
+                } else {
+                    // Find existing attribute by field_name and lead_id
+                    $attr = LeadAttribute::where('field_name', $key)
+                        ->where('lead_id', $lead->id)
+                        ->first();
+                }
 
                 if (!$attr) {
-                    // Skip if not found
+                    if (!is_numeric($key) && !empty($key)) {
+                        // Create a new attribute record for this field name
+                        $attr = LeadAttribute::create([
+                            'lead_id' => $lead->id,
+                            'field_name' => $key,
+                            'field_value' => $value
+                        ]);
+
+                        LeadHistory::create([
+                            'lead_id' => $lead->id,
+                            'user_id' => auth()->id(),
+                            'action' => 'attribute_created',
+                            'changes' => [
+                                'field_name' => $key,
+                                'old' => null,
+                                'new' => $value
+                            ]
+                        ]);
+                    }
                     continue;
                 }
 

@@ -28,6 +28,9 @@
                     </ul>
                 </div>
                 <div class="page-header-right ms-auto">
+                    <a href="{{ route('users.create') }}" class="btn btn-primary me-2">
+                        <i class="feather-plus me-2"></i> Add User
+                    </a>
                     <a href="javascript:void(0);" class="btn btn-icon btn-light-brand" data-bs-toggle="collapse"
                         data-bs-target="#collapseOne">
                         Filter
@@ -101,7 +104,7 @@
                                 </td>
                                 <td>{{ $user->name }}</td>
                                 <td>{{ $user->email }}</td>
-                                <td>{{ $user->role->name }}</td>
+                                <td>{{ $user->role?->name ?? 'No Role' }}</td>
                                 <td>{{ $user->country_code }}</td>
                                 <td>{{ $user->contact_no }}</td>
                                 <td>{{ $user->created_at->format('d M Y') }}</td>

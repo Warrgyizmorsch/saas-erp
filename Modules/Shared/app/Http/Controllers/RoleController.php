@@ -1,16 +1,16 @@
 <?php
 
-namespace Modules\CRM\App\Http\Controllers;
+namespace Modules\Shared\App\Http\Controllers;
 
-use Modules\CRM\App\Http\Controllers\Controller;
-use Modules\CRM\App\Models\Role;
+use Modules\Shared\App\Http\Controllers\Controller;
+use Modules\Shared\App\Models\Role;
 use Illuminate\Http\Request;
 
 class RoleController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Role::where('is_deleted', 0);
+        $query = Role::query();
 
         if ($request->filled('name')) {
             $query->where('name', 'like', '%' . $request->name . '%');
@@ -18,7 +18,7 @@ class RoleController extends Controller
 
         $roles = $query->paginate(10);
 
-        return view('crm::crm.roles.index', compact('roles'));
+        return view('shared::shared.roles.index', compact('roles'));
     }
 
     public function store(Request $request)
@@ -29,7 +29,7 @@ class RoleController extends Controller
 
         Role::create([
             'name' => $validated['name'],
-            'is_deleted' => 0,
+            'guard_name' => 'web',
         ]);
 
         return redirect()->route('roles.index')->with('success', 'Role created successfully!');
@@ -38,9 +38,9 @@ class RoleController extends Controller
     public function edit($id)
     {
         $editRole = Role::findOrFail($id);
-        $roles = Role::where('is_deleted', 0)->paginate(10);
+        $roles = Role::paginate(10);
 
-        return view('crm::crm.roles.index', compact('roles', 'editRole'));
+        return view('shared::shared.roles.index', compact('roles', 'editRole'));
     }
 
     public function update(Request $request, Role $role)
@@ -58,13 +58,8 @@ class RoleController extends Controller
 
     public function destroy(Role $role)
     {
-        $role->update([
-            'is_deleted' => 1,
-            'updated_at' => now(),
-        ]);
+        $role->delete();
 
         return redirect()->route('roles.index')->with('success', 'Role deleted successfully!');
     }
 }
-
-

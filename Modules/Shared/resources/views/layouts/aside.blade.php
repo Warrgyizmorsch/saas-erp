@@ -126,6 +126,55 @@ function renderMenuItem($item)
 
                 </li>
 
+                <li class="nxl-item nxl-hasmenu">
+                    <a href="javascript:void(0);" class="nxl-link">
+                        <span class="nxl-micon">
+                            <i class="feather-users"></i>
+                        </span>
+                        <span class="nxl-mtext">Users</span>
+                        <span class="nxl-arrow">
+                            <i class="feather-chevron-right"></i>
+                        </span>
+                    </a>
+                    <ul class="nxl-submenu">
+                        <li class="nxl-item">
+                            <a class="nxl-link" href="{{ route('users.index') }}">Users List</a>
+                        </li>
+                        <li class="nxl-item">
+                            <a class="nxl-link" href="{{ route('users.session') }}">Login History & Sessions</a>
+                        </li>
+                    </ul>
+                </li>
+
+                <li class="nxl-item nxl-hasmenu">
+                    <a href="javascript:void(0);" class="nxl-link">
+                        <span class="nxl-micon">
+                            <i class="feather-shield"></i>
+                        </span>
+                        <span class="nxl-mtext">Roles & Rights</span>
+                        <span class="nxl-arrow">
+                            <i class="feather-chevron-right"></i>
+                        </span>
+                    </a>
+                    <ul class="nxl-submenu">
+                        <li class="nxl-item">
+                            <a class="nxl-link" href="{{ route('routes.index') }}">Routes Management</a>
+                        </li>
+                        <li class="nxl-item">
+                            <a class="nxl-link" href="{{ route('menus.index') }}">Menus Configuration</a>
+                        </li>
+                        <li class="nxl-item">
+                            <a class="nxl-link" href="{{ route('roles.index') }}">Role Management</a>
+                        </li>
+                        <li class="nxl-item">
+                            <a class="nxl-link" href="{{ route('role-permissions.index') }}">Role Permissions</a>
+                        </li>
+                        <li class="nxl-item">
+                            <a class="nxl-link" href="{{ route('user-permissions.index') }}">User Overrides</a>
+                        </li>
+                    </ul>
+                </li>
+
                 {{-- DYNAMIC MODULE MENUS --}}
                 @foreach($modules as $module)
 

@@ -5,7 +5,7 @@ namespace Modules\CRM\App\Http\Controllers;
 use Illuminate\Http\Request;
 use Modules\CRM\App\Models\Bucket;
 use Modules\CRM\App\Models\Leads;
-use Modules\CRM\App\Models\User;
+use Modules\Shared\App\Models\User;
 use Modules\CRM\App\Models\CallBack;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;

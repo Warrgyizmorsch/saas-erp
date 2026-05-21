@@ -4,12 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
 use Modules\CRM\App\Http\Controllers\CategoryController;
 use Modules\CRM\App\Http\Controllers\BlogController;
-use Modules\CRM\App\Http\Controllers\UserController;
-use Modules\CRM\App\Http\Controllers\RouteController;
-use Modules\CRM\App\Http\Controllers\RoleController;
-use Modules\CRM\App\Http\Controllers\MenuController;
-use Modules\CRM\App\Http\Controllers\RolePermissionController;
-use Modules\CRM\App\Http\Controllers\UserPermissionController;
+
 use Modules\CRM\App\Http\Controllers\BucketController;
 use Modules\CRM\App\Http\Controllers\LeadController;
 use Modules\CRM\App\Http\Controllers\LeadQuestionController;
@@ -75,38 +70,7 @@ Route::middleware([
             ->name('category.recover');
     });
 
-    // Users
-    Route::prefix('users')->name('users.')->group(function () {
-        Route::get('/', [UserController::class, 'index'])->name('index');
-        Route::get('/create', [UserController::class, 'create'])->name('create');
-        Route::post('/store', [UserController::class, 'store'])->name('store');
-        Route::get('/edit/{user}', [UserController::class, 'edit'])->name('edit');
-        Route::put('/update/{user}', [UserController::class, 'update'])->name('update');
-        Route::delete('/destroy/{user}', [UserController::class, 'destroy'])->name('destroy');
-        Route::get('/session', [UserController::class, 'indexLog'])->name('session');
-        Route::post('/{user}/logout', [UserController::class, 'forceLogout'])->name('logout');
-        Route::get('/{user}/history', [UserController::class, 'userHistory'])->name('history');
-        Route::get('/{user}/lead-history', [UserController::class, 'leadHistory'])->name('leadHistory');
-    });
 
-    // Routes management
-    Route::resource('routes', RouteController::class);
-
-    // Roles
-    Route::resource('roles', RoleController::class);
-
-    // Menus
-    Route::resource('menus', MenuController::class);
-
-    // Role permissions
-    Route::resource('role-permissions', RolePermissionController::class);
-    Route::post('roles/{role}/permissions', [RolePermissionController::class, 'updatePermissions'])
-        ->name('role-permissions-id.update');
-
-    // User permissions
-    Route::resource('user-permissions', UserPermissionController::class);
-    Route::post('users/{user}/permissions', [UserPermissionController::class, 'updatePermissions'])
-        ->name('user-permissions-id.update');
 
     // Leads
     Route::prefix('lead')->group(function () {
@@ -187,8 +151,7 @@ Route::middleware([
     Route::get('/fetch-templates', [LeadController::class, 'fetchTemplates'])->name('lead.fetchTemplates');
     Route::post('/send-sms', [LeadController::class, 'sendSMS'])->name('lead.sendSms');
     Route::post('/leads/bulk-delete', [LeadController::class, 'bulkDelete'])->name('leads.bulkDelete');
-    Route::patch('/user/{id}/status', [UserController::class, 'updateStatus'])
-        ->name('users.userUpdateStatus');
+
 
     Route::get('/leads-export', [LeadController::class, 'exportLeads'])
         ->name('leads.export');

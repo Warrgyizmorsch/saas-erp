@@ -7,7 +7,7 @@ use Modules\CRM\App\Models\CallBack;
 use Modules\CRM\App\Models\Leads;
 use Modules\CRM\App\Models\Bucket;
 use Modules\CRM\App\Models\Category;
-use Modules\CRM\App\Models\User;
+use Modules\Shared\App\Models\User;
 use Modules\CRM\App\Models\LeadSource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;

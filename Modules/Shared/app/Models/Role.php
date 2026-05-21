@@ -1,12 +1,12 @@
 <?php
 
-namespace Modules\CRM\App\Models;
+namespace Modules\Shared\App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
 class Role extends Model
 {
-    protected $fillable = ['name', 'is_deleted'];
+    protected $fillable = ['name', 'is_deleted', 'guard_name'];
 
     // Role has many Users
     public function users()

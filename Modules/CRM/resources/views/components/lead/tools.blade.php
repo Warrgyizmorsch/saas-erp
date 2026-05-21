@@ -62,7 +62,7 @@
 
             {{-- Create --}}
             <button class="btn btn-icon btn-light-brand"
-                onclick="openCreateModal()">
+                onclick="typeof openCreateModal === 'function' ? openCreateModal() : window.location.href='{{ route('lead.create') }}'">
                 <i class="feather-plus"></i>
             </button>
 

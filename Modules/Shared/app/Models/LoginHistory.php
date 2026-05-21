@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\CRM\App\Models;
+namespace Modules\Shared\App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -20,5 +20,4 @@ class LoginHistory extends Model
     {
         return $this->belongsTo(User::class);
     }
-
 }

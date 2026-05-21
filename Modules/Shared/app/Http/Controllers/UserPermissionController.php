@@ -1,14 +1,14 @@
 <?php
 
-namespace Modules\CRM\App\Http\Controllers;
+namespace Modules\Shared\App\Http\Controllers;
 
-use Modules\CRM\App\Http\Controllers\Controller;
+use Modules\Shared\App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Modules\CRM\App\Models\User;
-use Modules\CRM\App\Models\Menu;
-use Modules\CRM\App\Models\Route as AppRoute;
-use Modules\CRM\App\Models\UserPermission;
-use Modules\CRM\App\Models\RolePermission;
+use Modules\Shared\App\Models\User;
+use Modules\Shared\App\Models\Menu;
+use Modules\Shared\App\Models\Route as AppRoute;
+use Modules\Shared\App\Models\UserPermission;
+use Modules\Shared\App\Models\RolePermission;
 
 class UserPermissionController extends Controller
 {
@@ -66,7 +66,7 @@ class UserPermissionController extends Controller
                 ->groupBy('menu_id');
         }
 
-        return view('crm::crm.user_permissions.index', compact(
+        return view('shared::shared.user_permissions.index', compact(
             'users',
             'selectedUser',
             'allMenus',
@@ -155,7 +155,4 @@ class UserPermissionController extends Controller
 
         return back()->with('success', 'Permissions updated successfully.');
     }
-
 }
-
-

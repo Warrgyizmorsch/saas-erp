@@ -1,10 +1,10 @@
 <?php
 
-namespace Modules\CRM\App\Http\Controllers;
+namespace Modules\Shared\App\Http\Controllers;
 
-use Modules\CRM\App\Http\Controllers\Controller;
-use Modules\CRM\App\Models\Menu;
-use Modules\CRM\App\Models\Route;
+use Modules\Shared\App\Http\Controllers\Controller;
+use Modules\Shared\App\Models\Menu;
+use Modules\Shared\App\Models\Route;
 use Illuminate\Http\Request;
 
 class MenuController extends Controller
@@ -23,8 +23,7 @@ class MenuController extends Controller
             ->orderBy('sort_order')
             ->get();
 
-
-        return view('crm::crm.menus.index', compact('menus', 'allMenus'));
+        return view('shared::shared.menus.index', compact('menus', 'allMenus'));
     }
 
     public function store(Request $request)
@@ -58,7 +57,7 @@ class MenuController extends Controller
             ->orderBy('sort_order')
             ->get();
 
-        return view('crm::crm.menus.index', compact('menus', 'allMenus', 'editMenu'));
+        return view('shared::shared.menus.index', compact('menus', 'allMenus', 'editMenu'));
     }
 
     public function update(Request $request, Menu $menu)
@@ -83,5 +82,3 @@ class MenuController extends Controller
         return redirect()->route('menus.index')->with('success', 'Menu deleted successfully!');
     }
 }
-
-

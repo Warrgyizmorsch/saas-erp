@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('shared::layouts.app')
 
 @section('content')
     <style>
@@ -70,8 +70,7 @@
                         <form method="GET" action="{{ route('university-details.index') }}" class="row g-2">
                             <div class="col-md-8">
                                 <input type="text" name="search" class="form-control"
-                                    placeholder="Search by university name or country..."
-                                    value="{{ request('search') }}">
+                                    placeholder="Search by university name or country..." value="{{ request('search') }}">
                             </div>
 
                             <div class="col-md-4 d-flex">
@@ -149,8 +148,8 @@
                                         </a>
 
                                         @if ($university->details)
-                                            <a href="{{ route('university-details.preview', $university->id) }}"
-                                                class="btn-preview" title="Preview" target="_blank">
+                                            <a href="{{ route('university-details.preview', $university->id) }}" class="btn-preview"
+                                                title="Preview" target="_blank">
                                                 <i class="fas fa-eye"></i>
                                             </a>
                                         @endif

@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('shared::layouts.app')
 
 @section('content')
     {{-- Minimal page-specific tweaks; Bootstrap-first so dark-mode stays consistent --}}
@@ -45,7 +45,8 @@
                     </div>
                     <ul class="breadcrumb">
                         <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
-                        <li class="breadcrumb-item"><a href="{{ route('crm-subject-pages.index') }}">Subject-Page List</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('crm-subject-pages.index') }}">Subject-Page List</a>
+                        </li>
                         <li class="breadcrumb-item">Edit</li>
                     </ul>
                 </div>
@@ -80,8 +81,8 @@
     <div class="crm-page-container">
         <div class="card">
             <div class="card-body">
-                <form id="subjectForm" action="{{ route('crm-subject-pages.update', $data['SubjectPage']->id) }}" method="POST"
-                    enctype="multipart/form-data">
+                <form id="subjectForm" action="{{ route('crm-subject-pages.update', $data['SubjectPage']->id) }}"
+                    method="POST" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
 
@@ -113,7 +114,7 @@
                         <div class="col-lg-9">
                             <input type="text" class="form-control" id="Url" name="Url" required
                                 value="{{ $data['SubjectPage']->slug }}">
-                            
+
                             {{-- ✅ URL validation error --}}
                             @error('Url')
                                 <div class="alert alert-danger alert-dismissible fade show mt-2" role="alert">
@@ -137,7 +138,8 @@
                     <div class="row g-3 mb-4">
                         <label class="col-lg-3 col-form-label fw-semibold">Content</label>
                         <div class="col-lg-9">
-                            <textarea id="summernote" name="Content" required>{!! $data['SubjectPage']['content'] !!}</textarea>                            
+                            <textarea id="summernote" name="Content"
+                                required>{!! $data['SubjectPage']['content'] !!}</textarea>
                             <div class="form-text">Tables and lists are normalized to Bootstrap classes for better
                                 dark-mode.</div>
                         </div>
@@ -156,8 +158,8 @@
                     <div class="row g-3 mb-4">
                         <label class="col-lg-3 col-form-label fw-semibold">Meta Description</label>
                         <div class="col-lg-9">
-                            <textarea class="form-control" name="Metadescription"
-                                rows="3" required>{{ $data['SubjectPage']->meta_description }}</textarea>
+                            <textarea class="form-control" name="Metadescription" rows="3"
+                                required>{{ $data['SubjectPage']->meta_description }}</textarea>
                         </div>
                     </div>
 
@@ -220,24 +222,26 @@
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+        crossorigin="anonymous"></script>
     <link href="https://cdn.jsdelivr.net/npm/summernote@0.9.0/dist/summernote-lite.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/summernote@0.9.0/dist/summernote-lite.min.js"></script>
-     <script>
-      $('#summernote').summernote({
-        placeholder: 'Hello stand alone ui',
-        tabsize: 2,
-        height: 120,
-        toolbar: [
-          ['style', ['style']],
-          ['font', ['bold', 'underline', 'clear']],
-          ['color', ['color']],
-          ['para', ['ul', 'ol', 'paragraph']],
-          ['table', ['table']],
-          ['insert', ['link', 'picture']],
-          ['view', ['codeview', 'help']]
-        ]
-      });
+    <script>
+        $('#summernote').summernote({
+            placeholder: 'Hello stand alone ui',
+            tabsize: 2,
+            height: 120,
+            toolbar: [
+                ['style', ['style']],
+                ['font', ['bold', 'underline', 'clear']],
+                ['color', ['color']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['table', ['table']],
+                ['insert', ['link', 'picture']],
+                ['view', ['codeview', 'help']]
+            ]
+        });
     </script>
 
     <script>
@@ -267,7 +271,7 @@
             }
         })();
 
-        
+
         // FAQ add/remove + JSON pack on submit
         document.addEventListener("DOMContentLoaded", function () {
             function addFAQ() {
@@ -275,20 +279,20 @@
                 let wrapper = document.createElement("div");
                 wrapper.className = "faq-entry mb-3";
                 wrapper.innerHTML = `
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Question</label>
-                            <input type="text" class="form-control faq-question" required>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Question</label>
+                                <input type="text" class="form-control faq-question" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Answer</label>
+                                <textarea class="form-control faq-answer" rows="1" required></textarea>
+                            </div>
+                            <div class="col-12">
+                                <button type="button" class="btn btn-danger btn-sm remove-faq">Remove</button>
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Answer</label>
-                            <textarea class="form-control faq-answer" rows="1" required></textarea>
-                        </div>
-                        <div class="col-12">
-                            <button type="button" class="btn btn-danger btn-sm remove-faq">Remove</button>
-                        </div>
-                    </div>
-                `;
+                    `;
                 container.appendChild(wrapper);
             }
 
@@ -311,6 +315,6 @@
             });
         });
 
-       
+
     </script>
 @endsection

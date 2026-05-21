@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('shared::layouts.app')
 
 @section('content')
     <div class="page-header d-flex justify-content-between align-items-center">
@@ -259,7 +259,7 @@
         .d-flex.gap-2>button {
             margin: 0;
         }
-        
+
         @media (max-width: 576px) {
             .d-flex.gap-2 {
                 flex-direction: column !important;

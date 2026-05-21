@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('shared::layouts.app')
 
 @section('content')
     <div class="page-header">
@@ -19,8 +19,8 @@
             <div class="col-lg-12">
                 <div class="card stretch stretch-full">
                     <form id="userForm"
-                        action="{{ isset($user) ? route('users.update', $user->id) : route('users.store') }}"
-                        method="POST" enctype="multipart/form-data">
+                        action="{{ isset($user) ? route('users.update', $user->id) : route('users.store') }}" method="POST"
+                        enctype="multipart/form-data">
                         @csrf
                         @if(isset($user)) @method('PUT') @endif
 
@@ -30,8 +30,7 @@
                                 <div class="col-lg-4 text-center border-end">
                                     <div class="image-preview mb-3 mx-auto">
                                         @if(isset($user) && $user->image)
-                                            <img id="preview" src="{{ asset('storage/' . $user->image) }}"
-                                                alt="Profile Image">
+                                            <img id="preview" src="{{ asset('storage/' . $user->image) }}" alt="Profile Image">
                                         @else
                                             <img id="preview" src="/images/blank.jpeg" alt="Profile Image">
                                         @endif
@@ -53,8 +52,7 @@
                                             <div class="input-group">
                                                 <div class="input-group-text"><i class="feather-user"></i></div>
                                                 <input type="text" name="name" class="form-control"
-                                                    value="{{ old('name', $user->name ?? '') }}"
-                                                    placeholder="Enter name">
+                                                    value="{{ old('name', $user->name ?? '') }}" placeholder="Enter name">
                                             </div>
                                             @error('name') <small class="text-danger">{{ $message }}</small> @enderror
                                         </div>
@@ -73,8 +71,7 @@
 
                                         <!-- Phone (Country Code + Number in one field) -->
                                         <div class="col-lg-6">
-                                            <label class="form-label">Contact No <span
-                                                    class="text-danger">*</span></label>
+                                            <label class="form-label">Contact No <span class="text-danger">*</span></label>
                                             <div>
                                                 <input id="phone" type="tel" name="contact_no" class="form-control"
                                                     value="{{ old('contact_no', $user->contact_no ?? '') }}"
@@ -108,8 +105,8 @@
                                             <label class="form-label">City <span class="text-danger">*</span></label>
                                             <div class="input-group">
                                                 <div class="input-group-text"><i class="feather-map-pin"></i></div>
-                                                <input type="text" name="city" class="form-control" value="{{ old('city', $user->city ?? '') }}"
-                                                    placeholder="Enter City">
+                                                <input type="text" name="city" class="form-control"
+                                                    value="{{ old('city', $user->city ?? '') }}" placeholder="Enter City">
                                             </div>
                                             @error('city') <small class="text-danger">{{ $message }}</small> @enderror
                                         </div>
@@ -117,34 +114,34 @@
 
                                     @auth
                                         @if(isset($user) && auth()->user()->role_id === 1)
-                                        <div class="row g-4 mt-1">
-                                            <!-- Password -->
-                                            <div class="col-lg-6">
-                                                <label class="form-label">New Password</label>
-                                                <div class="input-group">
-                                                    <div class="input-group-text">
-                                                        <i class="feather-lock"></i>
+                                            <div class="row g-4 mt-1">
+                                                <!-- Password -->
+                                                <div class="col-lg-6">
+                                                    <label class="form-label">New Password</label>
+                                                    <div class="input-group">
+                                                        <div class="input-group-text">
+                                                            <i class="feather-lock"></i>
+                                                        </div>
+                                                        <input type="password" name="password" class="form-control"
+                                                            placeholder="Enter new password">
                                                     </div>
-                                                    <input type="password" name="password" class="form-control"
-                                                        placeholder="Enter new password">
+                                                    @error('password')
+                                                        <small class="text-danger">{{ $message }}</small>
+                                                    @enderror
                                                 </div>
-                                                @error('password')
-                                                    <small class="text-danger">{{ $message }}</small>
-                                                @enderror
-                                            </div>
 
-                                            <!-- Confirm Password -->
-                                            <div class="col-lg-6">
-                                                <label class="form-label">Confirm Password</label>
-                                                <div class="input-group">
-                                                    <div class="input-group-text">
-                                                        <i class="feather-lock"></i>
+                                                <!-- Confirm Password -->
+                                                <div class="col-lg-6">
+                                                    <label class="form-label">Confirm Password</label>
+                                                    <div class="input-group">
+                                                        <div class="input-group-text">
+                                                            <i class="feather-lock"></i>
+                                                        </div>
+                                                        <input type="password" name="password_confirmation" class="form-control"
+                                                            placeholder="Confirm new password">
                                                     </div>
-                                                    <input type="password" name="password_confirmation" class="form-control"
-                                                        placeholder="Confirm new password">
                                                 </div>
                                             </div>
-                                        </div>
                                         @endif
                                     @endauth
                                 </div>
@@ -182,9 +179,9 @@
         }
 
         .iti__country-list {
-            width: 250px !important; 
-            max-height: 250px;       
-            overflow-y: auto;         
+            width: 250px !important;
+            max-height: 250px;
+            overflow-y: auto;
         }
     </style>
 

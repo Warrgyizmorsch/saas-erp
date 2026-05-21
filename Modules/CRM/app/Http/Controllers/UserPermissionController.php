@@ -66,7 +66,7 @@ class UserPermissionController extends Controller
                 ->groupBy('menu_id');
         }
 
-        return view('crm.user_permissions.index', compact(
+        return view('crm::crm.user_permissions.index', compact(
             'users',
             'selectedUser',
             'allMenus',

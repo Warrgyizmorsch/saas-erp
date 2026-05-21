@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('shared::layouts.app')
 
 @section('content')
     {{-- Minimal page-specific tweaks; Bootstrap-first so dark-mode stays consistent --}}
@@ -100,13 +100,14 @@
                         <label class="col-lg-3 col-form-label fw-semibold">Website</label>
                         <div class="col-lg-9">
                             <select name="site" id="siteSelect" class="form-select">
-                                <option value="wts" {{ ($data['blog']->site ?? 'wts') === 'wts' ? 'selected' : '' }}>WTS</option>
+                                <option value="wts" {{ ($data['blog']->site ?? 'wts') === 'wts' ? 'selected' : '' }}>WTS
+                                </option>
                                 <option value="warrgyizmorsch" {{ ($data['blog']->site ?? 'wts') === 'warrgyizmorsch' ? 'selected' : '' }}>
                                     Warrgyizmorsch</option>
                             </select>
                         </div>
                     </div>
-                    
+
                     <!-- Category according to the site -->
                     <div class="row g-3 mb-4" id="categoryRow" style="display:none;">
                         <label class="col-lg-3 col-form-label fw-semibold">Category</label>
@@ -120,7 +121,8 @@
                                 <option value="Web Development & Design" {{ ($data['blog']->category == "Web Development & Design") ? "selected" : "" }}>Web Development & Design</option>
                                 <option value="Software & Business Solutions" {{ ($data['blog']->category == "Software & Business Solutions") ? "selected" : "" }}>Software & Business Solutions</option>
                                 <option value="SEO" {{ ($data['blog']->category == "SEO") ? "selected" : "" }}>SEO</option>
-                                <option value="E-commerce" {{ ($data['blog']->category == "E-commerce") ? "selected" : "" }}>E-commerce
+                                <option value="E-commerce" {{ ($data['blog']->category == "E-commerce") ? "selected" : "" }}>
+                                    E-commerce
                                 </option>
                             </select>
                             <div class="form-text">Category is required only for Warrgyizmorsch.</div>
@@ -154,8 +156,7 @@
                                 <option value="">Select Author</option>
 
                                 @foreach($authors as $author)
-                                    <option value="{{ $author->id }}"
-                                        {{ (int) ($data['blog']->author_image ?? 0) === (int) $author->id ? 'selected' : '' }}>
+                                    <option value="{{ $author->id }}" {{ (int) ($data['blog']->author_image ?? 0) === (int) $author->id ? 'selected' : '' }}>
                                         {{ $author->name }}
                                     </option>
                                 @endforeach
@@ -168,12 +169,8 @@
                     <div class="row g-3 mb-4">
                         <label class="col-lg-3 col-form-label fw-semibold">Created At</label>
                         <div class="col-lg-9">
-                            <input
-                                type="datetime-local"
-                                name="created_at"
-                                class="form-control"
-                                value="{{ optional($data['blog']->created_at)->format('Y-m-d\TH:i') }}"
-                            >
+                            <input type="datetime-local" name="created_at" class="form-control"
+                                value="{{ optional($data['blog']->created_at)->format('Y-m-d\TH:i') }}">
                             <div class="form-text">You can change the blog publish date/time.</div>
                         </div>
                     </div>
@@ -182,7 +179,8 @@
                     <div class="row g-3 mb-4">
                         <label class="col-lg-3 col-form-label fw-semibold">Blog Content</label>
                         <div class="col-lg-9">
-                            <textarea id="summernote" name="blogContent" required>{!! $data['blog']['content'] !!}</textarea>                            
+                            <textarea id="summernote" name="blogContent"
+                                required>{!! $data['blog']['content'] !!}</textarea>
                             <div class="form-text">Tables and lists are normalized to Bootstrap classes for better
                                 dark-mode.</div>
                         </div>
@@ -201,8 +199,8 @@
                     <div class="row g-3 mb-4">
                         <label class="col-lg-3 col-form-label fw-semibold">Meta Description</label>
                         <div class="col-lg-9">
-                            <textarea class="form-control" name="Metadescription"
-                                rows="3" required>{{ $data['blog']->meta_discribtion }}</textarea>
+                            <textarea class="form-control" name="Metadescription" rows="3"
+                                required>{{ $data['blog']->meta_discribtion }}</textarea>
                         </div>
                     </div>
 
@@ -265,24 +263,26 @@
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+        crossorigin="anonymous"></script>
     <link href="https://cdn.jsdelivr.net/npm/summernote@0.9.0/dist/summernote-lite.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/summernote@0.9.0/dist/summernote-lite.min.js"></script>
-     <script>
-      $('#summernote').summernote({
-        placeholder: 'Hello stand alone ui',
-        tabsize: 2,
-        height: 120,
-        toolbar: [
-          ['style', ['style']],
-          ['font', ['bold', 'underline', 'clear']],
-          ['color', ['color']],
-          ['para', ['ul', 'ol', 'paragraph']],
-          ['table', ['table']],
-          ['insert', ['link', 'picture']],
-          ['view', ['codeview', 'help']]
-        ]
-      });
+    <script>
+        $('#summernote').summernote({
+            placeholder: 'Hello stand alone ui',
+            tabsize: 2,
+            height: 120,
+            toolbar: [
+                ['style', ['style']],
+                ['font', ['bold', 'underline', 'clear']],
+                ['color', ['color']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['table', ['table']],
+                ['insert', ['link', 'picture']],
+                ['view', ['codeview', 'help']]
+            ]
+        });
     </script>
 
     <script>
@@ -312,7 +312,7 @@
             }
         })();
 
-        
+
         // FAQ add/remove + JSON pack on submit
         document.addEventListener("DOMContentLoaded", function () {
             function addFAQ() {
@@ -320,20 +320,20 @@
                 let wrapper = document.createElement("div");
                 wrapper.className = "faq-entry mb-3";
                 wrapper.innerHTML = `
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Question</label>
-                            <input type="text" class="form-control faq-question" required>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Question</label>
+                                <input type="text" class="form-control faq-question" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Answer</label>
+                                <textarea class="form-control faq-answer" rows="1" required></textarea>
+                            </div>
+                            <div class="col-12">
+                                <button type="button" class="btn btn-danger btn-sm remove-faq">Remove</button>
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Answer</label>
-                            <textarea class="form-control faq-answer" rows="1" required></textarea>
-                        </div>
-                        <div class="col-12">
-                            <button type="button" class="btn btn-danger btn-sm remove-faq">Remove</button>
-                        </div>
-                    </div>
-                `;
+                    `;
                 container.appendChild(wrapper);
             }
 

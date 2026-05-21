@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('shared::layouts.app')
 
 @section('content')
     <x-slot name="title">Routes Management</x-slot>
@@ -29,7 +29,8 @@
                         {{-- Filter Form --}}
                         <form method="GET" action="{{ route('routes.index') }}" class="mb-3 row g-2">
                             <div class="col-md-3">
-                                <input type="text" name="name" class="form-control" placeholder="Filter by Name" value="{{ request('name') }}">
+                                <input type="text" name="name" class="form-control" placeholder="Filter by Name"
+                                    value="{{ request('name') }}">
                             </div>
                             <div class="col-md-3">
                                 <input type="text" name="route_name" class="form-control" placeholder="Filter by Route"
@@ -41,7 +42,8 @@
                                     <option value="GET" {{ request('method') == 'GET' ? 'selected' : '' }}>GET</option>
                                     <option value="POST" {{ request('method') == 'POST' ? 'selected' : '' }}>POST</option>
                                     <option value="PUT" {{ request('method') == 'PUT' ? 'selected' : '' }}>PUT</option>
-                                    <option value="DELETE" {{ request('method') == 'DELETE' ? 'selected' : '' }}>DELETE</option>
+                                    <option value="DELETE" {{ request('method') == 'DELETE' ? 'selected' : '' }}>DELETE
+                                    </option>
                                     <option value="PATCH" {{ request('method') == 'PATCH' ? 'selected' : '' }}>PATCH</option>
                                 </select>
                             </div>
@@ -65,7 +67,7 @@
                     </div>
                 </div>
             </div>
-    
+
         </div>
     </main>
 
@@ -94,9 +96,11 @@
                         </div>
                         <div class="col-md-3">
                             <select name="method" class="form-select" data-select2-selector="tag" required>
-                                <option value="GET" {{ old('method', $editRoute->method ?? '') == 'GET' ? 'selected' : '' }}>GET</option>
+                                <option value="GET" {{ old('method', $editRoute->method ?? '') == 'GET' ? 'selected' : '' }}>
+                                    GET</option>
                                 <option value="POST" {{ old('method', $editRoute->method ?? '') == 'POST' ? 'selected' : '' }}>POST</option>
-                                <option value="PUT" {{ old('method', $editRoute->method ?? '') == 'PUT' ? 'selected' : '' }}>PUT</option>
+                                <option value="PUT" {{ old('method', $editRoute->method ?? '') == 'PUT' ? 'selected' : '' }}>
+                                    PUT</option>
                                 <option value="DELETE" {{ old('method', $editRoute->method ?? '') == 'DELETE' ? 'selected' : '' }}>DELETE</option>
                                 <option value="PATCH" {{ old('method', $editRoute->method ?? '') == 'PATCH' ? 'selected' : '' }}>PATCH</option>
                             </select>
@@ -155,21 +159,20 @@
 
                                 <td>
                                     <div class="action-links">
-                                    {{-- Edit --}}
-                                    <a href="{{ route('routes.edit', $route->id) }}" class="btn-edit"
-                                        title="Edit">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
+                                        {{-- Edit --}}
+                                        <a href="{{ route('routes.edit', $route->id) }}" class="btn-edit" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
 
-                                    {{-- Delete --}}
-                                    <form method="POST" action="{{ route('routes.destroy', $route->id) }}" class="d-inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn-delete" title="Delete"
-                                            onclick="return confirm('Delete this route?')">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
+                                        {{-- Delete --}}
+                                        <form method="POST" action="{{ route('routes.destroy', $route->id) }}" class="d-inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn-delete" title="Delete"
+                                                onclick="return confirm('Delete this route?')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
                                     </div>
                                 </td>
 

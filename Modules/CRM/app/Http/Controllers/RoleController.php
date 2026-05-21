@@ -18,7 +18,7 @@ class RoleController extends Controller
 
         $roles = $query->paginate(10);
 
-        return view('crm.roles.index', compact('roles'));
+        return view('crm::crm.roles.index', compact('roles'));
     }
 
     public function store(Request $request)
@@ -28,7 +28,7 @@ class RoleController extends Controller
         ]);
 
         Role::create([
-            'name'       => $validated['name'],
+            'name' => $validated['name'],
             'is_deleted' => 0,
         ]);
 
@@ -40,7 +40,7 @@ class RoleController extends Controller
         $editRole = Role::findOrFail($id);
         $roles = Role::where('is_deleted', 0)->paginate(10);
 
-        return view('crm.roles.index', compact('roles', 'editRole'));
+        return view('crm::crm.roles.index', compact('roles', 'editRole'));
     }
 
     public function update(Request $request, Role $role)

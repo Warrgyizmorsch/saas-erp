@@ -12,29 +12,29 @@ class MenuController extends Controller
     public function index()
     {
         // Filtered and paginated menus for table/list view
-        $query = Menu::where('is_deleted', 0)->whereNull('parent_id');        
+        $query = Menu::where('is_deleted', 0)->whereNull('parent_id');
 
         $menus = $query->with('children.route')->orderBy('sort_order')->paginate(10);
 
         // Full menu tree for dropdown & display
         $allMenus = Menu::where('is_deleted', 0)
-                ->whereNull('parent_id')
-                ->with('childrenRecursive') // 🔁 recursive children
-                ->orderBy('sort_order')
-                ->get();
+            ->whereNull('parent_id')
+            ->with('childrenRecursive') // 🔁 recursive children
+            ->orderBy('sort_order')
+            ->get();
 
 
-        return view('crm.menus.index', compact('menus', 'allMenus'));
+        return view('crm::crm.menus.index', compact('menus', 'allMenus'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'title'     => 'required|string|max:255',
-            'icon'      => 'nullable|string|max:255',
+            'title' => 'required|string|max:255',
+            'icon' => 'nullable|string|max:255',
             'parent_id' => 'nullable|exists:menus,id',
-            'route_id'  => 'nullable|exists:routes,id',
-            'sort_order'=> 'nullable|integer',
+            'route_id' => 'nullable|exists:routes,id',
+            'sort_order' => 'nullable|integer',
         ]);
 
         Menu::create(array_merge($validated, ['is_deleted' => 0]));
@@ -47,28 +47,28 @@ class MenuController extends Controller
         $editMenu = Menu::findOrFail($id);
 
         $menus = Menu::where('is_deleted', 0)
-                     ->whereNull('parent_id')
-                     ->with('children.route')
-                     ->orderBy('sort_order')
-                     ->paginate(10);
+            ->whereNull('parent_id')
+            ->with('children.route')
+            ->orderBy('sort_order')
+            ->paginate(10);
 
         $allMenus = Menu::where('is_deleted', 0)
-                        ->whereNull('parent_id')
-                        ->with('children.route')
-                        ->orderBy('sort_order')
-                        ->get();
+            ->whereNull('parent_id')
+            ->with('children.route')
+            ->orderBy('sort_order')
+            ->get();
 
-        return view('crm.menus.index', compact('menus', 'allMenus', 'editMenu'));
+        return view('crm::crm.menus.index', compact('menus', 'allMenus', 'editMenu'));
     }
 
     public function update(Request $request, Menu $menu)
     {
         $validated = $request->validate([
-            'title'     => 'required|string|max:255',
-            'icon'      => 'nullable|string|max:255',
+            'title' => 'required|string|max:255',
+            'icon' => 'nullable|string|max:255',
             'parent_id' => 'nullable|exists:menus,id',
-            'route_id'  => 'nullable|exists:routes,id',
-            'sort_order'=> 'nullable|integer',
+            'route_id' => 'nullable|exists:routes,id',
+            'sort_order' => 'nullable|integer',
         ]);
 
         $menu->update($validated);

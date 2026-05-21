@@ -34,7 +34,7 @@ class WarrServicePageController extends Controller
         $services = WarrService::orderBy('name')->get();
         $countries = WarrCountry::orderBy('name')->get();
 
-        return view('crm.warr-service-pages.index', compact('data', 'services', 'countries'));
+        return view('crm::crm.warr-service-pages.index', compact('data', 'services', 'countries'));
     }
 
     public function create(Request $request)
@@ -65,7 +65,7 @@ class WarrServicePageController extends Controller
             $clone->section4_points = is_array($clone->section4_points) ? $clone->section4_points : [];
         }
 
-        return view('crm.warr-service-pages.create', compact(
+        return view('crm::crm.warr-service-pages.create', compact(
             'services',
             'countries',
             'cities',
@@ -157,7 +157,7 @@ class WarrServicePageController extends Controller
         // ensure arrays
         $faqData = is_array($page->faq) ? $page->faq : [];
 
-        return view('crm.warr-service-pages.edit', compact('page', 'services', 'countries', 'cities', 'faqData'));
+        return view('crm::crm.warr-service-pages.edit', compact('page', 'services', 'countries', 'cities', 'faqData'));
     }
 
     public function update(Request $request, $id)
@@ -253,7 +253,7 @@ class WarrServicePageController extends Controller
     public function countriesIndex(Request $request)
     {
         $countries = WarrCountry::orderBy('name')->paginate(20);
-        return view('crm.warr-crud.countries', compact('countries'));
+        return view('crm::crm.warr-crud.countries', compact('countries'));
     }
 
     public function countriesStore(Request $request)
@@ -300,7 +300,7 @@ class WarrServicePageController extends Controller
         $cities = $query->paginate(20);
         $countries = WarrCountry::orderBy('name')->get();
 
-        return view('crm.warr-crud.cities', compact('cities', 'countries'));
+        return view('crm::crm.warr-crud.cities', compact('cities', 'countries'));
     }
 
     public function citiesStore(Request $request)
@@ -348,7 +348,7 @@ class WarrServicePageController extends Controller
 
         $services = $query->paginate(20);
 
-        return view('crm.warr-crud.services', compact('services'));
+        return view('crm::crm.warr-crud.services', compact('services'));
     }
 
     public function servicesStore(Request $request)

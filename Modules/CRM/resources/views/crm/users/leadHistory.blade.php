@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('shared::layouts.app')
 
 @section('content')
     <main>
@@ -28,11 +28,12 @@
                 <form method="GET" class="mb-3">
                     <div class="row">
                         <div class="col-md-3">
-                            <input type="date" name="date" class="form-control" value="{{ request('date') }}" max="{{ now()->toDateString() }}">
+                            <input type="date" name="date" class="form-control" value="{{ request('date') }}"
+                                max="{{ now()->toDateString() }}">
                         </div>
                         <div class="col-md-2 d-flex gap-2">
                             <button type="submit" class="btn btn-primary">Filter</button>
-        
+
                             <a href="{{ route('users.leadHistory', $user->id) }}" class="btn btn-secondary">Reset</a>
                         </div>
                     </div>
@@ -56,12 +57,12 @@
                         <!-- Session Body -->
                         <div class="card-body">
                             @php
-    $tasks = $leadHistories->filter(function ($lead) use ($session) {
-        return $lead->created_at->between(
-            $session->created_at,
-            $session->logout_at ?? now()
-        );
-    });
+                                $tasks = $leadHistories->filter(function ($lead) use ($session) {
+                                    return $lead->created_at->between(
+                                        $session->created_at,
+                                        $session->logout_at ?? now()
+                                    );
+                                });
                             @endphp
 
                             @if($tasks->isNotEmpty())
@@ -107,7 +108,8 @@
 
                         <!-- Logout Footer -->
                         <div class="card-footer bg-secondary text-white" style="padding: 10px;">
-                            <strong>Logged Out -> {{ $session->logout_at ? $session->logout_at->format('d M Y h:i A') : '-' }}</strong>
+                            <strong>Logged Out ->
+                                {{ $session->logout_at ? $session->logout_at->format('d M Y h:i A') : '-' }}</strong>
                         </div>
                     </div>
                 @empty

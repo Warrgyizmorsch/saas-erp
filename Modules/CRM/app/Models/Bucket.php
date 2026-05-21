@@ -4,7 +4,7 @@ namespace Modules\CRM\App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use App\Models\Leads;
+use Modules\CRM\App\Models\Leads;
 
 class Bucket extends Model
 {

@@ -13,7 +13,7 @@ class BucketController extends Controller
         $buckets = Bucket::with('children')->whereNull('parent_id')->where('is_deleted', 0)->get();
         $allBuckets = Bucket::where('is_deleted', 0)->get();
 
-        return view('crm.bucket.index', compact('buckets', 'allBuckets'))
+        return view('crm::crm.bucket.index', compact('buckets', 'allBuckets'))
             ->with('editBucket', null); // default
     }
 
@@ -41,7 +41,7 @@ class BucketController extends Controller
         $buckets = Bucket::with('children')->whereNull('parent_id')->where('is_deleted', 0)->get();
         $allBuckets = Bucket::where('is_deleted', 0)->get();
 
-        return view('crm.bucket.index', compact('buckets', 'allBuckets', 'editBucket'));
+        return view('crm::crm.bucket.index', compact('buckets', 'allBuckets', 'editBucket'));
     }
 
 
@@ -64,7 +64,7 @@ class BucketController extends Controller
 
     public function destroy(Bucket $bucket)
     {
-        $bucket->delete(); 
+        $bucket->delete();
         return redirect()->route('bucket.index')->with('success', 'Bucket deleted successfully.');
     }
 }

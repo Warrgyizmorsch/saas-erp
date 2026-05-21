@@ -7,6 +7,13 @@ use Illuminate\Console\Scheduling\Schedule;
 
 class SharedServiceProvider extends ModuleServiceProvider
 {
+    public function boot(): void
+    {
+        $this->loadViewsFrom(
+            module_path('Shared', 'resources/views'),
+            'shared'
+        );
+    }
     /**
      * The name of the module.
      */

@@ -2,8 +2,10 @@
 
 namespace Modules\CRM\App\Providers;
 
-use Nwidart\Modules\Support\ModuleServiceProvider;
 use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Support\ServiceProvider;
+use Nwidart\Modules\Support\ModuleServiceProvider;
+use Illuminate\Support\Facades\Blade;
 
 class CRMServiceProvider extends ModuleServiceProvider
 {
@@ -18,13 +20,6 @@ class CRMServiceProvider extends ModuleServiceProvider
     protected string $nameLower = 'crm';
 
     /**
-     * Command classes to register.
-     *
-     * @var string[]
-     */
-    // protected array $commands = [];
-
-    /**
      * Provider classes to register.
      *
      * @var string[]
@@ -35,12 +30,30 @@ class CRMServiceProvider extends ModuleServiceProvider
     ];
 
     /**
-     * Define module schedules.
-     * 
-     * @param $schedule
+     * Boot the application events.
      */
-    // protected function configureSchedules(Schedule $schedule): void
-    // {
-    //     $schedule->command('inspire')->hourly();
-    // }
+    public function boot(): void
+    {
+        parent::boot();
+
+        // Views
+        $this->loadViewsFrom(
+            module_path('CRM', 'resources/views'),
+            'crm'
+        );
+
+        // Blade Components
+        Blade::anonymousComponentPath(
+            module_path('CRM', 'resources/views/components'),
+            'crm'
+        );
+    }
+
+    /**
+     * Register services.
+     */
+    public function register(): void
+    {
+        parent::register();
+    }
 }

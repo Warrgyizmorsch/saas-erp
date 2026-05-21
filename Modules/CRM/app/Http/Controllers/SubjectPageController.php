@@ -25,7 +25,7 @@ class SubjectPageController extends Controller
 
         if ($title) {
             $query->where('title', 'like', '%' . $title . '%');
-        }        
+        }
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
@@ -38,31 +38,34 @@ class SubjectPageController extends Controller
         return view("crm.subject-pages.index", compact('data'));
     }
 
-    public function create () {        
-        return view('crm.subject-pages.create');
+    public function create()
+    {
+        return view('crm::crm.subject-pages.create');
     }
 
     public function store(Request $request)
     {
-        $request->validate([
-            'Title' => 'required|string',
-            'Content' => 'required|string',
-            'MetaTag' => 'required|string',
-            'Metadescription' => 'required|string',            
-            'photo' => 'nullable|image|max:5120',
-            'Url' => [
-                'required',
-                'string',
-                'max:255',
-                'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
-                Rule::unique('subject_pages', 'slug'),
+        $request->validate(
+            [
+                'Title' => 'required|string',
+                'Content' => 'required|string',
+                'MetaTag' => 'required|string',
+                'Metadescription' => 'required|string',
+                'photo' => 'nullable|image|max:5120',
+                'Url' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
+                    Rule::unique('subject_pages', 'slug'),
+                ],
+                'status' => 'nullable|in:draft,publish',
             ],
-            'status' => 'nullable|in:draft,publish',
-        ],
-        [
-            'Url.unique' => 'This subject URL already exists. Please choose a different URL.',
-            'Url.regex' => 'URL can contain only lowercase letters, numbers, and hyphens.',
-        ]);                
+            [
+                'Url.unique' => 'This subject URL already exists. Please choose a different URL.',
+                'Url.regex' => 'URL can contain only lowercase letters, numbers, and hyphens.',
+            ]
+        );
 
         //prevent same title collision PER SITE (optional but safer than global)
         $existingSubjectPage = SubjectPage::where('slug', $request->input('Url'))
@@ -74,7 +77,7 @@ class SubjectPageController extends Controller
         }
 
         //Slug source
-        $slug = $request->input('Url');        
+        $slug = $request->input('Url');
 
         $subjectPage = new SubjectPage();
         $Content = $request->input('Content');
@@ -107,14 +110,14 @@ class SubjectPageController extends Controller
                 }
             }
         }
-        
+
         $subjectPage->title = $request->input('Title');
-        $subjectPage->content = $Content;        
+        $subjectPage->content = $Content;
         $subjectPage->slug = $slug;
         $subjectPage->faq = $request->input('faq_data');
         $subjectPage->meta_title = $request->input('MetaTag');
-        $subjectPage->meta_description = $request->input('Metadescription');        
-        
+        $subjectPage->meta_description = $request->input('Metadescription');
+
         $subjectPage->status = $request->input('status', 'draft');
 
         // ✅ thumbnail upload (use site+slug to avoid overwrite)
@@ -159,28 +162,30 @@ class SubjectPageController extends Controller
             return redirect()->back()->with('error', 'Subject Page Not Found');
         }
 
-        $request->validate([
-            'Title' => 'required|string',
-            'Content' => 'required|string',
-            'MetaTag' => 'required|string',
-            'Metadescription' => 'required|string',            
-            'photo' => 'nullable|image|max:5120',            
-            'Url' => [
-                'required',
-                'string',
-                'max:255',
-                'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',                
+        $request->validate(
+            [
+                'Title' => 'required|string',
+                'Content' => 'required|string',
+                'MetaTag' => 'required|string',
+                'Metadescription' => 'required|string',
+                'photo' => 'nullable|image|max:5120',
+                'Url' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
+                ],
+                'author_image' => 'nullable|exists:author,id',
+                'created_at' => 'nullable|date',
+                'status' => 'nullable|in:draft,publish',
             ],
-            'author_image' => 'nullable|exists:author,id',
-            'created_at' => 'nullable|date',
-            'status' => 'nullable|in:draft,publish',
-        ],
-        [            
-            'Url.regex' => 'URL can contain only lowercase letters, numbers, and hyphens.',
-        ]);        
+            [
+                'Url.regex' => 'URL can contain only lowercase letters, numbers, and hyphens.',
+            ]
+        );
 
         // regenerate slug, unique per site BUT ignore current id
-        $slug = $request->input('Url');             
+        $slug = $request->input('Url');
 
         $Content = $request->input('Content');
 
@@ -217,7 +222,7 @@ class SubjectPageController extends Controller
         $subjectPage->content = $Content;
         $subjectPage->faq = $request->input('faq_data');
         $subjectPage->meta_title = $request->input('MetaTag');
-        $subjectPage->meta_description = $request->input('Metadescription');        
+        $subjectPage->meta_description = $request->input('Metadescription');
         $subjectPage->status = $request->input('status', $subjectPage->status ?? 'draft');
 
         // ✅ thumbnail upload: prevent overwrite + delete old thumbnail if it was ours
@@ -273,11 +278,11 @@ class SubjectPageController extends Controller
             "url" => "https://wtsvisa.com",
             "logo" => "https://wtsvisa.com/new-home-images/wts-logo.png",
             "contactPoint" => [
-                    "@type" => "ContactPoint",
-                    "telephone" => "+44 7435256433",
-                    "contactType" => "Customer Service",
-                    "availableLanguage" => ["English"]
-                ],
+                "@type" => "ContactPoint",
+                "telephone" => "+44 7435256433",
+                "contactType" => "Customer Service",
+                "availableLanguage" => ["English"]
+            ],
             "sameAs" => [
                 "https://www.facebook.com/WTSvisaconsultancy",
                 "https://www.instagram.com/wts_visaconsultancy/",
@@ -290,9 +295,9 @@ class SubjectPageController extends Controller
             "@type" => "Question",
             "name" => $entry['question'],
             "acceptedAnswer" => [
-                    "@type" => "Answer",
-                    "text" => $entry['answer']
-                ]
+                "@type" => "Answer",
+                "text" => $entry['answer']
+            ]
         ], $faqEntries);
 
         return json_encode([
@@ -339,10 +344,10 @@ class SubjectPageController extends Controller
             "datePublished" => $pdalishDate ?? "",
             "dateModified" => $updalishDate ?? "",
             "author" => [
-                    "@type" => "Organization",
-                    "name" => "WTSVisaConsultancy",
-                    "url" => "https://wtsvisa.com",
-                ],
+                "@type" => "Organization",
+                "name" => "WTSVisaConsultancy",
+                "url" => "https://wtsvisa.com",
+            ],
             "publisher" => [
                 "@type" => "Organization",
                 "name" => 'WTSVisaConsultancy',
@@ -352,9 +357,9 @@ class SubjectPageController extends Controller
         ], JSON_UNESCAPED_SLASHES);
     }
     public function getSubjectBySlug($slug)
-    {        
+    {
 
-        $data['SubjectPage'] = SubjectPage::where('slug', $slug)->where('status', 'publish')->first();        
+        $data['SubjectPage'] = SubjectPage::where('slug', $slug)->where('status', 'publish')->first();
 
         // Check if exists
         if (!$data['SubjectPage']) {
@@ -397,12 +402,12 @@ class SubjectPageController extends Controller
     }
 
     public function subjectSitemap()
-{
-    $subjects = SubjectPage::where('status', 'publish')->latest()->get();
+    {
+        $subjects = SubjectPage::where('status', 'publish')->latest()->get();
 
-    return response()
-        ->view('subject-pages.subjectSitemap', compact('subjects'))
-        ->header('Content-Type', 'text/xml');
-}
+        return response()
+            ->view('subject-pages.subjectSitemap', compact('subjects'))
+            ->header('Content-Type', 'text/xml');
+    }
 }
 

@@ -13,7 +13,7 @@ class RolePermissionController extends Controller
 {
     public function index(Request $request)
     {
-        $roles = Role::where('is_deleted',0)->get();
+        $roles = Role::where('is_deleted', 0)->get();
         $selectedRole = null;
         $allMenus = collect();
         $menuPermissions = [];
@@ -56,7 +56,7 @@ class RolePermissionController extends Controller
                 ->groupBy('menu_id');
         }
 
-        return view('crm.role_permissions.index', compact('roles', 'selectedRole', 'allMenus', 'menuPermissions', 'routePermissions', 'extraRoutes'));
+        return view('crm::crm.role_permissions.index', compact('roles', 'selectedRole', 'allMenus', 'menuPermissions', 'routePermissions', 'extraRoutes'));
     }
 
     // public function updatePermissions(Request $request, Role $role)

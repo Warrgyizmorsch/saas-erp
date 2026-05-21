@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('shared::layouts.app')
 
 @section('content')
 
@@ -7,7 +7,7 @@
             position: sticky;
             top: 0;
             z-index: 10;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
         #warrLeadList tbody td:first-child,
@@ -15,11 +15,13 @@
             position: sticky;
             left: 0;
             z-index: 20;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
             background: #fff;
         }
 
-        .table-responsive { overflow-x: auto; }
+        .table-responsive {
+            overflow-x: auto;
+        }
 
         .page-url-col {
             max-width: 250px;
@@ -54,16 +56,15 @@
             border-radius: 6px;
             outline: none;
         }
-
     </style>
 
     @php
-$filtersApplied =
-    request('search') ||
-    request('from') ||
-    request('to') ||
-    request('source') ||
-    request('status');
+        $filtersApplied =
+            request('search') ||
+            request('from') ||
+            request('to') ||
+            request('source') ||
+            request('status');
     @endphp
 
     {{-- PAGE HEADER --}}
@@ -72,7 +73,7 @@ $filtersApplied =
             <div class="page-header-title">
                 <h5 class="m-b-10">
                     Warr Leads
-                    
+
                 </h5>
             </div>
 
@@ -93,8 +94,8 @@ $filtersApplied =
                     </a>
                 </div>
 
-                <button class="btn btn-light-brand" type="button"
-                        data-bs-toggle="collapse" data-bs-target="#warrLeadFilters">
+                <button class="btn btn-light-brand" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#warrLeadFilters">
                     <i class="feather-filter me-2"></i> Filters
                 </button>
             </div>
@@ -122,8 +123,7 @@ $filtersApplied =
     @endif
 
     {{-- FILTER PANEL --}}
-    <div id="warrLeadFilters"
-         class="accordion-collapse collapse page-header-collapse {{ $filtersApplied ? 'show' : '' }}">
+    <div id="warrLeadFilters" class="accordion-collapse collapse page-header-collapse {{ $filtersApplied ? 'show' : '' }}">
         <div class="accordion-body pb-2">
             <form method="GET" action="{{ route('warr-leads.index') }}" class="row g-3 mb-4">
 
@@ -184,84 +184,83 @@ $filtersApplied =
                         <div class="table-responsive">
                             <table class="table table-hover" id="warrLeadList">
                                 <thead>
-                                <tr>
-                                    <th class="bg-white">#</th>
-                                    <th>Name</th>
-                                    <th>Company</th>
-                                    <th>Email</th>
-                                    <th>Mobile</th>
-                                    <th>Date</th>
-                                    <th>Message by User</th>
-                                    <th>Service Categories</th>
-                                    <th>Status</th>
-                                    <th>Comment</th>
-                                    <th>Source</th>
-                                    <th>Page Url</th>
-                                </tr>
+                                    <tr>
+                                        <th class="bg-white">#</th>
+                                        <th>Name</th>
+                                        <th>Company</th>
+                                        <th>Email</th>
+                                        <th>Mobile</th>
+                                        <th>Date</th>
+                                        <th>Message by User</th>
+                                        <th>Service Categories</th>
+                                        <th>Status</th>
+                                        <th>Comment</th>
+                                        <th>Source</th>
+                                        <th>Page Url</th>
+                                    </tr>
                                 </thead>
 
                                 <tbody>
-                                @forelse($leads as $lead)
-                                    <tr>
-                                        <td class="bg-white">{{ $loop->iteration + ($leads->currentPage() - 1) * $leads->perPage() }}</td>
-                                        <td>{{ $lead->name ?? 'N/A' }}</td>
-                                        <td>{{ $lead->company_name ?? '-' }}</td>
-                                        <td>{{ $lead->email ?? 'N/A' }}</td>
-                                        <td>{{ $lead->mobile_no ?? '-' }}</td>
-                                        <td>{{ $lead->created_at ? $lead->created_at->format('d M Y') : 'N/A' }}</td>
-                                        <td class="data-column">{{ $lead->message ?? '-' }}</td>
-                                        <td class="data-column">{{ $lead->service_categories ?? '-' }}</td>
-                                        <td>
-                                            <form action="{{ route('warr-leads.updateWarrLead', $lead->id) }}"
-                                                method="POST"
-                                                class="warr-status-form">
-                                                @csrf
-                                                @method('PUT')
+                                    @forelse($leads as $lead)
+                                        <tr>
+                                            <td class="bg-white">
+                                                {{ $loop->iteration + ($leads->currentPage() - 1) * $leads->perPage() }}</td>
+                                            <td>{{ $lead->name ?? 'N/A' }}</td>
+                                            <td>{{ $lead->company_name ?? '-' }}</td>
+                                            <td>{{ $lead->email ?? 'N/A' }}</td>
+                                            <td>{{ $lead->mobile_no ?? '-' }}</td>
+                                            <td>{{ $lead->created_at ? $lead->created_at->format('d M Y') : 'N/A' }}</td>
+                                            <td class="data-column">{{ $lead->message ?? '-' }}</td>
+                                            <td class="data-column">{{ $lead->service_categories ?? '-' }}</td>
+                                            <td>
+                                                <form action="{{ route('warr-leads.updateWarrLead', $lead->id) }}" method="POST"
+                                                    class="warr-status-form">
+                                                    @csrf
+                                                    @method('PUT')
 
-                                                <select name="status"
-                                                        class="form-control warr-status-select"
+                                                    <select name="status" class="form-control warr-status-select"
                                                         data-select2-selector="tag">
-                                                    <option value="new" {{ ($lead->status ?? 'new') === 'new' ? 'selected' : '' }}>New</option>
-                                                    <option value="hold" {{ ($lead->status ?? '') === 'hold' ? 'selected' : '' }}>Hold</option>
-                                                    <option value="executed" {{ ($lead->status ?? '') === 'executed' ? 'selected' : '' }}>Executed</option>
-                                                    <option value="dead" {{ ($lead->status ?? '') === 'dead' ? 'selected' : '' }}>Dead</option>
-                                                </select>
-                                            </form>
-                                        </td>
-                                        <td class="data-column warr-comment-cell"
-                                            data-id="{{ $lead->id }}"
-                                            data-url="{{ route('warr-leads.updateWarrLead', $lead->id) }}"
-                                            title="Double click to edit">
-                                            <span class="warr-comment-text">
-                                                {{ $lead->comment ?? '-' }}
-                                            </span>
-                                        </td>
+                                                        <option value="new" {{ ($lead->status ?? 'new') === 'new' ? 'selected' : '' }}>New</option>
+                                                        <option value="hold" {{ ($lead->status ?? '') === 'hold' ? 'selected' : '' }}>Hold</option>
+                                                        <option value="executed" {{ ($lead->status ?? '') === 'executed' ? 'selected' : '' }}>Executed</option>
+                                                        <option value="dead" {{ ($lead->status ?? '') === 'dead' ? 'selected' : '' }}>Dead</option>
+                                                    </select>
+                                                </form>
+                                            </td>
+                                            <td class="data-column warr-comment-cell" data-id="{{ $lead->id }}"
+                                                data-url="{{ route('warr-leads.updateWarrLead', $lead->id) }}"
+                                                title="Double click to edit">
+                                                <span class="warr-comment-text">
+                                                    {{ $lead->comment ?? '-' }}
+                                                </span>
+                                            </td>
 
-                                        <td class="data-column">{{ $lead->source ?? '-' }}</td>
+                                            <td class="data-column">{{ $lead->source ?? '-' }}</td>
 
-                                        <td class="page-url-col">
-                                            @if(!empty($lead->page_url))
-                                                @php
-        $cleanUrl = strtok(trim($lead->page_url), '?');
-                                                @endphp
+                                            <td class="page-url-col">
+                                                @if(!empty($lead->page_url))
+                                                    @php
+                                                        $cleanUrl = strtok(trim($lead->page_url), '?');
+                                                    @endphp
 
-                                                @if(filter_var($cleanUrl, FILTER_VALIDATE_URL))
-                                                    <a href="{{ $cleanUrl }}" target="_blank" title="{{ $cleanUrl }}" class="page-url-link">
+                                                    @if(filter_var($cleanUrl, FILTER_VALIDATE_URL))
+                                                        <a href="{{ $cleanUrl }}" target="_blank" title="{{ $cleanUrl }}"
+                                                            class="page-url-link">
+                                                            {{ $cleanUrl }}
+                                                        </a>
+                                                    @else
                                                         {{ $cleanUrl }}
-                                                    </a>
+                                                    @endif
                                                 @else
-                                                    {{ $cleanUrl }}
+                                                    N/A
                                                 @endif
-                                            @else
-                                                N/A
-                                            @endif
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="8" class="text-center text-muted">No leads found.</td>
-                                    </tr>
-                                @endforelse
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="8" class="text-center text-muted">No leads found.</td>
+                                        </tr>
+                                    @endforelse
                                 </tbody>
                             </table>
                         </div>
@@ -280,93 +279,93 @@ $filtersApplied =
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
     <script>
-  $(document).ready(function () {
+        $(document).ready(function () {
 
-    // ✅ Update Status (dropdown change)
-    $(document).on("change", ".warr-status-select", function () {
-      const form = $(this).closest("form");
-      const url  = form.attr("action");
-      const data = form.serialize(); // includes _token + _method + status
+            // ✅ Update Status (dropdown change)
+            $(document).on("change", ".warr-status-select", function () {
+                const form = $(this).closest("form");
+                const url = form.attr("action");
+                const data = form.serialize(); // includes _token + _method + status
 
-      $.ajax({
-        url: url,
-        type: "POST", // PUT spoofed by _method
-        data: data,
-        success: function (res) {
-          toastr.success(res.message || "Status updated!");
-        },
-        error: function (xhr) {
-          toastr.error(xhr.responseJSON?.message || "Status update failed!");
-        }
-      });
-    });
+                $.ajax({
+                    url: url,
+                    type: "POST", // PUT spoofed by _method
+                    data: data,
+                    success: function (res) {
+                        toastr.success(res.message || "Status updated!");
+                    },
+                    error: function (xhr) {
+                        toastr.error(xhr.responseJSON?.message || "Status update failed!");
+                    }
+                });
+            });
 
-    // ✅ Double click to edit comment
-    $(document).on("dblclick", ".warr-comment-cell", function () {
-      const td = $(this);
+            // ✅ Double click to edit comment
+            $(document).on("dblclick", ".warr-comment-cell", function () {
+                const td = $(this);
 
-      // prevent multiple editors
-      if (td.find("input, textarea").length) return;
+                // prevent multiple editors
+                if (td.find("input, textarea").length) return;
 
-      const currentText = td.find(".warr-comment-text").text().trim();
-      const url = td.data("url");
+                const currentText = td.find(".warr-comment-text").text().trim();
+                const url = td.data("url");
 
-      const input = $(`<textarea class="warr-comment-input" rows="2"></textarea>`);
-      input.val(currentText === "-" ? "" : currentText);
+                const input = $(`<textarea class="warr-comment-input" rows="2"></textarea>`);
+                input.val(currentText === "-" ? "" : currentText);
 
-      td.data("old", input.val()); // store old value
-      td.html(input);
-      input.trigger("focus");
+                td.data("old", input.val()); // store old value
+                td.html(input);
+                input.trigger("focus");
 
-      // Save on Enter (without shift), Cancel on Escape
-      input.on("keydown", function (e) {
-        if (e.key === "Enter" && !e.shiftKey) {
-          e.preventDefault();
-          saveComment(td, url, input.val());
-        }
-        if (e.key === "Escape") {
-          const old = (td.data("old") || "").trim();
-          td.html(`<span class="warr-comment-text">${old || "-"}</span>`);
-        }
-      });
+                // Save on Enter (without shift), Cancel on Escape
+                input.on("keydown", function (e) {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        saveComment(td, url, input.val());
+                    }
+                    if (e.key === "Escape") {
+                        const old = (td.data("old") || "").trim();
+                        td.html(`<span class="warr-comment-text">${old || "-"}</span>`);
+                    }
+                });
 
-      // Save on blur
-      input.on("blur", function () {
-        saveComment(td, url, input.val());
-      });
-    });
+                // Save on blur
+                input.on("blur", function () {
+                    saveComment(td, url, input.val());
+                });
+            });
 
-    function saveComment(td, url, newValue) {
-      const oldValue = (td.data("old") || "").trim();
-      const nextValue = (newValue || "").trim();
+            function saveComment(td, url, newValue) {
+                const oldValue = (td.data("old") || "").trim();
+                const nextValue = (newValue || "").trim();
 
-      // If unchanged, restore only
-      if (nextValue === oldValue) {
-        td.html(`<span class="warr-comment-text">${nextValue || "-"}</span>`);
-        return;
-      }
+                // If unchanged, restore only
+                if (nextValue === oldValue) {
+                    td.html(`<span class="warr-comment-text">${nextValue || "-"}</span>`);
+                    return;
+                }
 
-      $.ajax({
-        url: url,
-        type: "POST", // PUT spoofed by _method
-        data: {
-          _token: "{{ csrf_token() }}",
-          _method: "PUT",
-          comment: nextValue
-        },
-        success: function (res) {
-          toastr.success(res.message || "Comment updated!");
-          const updated = (res.comment || nextValue || "").trim();
-          td.html(`<span class="warr-comment-text">${updated || "-"}</span>`);
-        },
-        error: function (xhr) {
-          toastr.error(xhr.responseJSON?.message || "Comment update failed!");
-          td.html(`<span class="warr-comment-text">${oldValue || "-"}</span>`);
-        }
-      });
-    }
+                $.ajax({
+                    url: url,
+                    type: "POST", // PUT spoofed by _method
+                    data: {
+                        _token: "{{ csrf_token() }}",
+                        _method: "PUT",
+                        comment: nextValue
+                    },
+                    success: function (res) {
+                        toastr.success(res.message || "Comment updated!");
+                        const updated = (res.comment || nextValue || "").trim();
+                        td.html(`<span class="warr-comment-text">${updated || "-"}</span>`);
+                    },
+                    error: function (xhr) {
+                        toastr.error(xhr.responseJSON?.message || "Comment update failed!");
+                        td.html(`<span class="warr-comment-text">${oldValue || "-"}</span>`);
+                    }
+                });
+            }
 
-  });
-</script>
+        });
+    </script>
 
 @endsection

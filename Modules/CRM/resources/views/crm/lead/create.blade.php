@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('shared::layouts.app')
 
 @section('content')
     <div class="page-header">
@@ -19,7 +19,7 @@
                         <span>Back</span>
                     </a>
                 </div>
-                <div class="d-flex align-items-center gap-2 page-header-right-items-wrapper">                    
+                <div class="d-flex align-items-center gap-2 page-header-right-items-wrapper">
                     <a href="{{ route('lead.create') }}" class="btn btn-icon btn-light-brand bg-primary text-white">
                         <i class="feather-plus"></i> New Lead
                     </a>
@@ -76,9 +76,8 @@
                                     <label class="form-label">Name</label>
                                     <div class="input-group">
                                         <div class="input-group-text"><i class="feather-user"></i></div>
-                                        <input type="text" name="name"
-                                            value="{{ old('name', $lead->user->name ?? '') }}" class="form-control"
-                                            placeholder="Name">
+                                        <input type="text" name="name" value="{{ old('name', $lead->user->name ?? '') }}"
+                                            class="form-control" placeholder="Name">
                                     </div>
                                     @error('name') <small class="text-danger">{{ $message }}</small> @enderror
                                 </div>
@@ -101,9 +100,8 @@
                                     <label class="form-label">City</label>
                                     <div class="input-group">
                                         <div class="input-group-text"><i class="feather-map-pin"></i></div>
-                                        <input type="text" name="city"
-                                            value="{{ old('city', $lead->user->city ?? '') }}" class="form-control"
-                                            placeholder="City">
+                                        <input type="text" name="city" value="{{ old('city', $lead->user->city ?? '') }}"
+                                            class="form-control" placeholder="City">
                                     </div>
                                     @error('city') <small class="text-danger">{{ $message }}</small> @enderror
                                 </div>
@@ -127,11 +125,11 @@
                                         <option value="">Select Lead Source</option>
 
                                         @php
-// Collect all options (sources + current lead platform if not already in sources)
-$allSources = $sources;
-if ($lead->platform && !in_array($lead->platform, $sources)) {
-    $allSources[] = $lead->platform;
-}
+                                            // Collect all options (sources + current lead platform if not already in sources)
+                                            $allSources = $sources;
+                                            if ($lead->platform && !in_array($lead->platform, $sources)) {
+                                                $allSources[] = $lead->platform;
+                                            }
                                         @endphp
 
                                         @foreach($allSources as $source)
@@ -152,8 +150,8 @@ if ($lead->platform && !in_array($lead->platform, $sources)) {
                                     <div class="input-group">
                                         <div class="input-group-text"><i class="feather-map-pin"></i></div>
                                         <input type="text" name="campaign_name"
-                                            value="{{ old('campaign_name', $lead->campaign_name) }}"
-                                            class="form-control" placeholder="Campaign Name">
+                                            value="{{ old('campaign_name', $lead->campaign_name) }}" class="form-control"
+                                            placeholder="Campaign Name">
                                     </div>
                                     @error('campaign_name') <small class="text-danger">{{ $message }}</small> @enderror
                                 </div>
@@ -186,9 +184,8 @@ if ($lead->platform && !in_array($lead->platform, $sources)) {
                                     <label class="form-label">Form Name</label>
                                     <div class="input-group">
                                         <div class="input-group-text"><i class="feather-file-text"></i></div>
-                                        <input type="text" name="form_name"
-                                            value="{{ old('form_name', $lead->form_name) }}" class="form-control"
-                                            placeholder="Form Name">
+                                        <input type="text" name="form_name" value="{{ old('form_name', $lead->form_name) }}"
+                                            class="form-control" placeholder="Form Name">
                                     </div>
                                     @error('form_name') <small class="text-danger">{{ $message }}</small> @enderror
                                 </div>
@@ -229,8 +226,8 @@ if ($lead->platform && !in_array($lead->platform, $sources)) {
                                             value="{{ old('applying_country_for_a_visa', $lead->applying_country_for_a_visa ?? '') }}"
                                             class="form-control" placeholder="Country">
                                     </div>
-                                    @error('applying_country_for_a_visa') <small
-                                    class="text-danger">{{ $message }}</small> @enderror
+                                    @error('applying_country_for_a_visa') <small class="text-danger">{{ $message }}</small>
+                                    @enderror
                                 </div>
 
                                 <!-- Planned Course -->
@@ -281,8 +278,7 @@ if ($lead->platform && !in_array($lead->platform, $sources)) {
                                             value="{{ old('whats_your_preferred_intake', $lead->whats_your_preferred_intake) }}"
                                             class="form-control" placeholder="Preferred Intake">
                                     </div>
-                                    @error('whats_your_preferred_intake') <small
-                                        class="text-danger">{{ $message }}</small>
+                                    @error('whats_your_preferred_intake') <small class="text-danger">{{ $message }}</small>
                                     @enderror
                                 </div>
 
@@ -300,10 +296,12 @@ if ($lead->platform && !in_array($lead->platform, $sources)) {
 
                                             @forelse($mergedAttributes as $attr)
                                                 <div class="col-lg-4 mb-4">
-                                                    <label class="form-label">{{ ucwords(str_replace('_', ' ', $attr->field_name)) }}</label>
-                                                    <input type="text" name="attributes[{{ $attr->id }}]" 
-                                                        value="{{ old('attributes.' . $attr->id, $attr->field_value) }}" 
-                                                        class="form-control" placeholder="{{ ucwords(str_replace('_', ' ', $attr->field_name)) }}">
+                                                    <label
+                                                        class="form-label">{{ ucwords(str_replace('_', ' ', $attr->field_name)) }}</label>
+                                                    <input type="text" name="attributes[{{ $attr->id }}]"
+                                                        value="{{ old('attributes.' . $attr->id, $attr->field_value) }}"
+                                                        class="form-control"
+                                                        placeholder="{{ ucwords(str_replace('_', ' ', $attr->field_name)) }}">
                                                 </div>
                                             @empty
                                                 <div class="col-12 text-muted">No additional attributes found.</div>

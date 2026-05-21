@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('shared::layouts.app')
 
 @section('content')
     <style>
@@ -39,14 +39,13 @@
             color: #dc3545;
         }
 
-.modal-backdrop.show {
-    opacity: 0;
-}
+        .modal-backdrop.show {
+            opacity: 0;
+        }
 
-.modal-backdrop {
-    position: static;
-}
-
+        .modal-backdrop {
+            position: static;
+        }
     </style>
 
     <main>
@@ -151,8 +150,7 @@
                                 <td>{{ $blog->created_at?->format('d M Y') }}</td>
                                 <td>
                                     <div class="action-links">
-                                        <a href="{{ route('blog.edit', ['id' => $blog->id]) }}" class="btn-edit"
-                                            title="Edit">
+                                        <a href="{{ route('blog.edit', ['id' => $blog->id]) }}" class="btn-edit" title="Edit">
                                             <i class="fas fa-edit"></i>
                                         </a>
 
@@ -164,7 +162,8 @@
 
                                         <div class="modal fade" id="kt_modal_create_delete{{ $blog->id }}" tabindex="-1"
                                             aria-labelledby="deleteLabel{{ $blog->id }}" aria-hidden="true">
-                                            <div class="modal-dialog" style="display: flex; justify-content: center; align-items:center; height: 100vh;">
+                                            <div class="modal-dialog"
+                                                style="display: flex; justify-content: center; align-items:center; height: 100vh;">
                                                 <div class="modal-content">
                                                     <div class="modal-header">
                                                         <h5 class="modal-title" id="deleteLabel{{ $blog->id }}">Confirm

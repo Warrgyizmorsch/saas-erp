@@ -63,7 +63,7 @@ class WarrLeadController extends Controller
         // Filtered count (after filters)
         $filteredLeadCount = $leads->total();
 
-        return view('crm.warr-leads.index', compact(
+        return view('crm::crm.warr-leads.index', compact(
             'leads',
             'sources',
             'page_url',

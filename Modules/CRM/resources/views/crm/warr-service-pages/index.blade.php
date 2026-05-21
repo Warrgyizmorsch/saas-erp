@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('shared::layouts.app')
 
 @section('content')
     <style>
@@ -74,7 +74,8 @@
                         <div class="col-md-4">
                             <select name="status" class="form-select" data-select2-selector="tag">
                                 <option value="">All Status</option>
-                                <option value="publish" {{ request('status') === 'publish' ? 'selected' : '' }}>Publish</option>
+                                <option value="publish" {{ request('status') === 'publish' ? 'selected' : '' }}>Publish
+                                </option>
                                 <option value="draft" {{ request('status') === 'draft' ? 'selected' : '' }}>Draft</option>
                             </select>
                         </div>
@@ -147,7 +148,8 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="badge badge-pill {{ $page->status === 'publish' ? 'bg-success' : 'bg-danger' }}">
+                                    <span
+                                        class="badge badge-pill {{ $page->status === 'publish' ? 'bg-success' : 'bg-danger' }}">
                                         {{ ucfirst($page->status) }}
                                     </span>
                                 </td>
@@ -155,8 +157,8 @@
 
                                 <td>
                                     <div class="action-links">
-                                        <a href="{{ route('warr-service-pages.edit', ['id' => $page->id]) }}"
-                                            class="btn-edit" title="Edit">
+                                        <a href="{{ route('warr-service-pages.edit', ['id' => $page->id]) }}" class="btn-edit"
+                                            title="Edit">
                                             <i class="fas fa-edit"></i>
                                         </a>
 
@@ -165,7 +167,8 @@
                                             <i class="fas fa-trash"></i>
                                         </button>
 
-                                        <a href="{{ route('warr-service-pages.create', ['clone_id' => $page->id]) }}" title="Clone">
+                                        <a href="{{ route('warr-service-pages.create', ['clone_id' => $page->id]) }}"
+                                            title="Clone">
                                             <i class="fas fa-copy"></i>
                                         </a>
 

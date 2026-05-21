@@ -57,9 +57,7 @@ Route::middleware([
     // 'check.permission'
 ])->prefix('crm')->group(function () {
 
-    Route::get('/', function () {
-        return view('crm::index');
-    });
+    Route::get('/', [DashboardController::class, 'index'])->name('crm.dashboard');
 
     // Categories
     Route::prefix('categories')->group(function () {
@@ -171,48 +169,33 @@ Route::middleware([
         Route::delete('/destroy/{id}', [BlogController::class, 'authorDestroy'])->name('destroy');
     });
 
-    // Warr Leads
-    Route::prefix('warr-leads')->group(function () {
-        Route::get('/', [WarrLeadController::class, 'index'])->name('warr-leads.index');
-        Route::put('/{lead}', [WarrLeadController::class, 'update'])->name('warr-leads.updateWarrLead');
-    });
+    Route::get('/modern-leads', [NewleadController::class, 'index'])->name('modern.leads.index');
+    Route::post('/modern-leads/quick-update/{lead}', [NewleadController::class, 'updateQuick'])->name('lead.updateQuick');
+    Route::post('/modern-leads/todo/{lead}', [NewleadController::class, 'storeTodo'])->name('lead.storeTodo');
+    Route::get('/user/activity', [UserController::class, 'activity'])->name('user.activity');
+    Route::post('/save-work-time', [UserController::class, 'saveWorkTime'])->name('save.work.time');
+    Route::post('lead/bucket/get-sub-status', [LeadController::class, 'getSubStatus'])->name('lead.getSubStatus');
 
-    // Warr Service Pages
-    Route::prefix('warr-service-pages')->group(function () {
-        Route::get('/', [WarrServicePageController::class, 'index'])->name('warr-service-pages.index');
-        Route::get('/create', [WarrServicePageController::class, 'create'])->name('warr-service-pages.create');
-        Route::post('/store', [WarrServicePageController::class, 'store'])->name('warr-service-pages.store');
-        Route::get('/edit/{id}', [WarrServicePageController::class, 'edit'])->name('warr-service-pages.edit');
-        Route::post('/update/{id}', [WarrServicePageController::class, 'update'])->name('warr-service-pages.update');
-        Route::delete('/delete/{id}', [WarrServicePageController::class, 'destroy'])->name('warr-service-pages.delete');
-        Route::get('/cities', [WarrServicePageController::class, 'getCities'])->name('warr-service-pages.cities');
-    });
+    Route::get('/follow-up-data', [LeadController::class, 'followUpData'])->name('lead.followUpData');
+    Route::post('/callback-update/{id}', [LeadController::class, 'callbackUpdate'])->name('lead.callbackUpdate');
+    Route::post('/callback-done', [LeadController::class, 'callbackDone'])->name('lead.callbackDone');
+    Route::get('/lead/new-daily-report', [LeadController::class, 'newdailyReport'])->name('lead.newdailyReport');
 
-    // Warr CRUD
-    Route::prefix('warr-crud')->group(function () {
-        // Countries
-        Route::get('/countries', [WarrServicePageController::class, 'countriesIndex'])->name('warr-countries.index');
-        Route::post('/countries', [WarrServicePageController::class, 'countriesStore'])->name('warr-countries.store');
-        Route::delete('/countries/{id}', [WarrServicePageController::class, 'countriesDestroy'])->name('warr-countries.destroy');
+    Route::get('/campaign-performance', [LeadController::class, 'campaignPerformance'])->name('lead.campaignPerformance');
+    Route::get('/source', [LeadController::class, 'sourcePerformance'])->name('lead.sourcePerformance');
+    Route::get('/lead/counsellor-report', [LeadController::class, 'councillorReport'])->name('lead.councillorReport');
+    Route::get('/fetch-templates', [LeadController::class, 'fetchTemplates'])->name('lead.fetchTemplates');
+    Route::post('/send-sms', [LeadController::class, 'sendSMS'])->name('lead.sendSms');
+    Route::post('/leads/bulk-delete', [LeadController::class, 'bulkDelete'])->name('leads.bulkDelete');
+    Route::patch('/user/{id}/status', [UserController::class, 'updateStatus'])
+        ->name('users.userUpdateStatus');
 
-        // Cities
-        Route::get('/cities', [WarrServicePageController::class, 'citiesIndex'])->name('warr-cities.index');
-        Route::post('/cities', [WarrServicePageController::class, 'citiesStore'])->name('warr-cities.store');
-        Route::delete('/cities/{id}', [WarrServicePageController::class, 'citiesDestroy'])->name('warr-cities.destroy');
+    Route::get('/leads-export', [LeadController::class, 'exportLeads'])
+        ->name('leads.export');
 
-        // Services
-        Route::get('/services', [WarrServicePageController::class, 'servicesIndex'])->name('warr-services.index');
-        Route::post('/services', [WarrServicePageController::class, 'servicesStore'])->name('warr-services.store');
-        Route::delete('/services/{id}', [WarrServicePageController::class, 'servicesDestroy'])->name('warr-services.destroy');
-    });
+    Route::get('/lead/activity', [LeadController::class, 'leadActivity'])->name('lead.leadActivity');
 
-    // Subject Pages
-    Route::prefix('crm-subject-pages')->group(function () {
-        Route::get('/', [SubjectPageController::class, 'index'])->name('crm-subject-pages.index');
-        Route::get('/create', [SubjectPageController::class, 'create'])->name('crm-subject-pages.create');
-        Route::post('/store', [SubjectPageController::class, 'store'])->name('crm-subject-pages.store');
-        Route::get('/edit/{id}', [SubjectPageController::class, 'edit'])->name('crm-subject-pages.edit');
-        Route::put('/update/{id}', [SubjectPageController::class, 'update'])->name('crm-subject-pages.update');
-        Route::delete('/destroy/{id}', [SubjectPageController::class, 'destroy'])->name('crm-subject-pages.destroy');
-    });
+    Route::get('/leads/export', [LeadController::class, 'export'])->name('lead.export');
+
+    Route::get('/user/search-by-mobile', [LeadController::class, 'searchByMobile'])->name('user.search.byMobile');
 });

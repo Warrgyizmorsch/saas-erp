@@ -149,7 +149,7 @@ class LeadController extends Controller
         });
 
         // Collect all active extra fields to show
-        $activeQuestions = \App\Models\LeadQuestion::where('is_active', 1)
+        $activeQuestions = \Modules\CRM\App\Models\LeadQuestion::where('is_active', 1)
             ->pluck('field_name')
             ->map(fn($f) => trim(preg_replace('/[^a-z0-9]+/i', '_', mb_strtolower(str_replace(['’', "'"], '', $f))), '_'))
             ->toArray();
@@ -191,7 +191,7 @@ class LeadController extends Controller
         $sources = LeadSource::pluck('source_name')->toArray();
 
 
-        return view('crm.lead.index', compact('leads', 'oldbuckets', 'filterBucket', 'oldSubStatus', 'extraFieldNames', 'buckets', 'owners', 'totalLeadsCount', 'filteredLeadCount', 'sources'));
+        return view('crm::crm.lead.index', compact('leads', 'oldbuckets', 'filterBucket', 'oldSubStatus', 'extraFieldNames', 'buckets', 'owners', 'totalLeadsCount', 'filteredLeadCount', 'sources'));
     }
 
     public function application(Request $request)
@@ -211,7 +211,7 @@ class LeadController extends Controller
             });
         }
         $applicationData = $query->paginate(10);
-        return view('crm.lead.application', compact('applicationData'));
+        return view('crm::crm.lead.application', compact('applicationData'));
     }
 
     public function create()
@@ -227,7 +227,7 @@ class LeadController extends Controller
         // Dynamic lead sources
         $sources = LeadSource::where('is_active', 1)->pluck('source_name')->toArray();
 
-        return view('crm.lead.create', compact('lead', 'buckets', 'sources', 'owners'));
+        return view('crm::crm.lead.create', compact('lead', 'buckets', 'sources', 'owners'));
     }
 
 
@@ -326,7 +326,7 @@ class LeadController extends Controller
         $leadAttributes = $lead->attributes()->get();
 
         // Get all active questions
-        $activeQuestions = \App\Models\LeadQuestion::where('is_active', 1)
+        $activeQuestions = \Modules\CRM\App\Models\LeadQuestion::where('is_active', 1)
             ->pluck('field_name')
             ->map(fn($f) => trim(preg_replace('/[^a-z0-9]+/i', '_', mb_strtolower(str_replace(['’', "'"], '', $f))), '_'))
             ->toArray();
@@ -341,7 +341,7 @@ class LeadController extends Controller
             ];
         });
 
-        return view('crm.lead.create', compact('lead', 'buckets', 'owners', 'sources', 'mergedAttributes'));
+        return view('crm::crm.lead.create', compact('lead', 'buckets', 'owners', 'sources', 'mergedAttributes'));
     }
 
     public function update(Request $request, Leads $lead)
@@ -600,7 +600,7 @@ class LeadController extends Controller
         // Eager load user who owns history logs
         $lead->load(['histories.user', 'bucket', 'owner']);
 
-        return view('crm.lead.history', compact('lead'));
+        return view('crm::crm.lead.history', compact('lead'));
     }
 
 
@@ -682,14 +682,14 @@ class LeadController extends Controller
         try {
             $storedPath = $file->store('imports');
             // LeadsImportJob::dispatch($storedPath, auth()->id());
-            $importJob = \App\Models\LeadImportJob::create([
+            $importJob = \Modules\CRM\App\Models\LeadImportJob::create([
                 'file_path' => $storedPath,
                 'status' => 'pending',
                 'total_rows' => $preflight['total_rows'] ?? 0,
                 'processed_rows' => 0,
             ]);
 
-            LeadsImportJob::dispatch($importJob->id, auth()->id());
+            \Modules\CRM\App\Jobs\LeadsImportJob::dispatch($importJob->id, auth()->id());
 
 
             return response()->json(['status' => 'success', 'message' => 'File uploaded successfully. Import has been queued and will be processed in the background.', 'job_id' => $importJob->id]);
@@ -991,7 +991,7 @@ class LeadController extends Controller
 
     public function getImportJobStatus($jobId)
     {
-        $importJob = \App\Models\LeadImportJob::find($jobId);
+        $importJob = \Modules\CRM\App\Models\LeadImportJob::find($jobId);
 
         if (!$importJob) {
             return response()->json(['status' => 'error', 'message' => 'Job not found'], 404);
@@ -1164,7 +1164,7 @@ class LeadController extends Controller
 
         /* -------------------- PAGINATION END -------------------- */
 
-        return view('crm.lead.daily-report', compact(
+        return view('crm::crm.lead.daily-report', compact(
             'paginated',
             'convertBuckets',
             'statusColumns',
@@ -1520,7 +1520,7 @@ class LeadController extends Controller
                 }
             }
         }
-        return view('crm.lead.new-daily-report', compact('final', 'statusColumns', 'userImages'));
+        return view('crm::crm.lead.new-daily-report', compact('final', 'statusColumns', 'userImages'));
     }
 
     public function updateEngagementStatus(Request $request, Leads $lead)
@@ -1644,7 +1644,7 @@ class LeadController extends Controller
         $leads = $query->paginate($perPage)
             ->appends($request->query());
 
-        return view('crm.lead.lead-data', compact('leads'));
+        return view('crm::crm.lead.lead-data', compact('leads'));
     }
 
     public function callbackUpdate(Request $request, $id)
@@ -1790,7 +1790,7 @@ class LeadController extends Controller
             ->pluck('adset_name', 'adset_name');
 
 
-        return view('crm.lead.campaign-performance', compact('data', 'totals', 'groupBy', 'campaigns', 'adsets', 'buckets'));
+        return view('crm::crm.lead.campaign-performance', compact('data', 'totals', 'groupBy', 'campaigns', 'adsets', 'buckets'));
     }
 
     public function sourcePerformance(Request $request)
@@ -1940,7 +1940,7 @@ class LeadController extends Controller
         ]);
 
         return view(
-            'crm.lead.source-performance',
+            'crm::crm.lead.source-performance',
             compact('sourcesData', 'sources', 'totals', 'buckets')
         );
     }
@@ -1986,7 +1986,7 @@ class LeadController extends Controller
     //     $data = $query->get();
 
     //     $councillors = User::whereIn('id', Leads::pluck('lead_owner')->unique())->pluck('name', 'id');
-    //     return view('crm.lead.councillor-report', compact('data', 'councillors', 'totals'));
+    //     return view('crm::crm.lead.councillor-report', compact('data', 'councillors', 'totals'));
     // }
 
     public function councillorReport(Request $request)
@@ -2055,7 +2055,7 @@ class LeadController extends Controller
         )->pluck('name', 'id');
 
         return view(
-            'crm.lead.councillor-report',
+            'crm::crm.lead.councillor-report',
             compact('data', 'councillors', 'totals', 'buckets')
         );
     }
@@ -2211,7 +2211,7 @@ class LeadController extends Controller
 
 
 
-        return view('crm.lead.activity-lead-report', compact('callbacks', 'owners'));
+        return view('crm::crm.lead.activity-lead-report', compact('callbacks', 'owners'));
     }
     public function exportLeads(Request $request)
     {

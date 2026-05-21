@@ -11,7 +11,7 @@ class LeadQuestionController extends Controller
     public function index()
     {
         $questions = LeadQuestion::orderBy('id', 'desc')->paginate(10);
-        return view('crm.lead_questions.index', compact('questions'));
+        return view('crm::crm.lead_questions.index', compact('questions'));
     }
 
     public function store(Request $request)

@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('shared::layouts.app')
 
 @section('content')
 
@@ -46,7 +46,8 @@
                     </div>
                     <ul class="breadcrumb">
                         <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
-                        <li class="breadcrumb-item"><a href="{{ route('crm-subject-pages.index') }}">Subject-Page List</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('crm-subject-pages.index') }}">Subject-Page List</a>
+                        </li>
                         <li class="breadcrumb-item">Create</li>
                     </ul>
                 </div>
@@ -81,7 +82,8 @@
     <div class="crm-page-container">
         <div class="card">
             <div class="card-body">
-                <form id="subjectForm" action="{{ route('crm-subject-pages.store') }}" method="POST" enctype="multipart/form-data">
+                <form id="subjectForm" action="{{ route('crm-subject-pages.store') }}" method="POST"
+                    enctype="multipart/form-data">
                     @csrf
 
                     {{-- Thumbnail --}}
@@ -100,7 +102,7 @@
                                 </div>
                             </div>
                         </div>
-                    </div>                                                            
+                    </div>
 
                     <!-- URL -->
                     <div class="row g-3 mb-4" id="UrlRow">
@@ -108,10 +110,10 @@
                         <div class="col-lg-9">
                             <div class="input-group">
                                 <span class="input-group-text">/</span>
-                                <input type="text" class="form-control" id="Url" name="Url"
-                                    placeholder="Don't Leave Blank" required>
+                                <input type="text" class="form-control" id="Url" name="Url" placeholder="Don't Leave Blank"
+                                    required>
                             </div>
-                            
+
                             {{-- ✅ URL validation error --}}
                             @error('Url')
                                 <div class="alert alert-danger alert-dismissible fade show mt-2" role="alert">
@@ -126,9 +128,9 @@
                     <div class="row g-3 mb-4">
                         <label for="Title" class="col-lg-3 col-form-label fw-semibold">Title</label>
                         <div class="col-lg-9">
-                            <input type="text" class="form-control" id="Title" name="Title" required>                            
+                            <input type="text" class="form-control" id="Title" name="Title" required>
                         </div>
-                    </div>                    
+                    </div>
 
                     {{-- Content (Quill) --}}
                     <div class="row g-3 mb-4">
@@ -204,24 +206,26 @@
             </div>
         </div>
     </div>
-    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+        crossorigin="anonymous"></script>
     <link href="https://cdn.jsdelivr.net/npm/summernote@0.9.0/dist/summernote-lite.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/summernote@0.9.0/dist/summernote-lite.min.js"></script>
-     <script>
-      $('#summernote').summernote({
-        placeholder: 'Hello stand alone ui with GP',
-        tabsize: 2,
-        height: 120,
-        toolbar: [
-          ['style', ['style']],
-          ['font', ['bold', 'underline', 'clear']],
-          ['color', ['color']],
-          ['para', ['ul', 'ol', 'paragraph']],
-          ['table', ['table']],
-          ['insert', ['link', 'picture']],
-          ['view', ['codeview', 'help']]
-        ]
-      });
+    <script>
+        $('#summernote').summernote({
+            placeholder: 'Hello stand alone ui with GP',
+            tabsize: 2,
+            height: 120,
+            toolbar: [
+                ['style', ['style']],
+                ['font', ['bold', 'underline', 'clear']],
+                ['color', ['color']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['table', ['table']],
+                ['insert', ['link', 'picture']],
+                ['view', ['codeview', 'help']]
+            ]
+        });
     </script>
 
     <script>
@@ -240,7 +244,7 @@
             }
         })();
 
-        
+
 
         // FAQ add/remove + JSON pack on submit
         document.addEventListener("DOMContentLoaded", function () {
@@ -249,20 +253,20 @@
                 let wrapper = document.createElement("div");
                 wrapper.className = "faq-entry mb-3";
                 wrapper.innerHTML = `
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Question</label>
-                            <input type="text" class="form-control faq-question" required>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Question</label>
+                                <input type="text" class="form-control faq-question" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Answer</label>
+                                <textarea class="form-control faq-answer" rows="1" required></textarea>
+                            </div>
+                            <div class="col-12">
+                                <button type="button" class="btn btn-danger btn-sm remove-faq">Remove</button>
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Answer</label>
-                            <textarea class="form-control faq-answer" rows="1" required></textarea>
-                        </div>
-                        <div class="col-12">
-                            <button type="button" class="btn btn-danger btn-sm remove-faq">Remove</button>
-                        </div>
-                    </div>
-                `;
+                    `;
                 container.appendChild(wrapper);
             }
 
@@ -286,11 +290,11 @@
         });
 
         // url
-        document.addEventListener("DOMContentLoaded", function () {                
-                const UrlRow = document.getElementById("UrlRow");
-                const UrlInput = document.getElementById("Url");
+        document.addEventListener("DOMContentLoaded", function () {
+            const UrlRow = document.getElementById("UrlRow");
+            const UrlInput = document.getElementById("Url");
 
-                
-            });
+
+        });
     </script>
 @endsection

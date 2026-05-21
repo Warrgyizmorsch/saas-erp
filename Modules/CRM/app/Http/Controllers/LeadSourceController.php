@@ -11,7 +11,7 @@ class LeadSourceController extends Controller
     public function index()
     {
         $sources = LeadSource::orderBy('id', 'desc')->paginate(10);
-        return view('crm.lead_sources.index', compact('sources'));
+        return view('crm::crm.lead_sources.index', compact('sources'));
     }
 
     public function store(Request $request)

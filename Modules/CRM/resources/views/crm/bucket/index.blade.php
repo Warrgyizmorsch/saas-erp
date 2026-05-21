@@ -1,37 +1,37 @@
-@extends('layouts.app')
+@extends('shared::layouts.app')
 
 @section('content')
 
-<style>
-    li.hover-item:hover {
-        background-color: #9CA3AF;
-        color: white;
-        cursor: pointer;
-    }
+    <style>
+        li.hover-item:hover {
+            background-color: #9CA3AF;
+            color: white;
+            cursor: pointer;
+        }
 
-    .btn {
-        border-radius: 8px;
-        font-size: 13px;
-        padding: 6px 12px;
-    }
-</style>
+        .btn {
+            border-radius: 8px;
+            font-size: 13px;
+            padding: 6px 12px;
+        }
+    </style>
 
-<main>
-    <div>
-        <div class="page-header">
-            <div class="page-header-left d-flex align-items-center">
-                <div class="page-header-title">
-                    <h5 class="m-b-10">Manage Buckets</h5>
+    <main>
+        <div>
+            <div class="page-header">
+                <div class="page-header-left d-flex align-items-center">
+                    <div class="page-header-title">
+                        <h5 class="m-b-10">Manage Buckets</h5>
+                    </div>
+                    <ul class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
+                        <li class="breadcrumb-item">Buckets</li>
+                    </ul>
                 </div>
-                <ul class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
-                    <li class="breadcrumb-item">Buckets</li>
-                </ul>
             </div>
+
         </div>
-        
-    </div>
-</main>
+    </main>
 
     <div class="crm-page-container">
         {{-- Success Message --}}
@@ -47,7 +47,7 @@
                 </h5>
             </div>
             <div class="card-body">
-                <form action="{{ $editBucket ? route('bucket.update', $editBucket->id) : route('bucket.store') }}" 
+                <form action="{{ $editBucket ? route('bucket.update', $editBucket->id) : route('bucket.store') }}"
                     method="POST" class="">
                     @csrf
                     @if($editBucket)
@@ -63,7 +63,7 @@
                             <input type="text" name="name" value="{{ $editBucket->name ?? '' }}" class="form-control"
                                 placeholder="Enter bucket name" required>
                         </div>
-                        
+
                         {{-- Parent Bucket --}}
                         <div class="col-md-4">
                             <label class="form-label fw-semibold">
@@ -140,14 +140,15 @@
                 <h5 class="mb-0 fw-bold">Bucket List</h5>
             </div>
             <div class="card-body">
-        
+
                 <ul class="list-unstyled">
                     @foreach ($buckets as $bucket)
                         <li class="mb-2">
                             <div class="d-flex align-items-center gap-2 border-bottom">
                                 <strong>
                                     @if($bucket->bucket_color)
-                                        <span class="{{ $bucket->bucket_color }}" style="display: inline-block; height: 10px; width: 10px; border-radius: 50%;">
+                                        <span class="{{ $bucket->bucket_color }}"
+                                            style="display: inline-block; height: 10px; width: 10px; border-radius: 50%;">
                                         </span>
                                     @endif
                                     {{ $bucket->name }}
@@ -158,7 +159,8 @@
                                     </a>
                                     <form action="{{ route('bucket.destroy', $bucket->id) }}" method="POST" class="d-inline">
                                         @csrf @method('DELETE')
-                                        <button type="submit" class="btn-delete" onclick="return confirm('Delete this bucket?')">
+                                        <button type="submit" class="btn-delete"
+                                            onclick="return confirm('Delete this bucket?')">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </form>
@@ -173,8 +175,9 @@
                                             <div class="d-flex align-items-center gap-2 border-bottom">
                                                 <strong>
                                                     @if($child->bucket_color)
-                                                    <span class="{{ $child->bucket_color }}" style="display: inline-block; height: 10px; width: 10px; border-radius: 50%;">
-                                                    </span>
+                                                        <span class="{{ $child->bucket_color }}"
+                                                            style="display: inline-block; height: 10px; width: 10px; border-radius: 50%;">
+                                                        </span>
                                                     @endif
                                                     {{ $child->name }}
                                                 </strong>
@@ -182,7 +185,8 @@
                                                     <a href="{{ route('bucket.edit', $child->id) }}" class="btn-edit">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
-                                                    <form action="{{ route('bucket.destroy', $child->id) }}" method="POST" class="d-inline">
+                                                    <form action="{{ route('bucket.destroy', $child->id) }}" method="POST"
+                                                        class="d-inline">
                                                         @csrf @method('DELETE')
                                                         <button type="submit" class="btn-delete"
                                                             onclick="return confirm('Delete this bucket?')">
@@ -198,9 +202,9 @@
                         </li>
                     @endforeach
                 </ul>
-        
+
             </div>
         </div>
-     
+
     </div>
 @endsection

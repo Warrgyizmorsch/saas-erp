@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('shared::layouts.app')
 
 @section('content')
     <style>
@@ -62,9 +62,9 @@
             <div class="card-body">
                 <!-- Form -->
                 <form id="universityForm" action="{{ $university->id
-    ? route('university-details.store', $university->id)
-    : route('university-details.store-new') 
-    }}" method="POST" enctype="multipart/form-data">
+        ? route('university-details.store', $university->id)
+        : route('university-details.store-new') 
+        }}" method="POST" enctype="multipart/form-data">
                     @csrf
 
                     <!-- Tab Navigation -->
@@ -87,8 +87,8 @@
                                     type="button">Admission</button>
                             </li>
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="scholarship-tab" data-bs-toggle="tab"
-                                    data-bs-target="#scholarship" type="button">Scholarship</button>
+                                <button class="nav-link" id="scholarship-tab" data-bs-toggle="tab" data-bs-target="#scholarship"
+                                    type="button">Scholarship</button>
                             </li>
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="finances-tab" data-bs-toggle="tab" data-bs-target="#finances"
@@ -214,9 +214,8 @@
                             <div class="row g-3 mb-4">
                                 <label class="col-lg-3 col-form-label fw-semibold">Global Diversity (%)</label>
                                 <div class="col-lg-9">
-                                    <input type="text" class="form-control" id="global_diversity"
-                                        name="global_diversity" value="{{ $detail->global_diversity ?? '' }}"
-                                        placeholder="e.g., 41%">
+                                    <input type="text" class="form-control" id="global_diversity" name="global_diversity"
+                                        value="{{ $detail->global_diversity ?? '' }}" placeholder="e.g., 41%">
                                 </div>
                             </div>
                             <div class="row g-3 mb-4">
@@ -225,8 +224,8 @@
                                 </label>
                                 <div class="col-lg-9">
                                     <textarea id="summernote-ranking" name="ranking_info">
-                                        {!! $detail->ranking_info ?? '' !!}
-                                    </textarea>
+                                            {!! $detail->ranking_info ?? '' !!}
+                                        </textarea>
                                     <div class="form-text">
                                         Provide detailed ranking insights such as QS ranking, world ranking,
                                         achievements, recognitions, and global position.
@@ -241,9 +240,8 @@
                                 <label class="col-lg-3 col-form-label fw-semibold">Cost of Living (Annual)</label>
                                 <div class="col-lg-9">
                                     <div class="input-group">
-                                        <input type="number" class="form-control" id="cost_of_living"
-                                            name="cost_of_living" value="{{ $detail->cost_of_living ?? '' }}"
-                                            placeholder="26592" step="0.01">
+                                        <input type="number" class="form-control" id="cost_of_living" name="cost_of_living"
+                                            value="{{ $detail->cost_of_living ?? '' }}" placeholder="26592" step="0.01">
                                         <select name="currency_code" class="form-select" style="max-width: 150px;">
                                             <option value="GBP" {{ ($detail->currency_code ?? 'GBP') === 'GBP' ? 'selected' : '' }}>
                                                 GBP £</option>
@@ -264,8 +262,7 @@
                             <div class="row g-3 mb-4">
                                 <label class="col-lg-3 col-form-label fw-semibold">Tuition Fee From</label>
                                 <div class="col-lg-9">
-                                    <input type="number" class="form-control" id="tuition_fee_from"
-                                        name="tuition_fee_from"
+                                    <input type="number" class="form-control" id="tuition_fee_from" name="tuition_fee_from"
                                         value="{{ old('tuition_fee_from', $detail->tuition_fee_from ?? $minFee) }}"
                                         placeholder="17000" step="0.01">
                                     <div class="form-text">Starting price for courses</div>
@@ -288,8 +285,8 @@
                                 <label class="col-lg-3 col-form-label fw-semibold">Entry Requirements URL</label>
                                 <div class="col-lg-9">
                                     <input type="url" class="form-control" id="entry_requirements_url"
-                                        name="entry_requirements_url"
-                                        value="{{ $detail->entry_requirements_url ?? '' }}" placeholder="https://...">
+                                        name="entry_requirements_url" value="{{ $detail->entry_requirements_url ?? '' }}"
+                                        placeholder="https://...">
                                 </div>
                             </div>
                         </div>
@@ -348,9 +345,8 @@
                             <div class="row g-3 mb-4">
                                 <label class="col-lg-3 col-form-label fw-semibold">Accommodation URL</label>
                                 <div class="col-lg-9">
-                                    <input type="url" class="form-control" id="accommodation_url"
-                                        name="accommodation_url" value="{{ $detail->accommodation_url ?? '' }}"
-                                        placeholder="https://...">
+                                    <input type="url" class="form-control" id="accommodation_url" name="accommodation_url"
+                                        value="{{ $detail->accommodation_url ?? '' }}" placeholder="https://...">
                                 </div>
                             </div>
                         </div>
@@ -368,11 +364,11 @@
                             {{-- FAQ Container --}}
                             <div id="faq-container" class="mb-3">
                                 @php
-$faqs = [];
-if (!empty($detail->faq_content)) {
-    $decoded = json_decode($detail->faq_content, true);
-    $faqs = is_array($decoded) ? $decoded : [];
-}
+                                    $faqs = [];
+                                    if (!empty($detail->faq_content)) {
+                                        $decoded = json_decode($detail->faq_content, true);
+                                        $faqs = is_array($decoded) ? $decoded : [];
+                                    }
                                 @endphp
 
                                 @if (count($faqs) > 0)
@@ -386,11 +382,11 @@ if (!empty($detail->faq_content)) {
                                                 </div>
                                                 <div class="col-md-6">
                                                     <label class="form-label">Answer</label>
-                                                    <textarea class="form-control faq-answer" rows="1">{{ $faq['answer'] ?? '' }}</textarea>
+                                                    <textarea class="form-control faq-answer"
+                                                        rows="1">{{ $faq['answer'] ?? '' }}</textarea>
                                                 </div>
                                                 <div class="col-12">
-                                                    <button type="button"
-                                                        class="btn btn-danger btn-sm remove-faq">Remove</button>
+                                                    <button type="button" class="btn btn-danger btn-sm remove-faq">Remove</button>
                                                 </div>
                                             </div>
                                         </div>
@@ -407,8 +403,7 @@ if (!empty($detail->faq_content)) {
                                                 <textarea class="form-control faq-answer" rows="1"></textarea>
                                             </div>
                                             <div class="col-12">
-                                                <button type="button"
-                                                    class="btn btn-danger btn-sm remove-faq">Remove</button>
+                                                <button type="button" class="btn btn-danger btn-sm remove-faq">Remove</button>
                                             </div>
                                         </div>
                                     </div>
@@ -453,8 +448,7 @@ if (!empty($detail->faq_content)) {
                                     <div class="d-flex align-items-center gap-3 flex-wrap">
                                         <div class="image-preview" id="thumbPreview">
                                             @if ($detail->thumbnail_image)
-                                                <img src="{{ asset('storage/' . $detail->thumbnail_image) }}"
-                                                    alt="thumbnail">
+                                                <img src="{{ asset('storage/' . $detail->thumbnail_image) }}" alt="thumbnail">
                                             @else
                                                 <img src="/images/blank.jpeg" alt="preview">
                                             @endif
@@ -551,8 +545,7 @@ if (!empty($detail->faq_content)) {
                                                                 <div class="course-field">
                                                                     <label>Duration</label>
                                                                     <input type="text" class="form-control" name="duration"
-                                                                        value="{{ $course->duration }}"
-                                                                        placeholder="e.g., 2 Years">
+                                                                        value="{{ $course->duration }}" placeholder="e.g., 2 Years">
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -586,8 +579,7 @@ if (!empty($detail->faq_content)) {
                                                             <div class="col-md-6">
                                                                 <div class="course-field">
                                                                     <label>Application Fee</label>
-                                                                    <input type="number" class="form-control"
-                                                                        name="application_fee"
+                                                                    <input type="number" class="form-control" name="application_fee"
                                                                         value="{{ $course->application_fee ?? 0 }}" min="0"
                                                                         step="0.01">
                                                                 </div>
@@ -598,8 +590,8 @@ if (!empty($detail->faq_content)) {
                                                             <div class="col-md-6">
                                                                 <div class="course-field">
                                                                     <label>Currency Code</label>
-                                                                    <select class="form-select currencySelect"
-                                                                        name="currency_code" data-course-id="{{ $course->id }}">
+                                                                    <select class="form-select currencySelect" name="currency_code"
+                                                                        data-course-id="{{ $course->id }}">
                                                                         <option value="USD" {{ $course->currency_code === 'USD' ? 'selected' : '' }}>USD ($)</option>
                                                                         <option value="GBP" {{ $course->currency_code === 'GBP' ? 'selected' : '' }}>GBP (£)</option>
                                                                         <option value="EUR" {{ $course->currency_code === 'EUR' ? 'selected' : '' }}>EUR (€)</option>
@@ -621,13 +613,11 @@ if (!empty($detail->faq_content)) {
                                                         </div>
 
                                                         <div class="course-actions">
-                                                            <button type="button"
-                                                                class="btn btn-sm btn-primary saveCourseButtton"
+                                                            <button type="button" class="btn btn-sm btn-primary saveCourseButtton"
                                                                 data-course-id="{{ $course->id }}">
                                                                 <i class="fas fa-save"></i> Save
                                                             </button>
-                                                            <button type="button"
-                                                                class="btn btn-sm btn-danger deleteCourseButton"
+                                                            <button type="button" class="btn btn-sm btn-danger deleteCourseButton"
                                                                 data-course-id="{{ $course->id }}">
                                                                 <i class="fas fa-trash"></i> Delete
                                                             </button>
@@ -806,20 +796,20 @@ if (!empty($detail->faq_content)) {
                 let wrapper = document.createElement("div");
                 wrapper.className = "faq-entry mb-3";
                 wrapper.innerHTML = `
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Question</label>
-                            <input type="text" class="form-control faq-question" required>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Question</label>
+                                <input type="text" class="form-control faq-question" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Answer</label>
+                                <textarea class="form-control faq-answer" rows="1" required></textarea>
+                            </div>
+                            <div class="col-12">
+                                <button type="button" class="btn btn-danger btn-sm remove-faq">Remove</button>
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Answer</label>
-                            <textarea class="form-control faq-answer" rows="1" required></textarea>
-                        </div>
-                        <div class="col-12">
-                            <button type="button" class="btn btn-danger btn-sm remove-faq">Remove</button>
-                        </div>
-                    </div>
-                `;
+                    `;
                 container.appendChild(wrapper);
             }
 

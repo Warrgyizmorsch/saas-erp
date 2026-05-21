@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('shared::layouts.app')
 
 @section('content')
 
@@ -82,7 +82,8 @@
                 <form method="GET" action="{{ route('lead.application') }}" class="row g-3 mb-4">
                     <div class="col-md-3">
                         <label class="form-label">Applicant Name</label>
-                        <input type="text" name="applicant_name" value="{{ request('applicant_name') }}" class="form-control">
+                        <input type="text" name="applicant_name" value="{{ request('applicant_name') }}"
+                            class="form-control">
                     </div>
 
                     <div class="col-md-3">
@@ -99,7 +100,7 @@
                             <option value="48">Converted</option>
                         </select>
                     </div>
-                     <div class="col-12 d-flex gap-2 mt-4">
+                    <div class="col-12 d-flex gap-2 mt-4">
                         <button type="submit" class="btn btn-primary">
                             <i class="feather-filter me-1"></i> Filter
                         </button>
@@ -138,30 +139,30 @@
 
                                     <tbody>
                                         @forelse($applicationData as $row)
-                                        <tr>
-                                            <td class="text-start">
-                                                <strong>{{ $row->id }}</strong>
-                                            </td>
+                                            <tr>
+                                                <td class="text-start">
+                                                    <strong>{{ $row->id }}</strong>
+                                                </td>
 
-                                            <td>
-                                                <strong>{{ $row->user->name ?? 'N/A' }}</strong>
-                                            </td>
+                                                <td>
+                                                    <strong>{{ $row->user->name ?? 'N/A' }}</strong>
+                                                </td>
 
-                                            <td>
-                                                <strong>{{ $row->user->email ?? 'N/A' }}</strong>
-                                            </td>
-                                            <td>{{ $row->user->contact_no ?? 'N/A' }}</td>
-                                            <td>{{ \Carbon\Carbon::parse($row->created_at)->format('M d, Y h:i A') }}</td>
-                                            <td>{{ \Carbon\Carbon::parse($row->updated_at)->format('M d, Y h:i A') }}</td>
-                                            <td>{{ $row->bucket->name ?? 'N/A' }}</td>
-                                            <td>{{ $row->lead_status }}</td>
-                                        </tr>
+                                                <td>
+                                                    <strong>{{ $row->user->email ?? 'N/A' }}</strong>
+                                                </td>
+                                                <td>{{ $row->user->contact_no ?? 'N/A' }}</td>
+                                                <td>{{ \Carbon\Carbon::parse($row->created_at)->format('M d, Y h:i A') }}</td>
+                                                <td>{{ \Carbon\Carbon::parse($row->updated_at)->format('M d, Y h:i A') }}</td>
+                                                <td>{{ $row->bucket->name ?? 'N/A' }}</td>
+                                                <td>{{ $row->lead_status }}</td>
+                                            </tr>
                                         @empty
-                                        <tr>
-                                            <td class="text-center p-5 text-muted">
-                                                No Records Found
-                                            </td>
-                                        </tr>
+                                            <tr>
+                                                <td class="text-center p-5 text-muted">
+                                                    No Records Found
+                                                </td>
+                                            </tr>
                                         @endforelse
                                     </tbody>
 

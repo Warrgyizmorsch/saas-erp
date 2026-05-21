@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('shared::layouts.app')
 
 @section('content')
     <style>
@@ -14,11 +14,13 @@
             justify-content: center;
             margin: 0 auto 15px;
         }
+
         .image-preview img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
+
         .author-table img {
             width: 40px;
             height: 40px;
@@ -54,7 +56,8 @@
                             {{-- Photo Section --}}
                             <div class="text-center">
                                 <div class="image-preview" id="thumbPreview">
-                                    <img src="{{ isset($editAuthor) && $editAuthor->photo ? asset('storage/' . $editAuthor->photo) : '/images/blank.jpeg' }}" id="previewImg">
+                                    <img src="{{ isset($editAuthor) && $editAuthor->photo ? asset('storage/' . $editAuthor->photo) : '/images/blank.jpeg' }}"
+                                        id="previewImg">
                                 </div>
                                 <div class="mb-3">
                                     <label for="thumbInput" class="form-label btn btn-sm btn-light-primary border">
@@ -68,17 +71,20 @@
                             {{-- Inputs --}}
                             <div class="mb-3">
                                 <label class="form-label fw-bold small text-uppercase">Full Name</label>
-                                <input type="text" name="name" class="form-control" placeholder="Enter author name" value="{{ $editAuthor->name ?? '' }}" required>
+                                <input type="text" name="name" class="form-control" placeholder="Enter author name"
+                                    value="{{ $editAuthor->name ?? '' }}" required>
                             </div>
 
                             <div class="mb-4">
                                 <label class="form-label fw-bold small text-uppercase">Short Bio/Description</label>
-                                <textarea name="description" class="form-control" rows="4" placeholder="Brief about author...">{{ $editAuthor->description ?? '' }}</textarea>
+                                <textarea name="description" class="form-control" rows="4"
+                                    placeholder="Brief about author...">{{ $editAuthor->description ?? '' }}</textarea>
                             </div>
 
                             <div class="d-grid gap-2">
                                 <button type="submit" class="btn btn-primary">
-                                    <i class="ti ti-device-floppy me-1"></i> {{ isset($editAuthor) ? 'Update Author' : 'Save Author' }}
+                                    <i class="ti ti-device-floppy me-1"></i>
+                                    {{ isset($editAuthor) ? 'Update Author' : 'Save Author' }}
                                 </button>
                                 @if(isset($editAuthor))
                                     <a href="{{ route('author.index') }}" class="btn btn-light">Cancel Edit</a>
@@ -107,39 +113,44 @@
                                 </thead>
                                 <tbody>
                                     @forelse($authors as $author)
-                                    <tr>
-                                        <td class="ps-4">
-                                            <div class="d-flex align-items-center gap-3">
-                                                <img src="{{ $author->photo ? asset('storage/' . $author->photo) : "/images/blank.jpeg" }}" alt="author">
-                                                <div>
-                                                    <div class="fw-bold text-dark">{{ $author->name }}</div>
-                                                    <div class="small text-muted">ID: #{{ $author->id }}</div>
+                                        <tr>
+                                            <td class="ps-4">
+                                                <div class="d-flex align-items-center gap-3">
+                                                    <img src="{{ $author->photo ? asset('storage/' . $author->photo) : "/images/blank.jpeg" }}"
+                                                        alt="author">
+                                                    <div>
+                                                        <div class="fw-bold text-dark">{{ $author->name }}</div>
+                                                        <div class="small text-muted">ID: #{{ $author->id }}</div>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="text-muted small" style="max-width: 300px; white-space: normal;">
-                                                {{ Str::limit($author->description, 100) }}
-                                            </div>
-                                        </td>
-                                        <td class="text-end pe-4">
-                                            <div class="btn-group gap-2">
-                                                <a href="{{ route('author.edit', $author->id) }}" class="btn-edit" title="Edit">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                                <form action="{{ route('author.destroy', $author->id) }}" method="POST" class="d-inline">
-                                                    @csrf @method('DELETE')
-                                                    <button type="submit" class="btn-delete" onclick="return confirm('Delete this author?')">
-                                                        <i class="fas fa-trash"></i>
-                                                    </button>
-                                                </form>
-                                            </div>
-                                        </td>
-                                    </tr>
+                                            </td>
+                                            <td>
+                                                <div class="text-muted small" style="max-width: 300px; white-space: normal;">
+                                                    {{ Str::limit($author->description, 100) }}
+                                                </div>
+                                            </td>
+                                            <td class="text-end pe-4">
+                                                <div class="btn-group gap-2">
+                                                    <a href="{{ route('author.edit', $author->id) }}" class="btn-edit"
+                                                        title="Edit">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <form action="{{ route('author.destroy', $author->id) }}" method="POST"
+                                                        class="d-inline">
+                                                        @csrf @method('DELETE')
+                                                        <button type="submit" class="btn-delete"
+                                                            onclick="return confirm('Delete this author?')">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
                                     @empty
-                                    <tr>
-                                        <td colspan="3" class="text-center py-5 text-muted">No authors found in database.</td>
-                                    </tr>
+                                        <tr>
+                                            <td colspan="3" class="text-center py-5 text-muted">No authors found in database.
+                                            </td>
+                                        </tr>
                                     @endforelse
                                 </tbody>
                             </table>

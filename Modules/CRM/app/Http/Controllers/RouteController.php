@@ -59,12 +59,12 @@ class RouteController extends Controller
         $routes = $query->paginate(10);
         $flattenMenus = $this->getFlattenMenus();
 
-        return view('crm.routes.index', compact('routes', 'flattenMenus'));
+        return view('crm::crm.routes.index', compact('routes', 'flattenMenus'));
     }
 
     public function store(Request $request)
     {
-                
+
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -89,7 +89,7 @@ class RouteController extends Controller
         $routes = Route::where('is_deleted', 0)->paginate(10);
         $flattenMenus = $this->getFlattenMenus();
 
-        return view('crm.routes.index', compact('routes', 'editRoute', 'flattenMenus'));
+        return view('crm::crm.routes.index', compact('routes', 'editRoute', 'flattenMenus'));
     }
 
     public function update(Request $request, Route $route)

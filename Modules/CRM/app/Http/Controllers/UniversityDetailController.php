@@ -26,7 +26,7 @@ class UniversityDetailController extends Controller
             ->orderBy('name')
             ->paginate(15);
 
-        return view('crm.universities.index', compact('universities'));
+        return view('crm::crm.universities.index', compact('universities'));
     }
 
     /**
@@ -43,7 +43,7 @@ class UniversityDetailController extends Controller
 
         $minFee = null;
 
-        return view('crm.universities.edit', compact('university', 'detail', 'minFee'));
+        return view('crm::crm.universities.edit', compact('university', 'detail', 'minFee'));
     }
 
     public function storeNew(Request $request)
@@ -101,7 +101,7 @@ class UniversityDetailController extends Controller
         // 🔥 Auto-calc default tuition fee (important)
         $minFee = $university->courses->min('tuition_fee');
 
-        return view('crm.universities.edit', compact('university', 'detail', 'minFee'));
+        return view('crm::crm.universities.edit', compact('university', 'detail', 'minFee'));
     }
 
     /**
@@ -151,7 +151,7 @@ class UniversityDetailController extends Controller
             ['university_id' => $universityId],
             $validated
         );
-        
+
         // Handle banner image upload
         if ($request->hasFile('banner_image')) {
             if ($detail->banner_image && Storage::disk('public')->exists($detail->banner_image)) {
@@ -239,7 +239,7 @@ class UniversityDetailController extends Controller
             return redirect()->route('university-details.index')->with('error', 'University detail not found or not published.');
         }
 
-        return view('crm.universities.preview', compact('university', 'detail'));
+        return view('crm::crm.universities.preview', compact('university', 'detail'));
     }
 
     public function addCourse(Request $request)

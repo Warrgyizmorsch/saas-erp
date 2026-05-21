@@ -18,7 +18,7 @@ class DashboardController extends Controller
         $user = Auth::user();
 
         if ($user->role_id == 2) {
-            return view('crm.users.dashboard'); // basic welcome page
+            return view('crm::crm.users.dashboard'); // basic welcome page
         }
 
 
@@ -65,9 +65,11 @@ class DashboardController extends Controller
         $firstBucket = Bucket::where('name', 'Application')
             ->whereNull('parent_id')
             ->where('is_deleted', 0)
-            ->with(['children' => function ($q) {
-                $q->where('is_deleted', 0);
-            }])
+            ->with([
+                'children' => function ($q) {
+                    $q->where('is_deleted', 0);
+                }
+            ])
             ->first();
 
         $statusCounts = [];
@@ -106,7 +108,7 @@ class DashboardController extends Controller
         }
 
         $engagementCounts = [
-            'hot'  => 0,
+            'hot' => 0,
             'warm' => 0,
             'cold' => 0,
             'dead' => 0,
@@ -123,7 +125,7 @@ class DashboardController extends Controller
         $totalEngagement = $totalLeads ?: 1; // prevent division by zero
 
         $engagementPercentages = [
-            'hot'  => round(($engagementCounts['hot'] / $totalEngagement) * 100, 1),
+            'hot' => round(($engagementCounts['hot'] / $totalEngagement) * 100, 1),
             'warm' => round(($engagementCounts['warm'] / $totalEngagement) * 100, 1),
             'cold' => round(($engagementCounts['cold'] / $totalEngagement) * 100, 1),
             'dead' => round(($engagementCounts['dead'] / $totalEngagement) * 100, 1),
@@ -400,11 +402,11 @@ class DashboardController extends Controller
         // Date range (full current year by default)
         $now = Carbon::now();
         $chartStart = $now->copy()->startOfYear();
-        $chartEnd   = $now->copy()->endOfYear();
+        $chartEnd = $now->copy()->endOfYear();
 
         if ($filterStart && $filterEnd) {
             $chartStart = $filterStart->copy()->startOfMonth();
-            $chartEnd   = $filterEnd->copy()->endOfMonth();
+            $chartEnd = $filterEnd->copy()->endOfMonth();
         }
 
         // Generate month categories (always full range)
@@ -444,10 +446,10 @@ class DashboardController extends Controller
                 ->toArray();
 
             $monthlyChartData[] = [
-                'user_id'   => $user->id,
+                'user_id' => $user->id,
                 'user_name' => $user->name,
-                'series'    => $userData,
-                'total'     => array_sum($userData),
+                'series' => $userData,
+                'total' => array_sum($userData),
             ];
         }
 
@@ -500,8 +502,8 @@ class DashboardController extends Controller
 
             $sourceChartData[] = [
                 'source_name' => ucfirst($source),
-                'series'      => $series,
-                'total'       => array_sum($series),
+                'series' => $series,
+                'total' => array_sum($series),
             ];
         }
 
@@ -520,15 +522,17 @@ class DashboardController extends Controller
             ->toArray();
 
         $sourceChartData = array_merge(
-            [[
-                'source_name' => 'All Sources',
-                'series' => $allSeries,
-                'total' => array_sum($allSeries),
-            ]],
+            [
+                [
+                    'source_name' => 'All Sources',
+                    'series' => $allSeries,
+                    'total' => array_sum($allSeries),
+                ]
+            ],
             $sourceChartData
         );
 
-        return view('dashboard', compact(
+        return view('crm::index', compact(
             'buckets',
             'firstBucket',
             'statusCounts',

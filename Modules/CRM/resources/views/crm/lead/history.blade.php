@@ -1,27 +1,27 @@
-@extends('layouts.app')
+@extends('shared::layouts.app')
 
 @section('content')
 
-<main>
-    <div>
-        <div style="display: flex; justify-content: space-between; align-items: center;" class="page-header">
-            <div class="page-header-left d-flex align-items-center">
-                <div class="page-header-title">
-                    <h5 class="m-b-10">Lead History</h5>
+    <main>
+        <div>
+            <div style="display: flex; justify-content: space-between; align-items: center;" class="page-header">
+                <div class="page-header-left d-flex align-items-center">
+                    <div class="page-header-title">
+                        <h5 class="m-b-10">Lead History</h5>
+                    </div>
+                    <ul class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
+                        <li class="breadcrumb-item">Lead History (ID: {{ $lead->id }})</li>
+                    </ul>
                 </div>
-                <ul class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
-                    <li class="breadcrumb-item">Lead History (ID: {{ $lead->id }})</li>
-                </ul>
-            </div>
-            <div class="">
-                <a href="{{ route('lead.index') }}" class="btn btn-primary">
-                    <i class="fa fa-arrow-left" style="margin-right: 3px;"></i> Back
-                </a>
+                <div class="">
+                    <a href="{{ route('lead.index') }}" class="btn btn-primary">
+                        <i class="fa fa-arrow-left" style="margin-right: 3px;"></i> Back
+                    </a>
+                </div>
             </div>
         </div>
-    </div>
-</main>
+    </main>
 
     <div class="crm-page-container">
         <div class="card">

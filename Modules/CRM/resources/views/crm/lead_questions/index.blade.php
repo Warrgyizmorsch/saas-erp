@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('shared::layouts.app')
 
 @section('content')
 
@@ -173,11 +173,11 @@
                                                 <i class="feather-edit"></i>
                                             </button>
                                             <!-- <form method="POST" action="{{ route('lead_questions.destroy',$q) }}">
-                                                    @csrf @method('DELETE')
-                                                    <button class="btn btn-sm btn-danger">
-                                                        <i class="feather-trash-2"></i> Delete
-                                                    </button>
-                                                </form> -->
+                                                            @csrf @method('DELETE')
+                                                            <button class="btn btn-sm btn-danger">
+                                                                <i class="feather-trash-2"></i> Delete
+                                                            </button>
+                                                        </form> -->
                                         </td>
                                     </tr>
                                 @endforeach

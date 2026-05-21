@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('shared::layouts.app')
 
 @section('content')
     <x-slot name="title">User Permissions</x-slot>
@@ -64,7 +64,7 @@
                                                     echo '<li class="mb-2">';
                                                     echo '  <div class="form-check">';
                                                     echo '      <input type="checkbox" name="permissions[' . $menu->id . ']" value="1"
-                                                                   class="form-check-input permission-checkbox" ' . $checked . ' ' . $parentAttr . '>';
+                                                                                                       class="form-check-input permission-checkbox" ' . $checked . ' ' . $parentAttr . '>';
                                                     echo '      <label class="form-check-label">' . $menu->title . '</label>';
 
                                                     // --- Badge logic (same as routes) ---
@@ -120,8 +120,8 @@
                                                         @endphp
                                                         <li class="mb-2">
                                                             <div class="form-check">
-                                                                <input type="checkbox" name="permissions_route[{{ $route->id }}]"
-                                                                    value="1" class="form-check-input" {{ $checked }}>
+                                                                <input type="checkbox" name="permissions_route[{{ $route->id }}]" value="1"
+                                                                    class="form-check-input" {{ $checked }}>
                                                                 <label class="form-check-label">
                                                                     {{ $route->name }}
                                                                     <small class="text-muted">({{ $route->method }}

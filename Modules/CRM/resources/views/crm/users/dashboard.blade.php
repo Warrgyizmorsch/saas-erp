@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('shared::layouts.app')
 
 @section('content')
     <div class="page-header">
@@ -44,8 +44,7 @@
                                 <div class="dropdown-item">
                                     <div class="custom-control custom-checkbox">
                                         <input type="checkbox" class="custom-control-input" id="{{ $filter }}" checked>
-                                        <label class="custom-control-label c-pointer"
-                                            for="{{ $filter }}">{{ $filter }}</label>
+                                        <label class="custom-control-label c-pointer" for="{{ $filter }}">{{ $filter }}</label>
                                     </div>
                                 </div>
                             @endforeach

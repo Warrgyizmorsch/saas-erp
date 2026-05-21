@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('shared::layouts.app')
 
 @section('content')
     <style>
@@ -42,8 +42,7 @@
                             <select name="service_id" class="form-select" required>
                                 <option value="">Select Service</option>
                                 @foreach($services as $s)
-                                    <option value="{{ $s->id }}"
-                                        {{ (string) old('service_id', $page->service_id) === (string) $s->id ? 'selected' : '' }}>
+                                    <option value="{{ $s->id }}" {{ (string) old('service_id', $page->service_id) === (string) $s->id ? 'selected' : '' }}>
                                         {{ $s->name }}
                                     </option>
                                 @endforeach
@@ -58,8 +57,7 @@
                             <select name="country_id" id="countrySelect" class="form-select" required>
                                 <option value="">Select Country</option>
                                 @foreach($countries as $c)
-                                    <option value="{{ $c->id }}"
-                                        {{ (string) old('country_id', $page->country_id) === (string) $c->id ? 'selected' : '' }}>
+                                    <option value="{{ $c->id }}" {{ (string) old('country_id', $page->country_id) === (string) $c->id ? 'selected' : '' }}>
                                         {{ $c->name }}
                                     </option>
                                 @endforeach
@@ -73,8 +71,7 @@
                             <select name="city_id" id="citySelect" class="form-select">
                                 <option value="">Select City</option>
                                 @foreach($cities ?? [] as $ct)
-                                    <option value="{{ $ct->id }}"
-                                        {{ (string) old('city_id', $page->city_id) === (string) $ct->id ? 'selected' : '' }}>
+                                    <option value="{{ $ct->id }}" {{ (string) old('city_id', $page->city_id) === (string) $ct->id ? 'selected' : '' }}>
                                         {{ $ct->name }}
                                     </option>
                                 @endforeach
@@ -95,26 +92,18 @@
                     <div class="row g-3 mb-4">
                         <label class="col-lg-3 col-form-label fw-semibold">More Services</label>
                         <div class="col-lg-9">
-                            <select
-                                name="more_services[]"
-                                class="form-select"
-                                multiple
-                                data-select2-selector="tag"
-                                data-placeholder="Select services (leave empty for all)"
-                                data-allow-clear="true"
-                            >
+                            <select name="more_services[]" class="form-select" multiple data-select2-selector="tag"
+                                data-placeholder="Select services (leave empty for all)" data-allow-clear="true">
                                 @foreach($services as $s)
-                                    <option
-                                        value="{{ $s->id }}"
-                                        {{ in_array($s->id, $selectedMoreOld, true) ? 'selected' : '' }}
-                                    >
+                                    <option value="{{ $s->id }}" {{ in_array($s->id, $selectedMoreOld, true) ? 'selected' : '' }}>
                                         {{ $s->name }}
                                     </option>
                                 @endforeach
                             </select>
 
                             <div class="form-text">
-                                Leave blank to show all services. Selecting items will limit the display to those services only.
+                                Leave blank to show all services. Selecting items will limit the display to those services
+                                only.
                             </div>
                         </div>
                     </div>
@@ -142,8 +131,7 @@
                         <div class="col-lg-9">
                             <div class="input-group">
                                 <span class="input-group-text">/</span>
-                                <input type="text" name="slug" class="form-control"
-                                    value="{{ old('slug', $page->slug) }}">
+                                <input type="text" name="slug" class="form-control" value="{{ old('slug', $page->slug) }}">
                             </div>
                         </div>
                     </div>
@@ -153,41 +141,41 @@
                         <hr class="my-4">
                         <h6 class="mb-3">Section {{ $i }}</h6>
 
-                    {{-- Section Notes --}}
-                    @if($i === 1)
-                        <div class="alert alert-info py-2 small">
-                            <strong>Section 1:</strong>
-                            Card-based feature section. Each point appears as a card.
-                            <br>
-                            <strong>Recommended:</strong> 6 points (can vary if needed).
-                        </div>
-                    @elseif($i === 2)
-                        <div class="alert alert-info py-2 small">
-                            <strong>Section 2:</strong>
-                            Two-column layout.
-                            <ul class="mb-0 ps-3">
-                                <li><strong>Left:</strong> Section title & description</li>
-                                <li><strong>Right:</strong> Accordion-style points</li>
-                            </ul>
-                        </div>
-                    @elseif($i === 3)
-                        <div class="alert alert-info py-2 small">
-                            <strong>Section 3:</strong>
-                            CTA section with heading, description, and call-to-action button.
-                            <br>
-                            <strong>No points required for this section.</strong>
-                        </div>
-                    @elseif($i === 4)
-                        <div class="alert alert-info py-2 small">
-                            <strong>Section 4:</strong>
-                            CTA with visual layout 
-                            <ul class="mb-0 ps-3">
-                                <li><strong>Left:</strong> Image</li>
-                                <li><strong>Right:</strong> Exactly 2 CTA points</li>
-                            </ul>
-                            OR Unique Image Section (Heading and Content)
-                        </div>
-                    @endif
+                        {{-- Section Notes --}}
+                        @if($i === 1)
+                            <div class="alert alert-info py-2 small">
+                                <strong>Section 1:</strong>
+                                Card-based feature section. Each point appears as a card.
+                                <br>
+                                <strong>Recommended:</strong> 6 points (can vary if needed).
+                            </div>
+                        @elseif($i === 2)
+                            <div class="alert alert-info py-2 small">
+                                <strong>Section 2:</strong>
+                                Two-column layout.
+                                <ul class="mb-0 ps-3">
+                                    <li><strong>Left:</strong> Section title & description</li>
+                                    <li><strong>Right:</strong> Accordion-style points</li>
+                                </ul>
+                            </div>
+                        @elseif($i === 3)
+                            <div class="alert alert-info py-2 small">
+                                <strong>Section 3:</strong>
+                                CTA section with heading, description, and call-to-action button.
+                                <br>
+                                <strong>No points required for this section.</strong>
+                            </div>
+                        @elseif($i === 4)
+                            <div class="alert alert-info py-2 small">
+                                <strong>Section 4:</strong>
+                                CTA with visual layout
+                                <ul class="mb-0 ps-3">
+                                    <li><strong>Left:</strong> Image</li>
+                                    <li><strong>Right:</strong> Exactly 2 CTA points</li>
+                                </ul>
+                                OR Unique Image Section (Heading and Content)
+                            </div>
+                        @endif
 
                         <div class="row g-3 mb-3">
                             <label class="col-lg-3 col-form-label fw-semibold">Title</label>
@@ -277,7 +265,7 @@
         };
 
         // Country -> Cities
-        document.getElementById('countrySelect').addEventListener('change', async function() {
+        document.getElementById('countrySelect').addEventListener('change', async function () {
             const countryId = this.value;
             const citySelect = document.getElementById('citySelect');
             citySelect.innerHTML = `<option value="">Select City</option>`;
@@ -298,46 +286,46 @@
         // HTML creators
         function pointHtml() {
             return `
-                <div class="entry-box mb-2 point-entry">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Point Heading</label>
-                            <input type="text" class="form-control point-heading" placeholder="Heading...">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Point Description</label>
-                            <textarea class="form-control point-description" rows="1" placeholder="Description..."></textarea>
-                        </div>
-                        <div class="col-12">
-                            <button type="button" class="btn btn-danger btn-sm remove-point">Remove</button>
+                    <div class="entry-box mb-2 point-entry">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Point Heading</label>
+                                <input type="text" class="form-control point-heading" placeholder="Heading...">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Point Description</label>
+                                <textarea class="form-control point-description" rows="1" placeholder="Description..."></textarea>
+                            </div>
+                            <div class="col-12">
+                                <button type="button" class="btn btn-danger btn-sm remove-point">Remove</button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            `;
+                `;
         }
 
         function faqHtml() {
             return `
-                <div class="entry-box mb-3 faq-entry">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Question</label>
-                            <input type="text" class="form-control faq-question" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Answer</label>
-                            <textarea class="form-control faq-answer" rows="1" required></textarea>
-                        </div>
-                        <div class="col-12">
-                            <button type="button" class="btn btn-danger btn-sm remove-faq">Remove</button>
+                    <div class="entry-box mb-3 faq-entry">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Question</label>
+                                <input type="text" class="form-control faq-question" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Answer</label>
+                                <textarea class="form-control faq-answer" rows="1" required></textarea>
+                            </div>
+                            <div class="col-12">
+                                <button type="button" class="btn btn-danger btn-sm remove-faq">Remove</button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            `;
+                `;
         }
 
         // add/remove listeners
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function (e) {
             if (e.target.classList.contains('add-point')) {
                 const section = e.target.getAttribute('data-section');
                 document.getElementById(`points-container-${section}`).insertAdjacentHTML('beforeend', pointHtml());
@@ -393,7 +381,7 @@
         fillFaqs();
 
         // Pack JSON on submit
-        document.getElementById('servicePageForm').addEventListener('submit', function() {
+        document.getElementById('servicePageForm').addEventListener('submit', function () {
             // sections points JSON packing
             for (let s = 1; s <= 4; s++) {
                 const points = [];

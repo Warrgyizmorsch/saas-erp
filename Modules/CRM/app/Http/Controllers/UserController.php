@@ -35,23 +35,23 @@ class UserController extends Controller
 
         $users = $query->paginate(10);
 
-        $roles = Role::where('is_deleted',0)->get();
+        $roles = Role::where('is_deleted', 0)->get();
 
-        $todayLog = \App\Models\UserWorkLog::where('user_id', auth()->id())
+        $todayLog = \Modules\CRM\App\Models\UserWorkLog::where('user_id', auth()->id())
             ->where('date', now('Asia/Kolkata')->toDateString())
             ->first();
 
         $existingSeconds = $todayLog ? $todayLog->active_seconds : 0;
 
-        return view('crm.users.index', compact('users', 'roles', 'existingSeconds'));
+        return view('crm::crm.users.index', compact('users', 'roles', 'existingSeconds'));
     }
 
 
     public function create()
     {
-        $roles = Role::where('is_deleted',0)->get();
+        $roles = Role::where('is_deleted', 0)->get();
 
-        return view('crm.users.store', compact('roles'));
+        return view('crm::crm.users.store', compact('roles'));
     }
 
     public function store(Request $request)
@@ -80,8 +80,8 @@ class UserController extends Controller
 
     public function edit(User $user)
     {
-        $roles = Role::where('is_deleted',0)->get();
-        return view('crm.users.store', compact('roles', 'user'));
+        $roles = Role::where('is_deleted', 0)->get();
+        return view('crm::crm.users.store', compact('roles', 'user'));
     }
 
     public function update(Request $request, User $user)
@@ -124,7 +124,7 @@ class UserController extends Controller
         // Step 1: Get all session user_ids (currently logged-in users)
         $loggedInUserIds = DB::table('sessions')->pluck('user_id')->unique()->filter();
 
-        $userRole = Role::where('is_deleted',0)->get();
+        $userRole = Role::where('is_deleted', 0)->get();
 
         // Step 2: Build user query with loginHistories
         $query = User::with('loginHistories');
@@ -166,14 +166,14 @@ class UserController extends Controller
         $userIds = $users->pluck('id');
         $sessions = DB::table('sessions')->whereIn('user_id', $userIds)->get()->keyBy('user_id');
 
-         $activityLogs = UserWorkLog::with('user')
-        ->when($request->filled('from') && $request->filled('to'), function ($q) use ($request) {
-            $q->whereBetween('date', [$request->from, $request->to]);
-        })
-        ->latest()
-        ->paginate(10, ['*'], 'activity_page');
+        $activityLogs = UserWorkLog::with('user')
+            ->when($request->filled('from') && $request->filled('to'), function ($q) use ($request) {
+                $q->whereBetween('date', [$request->from, $request->to]);
+            })
+            ->latest()
+            ->paginate(10, ['*'], 'activity_page');
 
-        return view('crm.users.loginHistory', compact('users', 'sessions', 'userRole','activityLogs'));
+        return view('crm::crm.users.loginHistory', compact('users', 'sessions', 'userRole', 'activityLogs'));
     }
 
 
@@ -184,7 +184,7 @@ class UserController extends Controller
             ->whereNull('logout_at')
             ->latest('created_at')
             ->first()
-            ?->update([
+                ?->update([
                 'logout_at' => now(),
                 'user_agent' => request()->userAgent()
             ]);
@@ -207,7 +207,7 @@ class UserController extends Controller
         $sessions = DB::table('sessions')->get()->keyBy('user_id');
 
 
-        return view('crm.users.history', compact('user', 'sessions'));
+        return view('crm::crm.users.history', compact('user', 'sessions'));
     }
 
     public function filterLoginHistory(Request $request)
@@ -215,7 +215,7 @@ class UserController extends Controller
         $loggedInUserIds = DB::table('sessions')->pluck('user_id')->unique()->filter();
 
         $query = User::with('loginHistories');
-        $userRole = Role::where('is_deleted',0)->get();
+        $userRole = Role::where('is_deleted', 0)->get();
 
         // Conditionally apply role filter
         if ($request->filled('role_id')) {
@@ -272,7 +272,7 @@ class UserController extends Controller
             ->orderBy('created_at', 'asc')
             ->get();
 
-        return view('crm.users.leadHistory', compact('user', 'sessions', 'leadHistories', 'date'));
+        return view('crm::crm.users.leadHistory', compact('user', 'sessions', 'leadHistories', 'date'));
     }
 
     // UserController.php ke andar
@@ -297,7 +297,7 @@ class UserController extends Controller
             }
 
             // 🟢 FIX: Pehle record fetch karein ya create karein
-            $todayLog = \App\Models\UserWorkLog::firstOrCreate(
+            $todayLog = \Modules\CRM\App\Models\UserWorkLog::firstOrCreate(
                 ['user_id' => $userId, 'date' => $nowIST->toDateString()],
                 ['active_seconds' => 0]
             );

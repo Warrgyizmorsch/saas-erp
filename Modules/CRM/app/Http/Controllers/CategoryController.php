@@ -11,7 +11,7 @@ class CategoryController extends Controller
     {
         $categories = Category::latest()->paginate(10);
 
-        return view('crm.category.index', compact('categories'));
+        return view('crm::crm.category.index', compact('categories'));
     }
 
     public function store(Request $request)
@@ -35,7 +35,7 @@ class CategoryController extends Controller
 
         $categories = Category::latest()->paginate(10);
 
-        return view('crm.category.index', compact('category', 'categories'));
+        return view('crm::crm.category.index', compact('category', 'categories'));
     }
 
     public function update(Request $request, $id)

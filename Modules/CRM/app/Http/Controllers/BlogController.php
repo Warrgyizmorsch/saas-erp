@@ -57,7 +57,7 @@ class BlogController extends Controller
 
         $editAuthor = Author::findOrFail($id);
 
-        return view('crm.blog.author', compact('authors', 'editAuthor'));
+        return view('crm::crm.blog.author', compact('authors', 'editAuthor'));
     }
 
     public function authorstore(Request $request)
@@ -109,7 +109,7 @@ class BlogController extends Controller
     public function create()
     {
         $authors = Author::orderBy('id', 'asc')->get();
-        return view('crm.blog.create', compact('authors'));
+        return view('crm::crm.blog.create', compact('authors'));
     }
 
     public function store(Request $request)

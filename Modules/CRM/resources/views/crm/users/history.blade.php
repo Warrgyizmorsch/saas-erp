@@ -1,26 +1,26 @@
-@extends('layouts.app')
+@extends('shared::layouts.app')
 
 @section('content')
 
-<main>
-    <div>
-        <div class="page-header">
-            <div class="page-header-left d-flex align-items-center">
-                <div class="page-header-title">
-                    <h5 class="m-b-10">User History</h5>
+    <main>
+        <div>
+            <div class="page-header">
+                <div class="page-header-left d-flex align-items-center">
+                    <div class="page-header-title">
+                        <h5 class="m-b-10">User History</h5>
+                    </div>
+                    <ul class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
+                        <li class="breadcrumb-item">History for {{ $user->name }}</li>
+                    </ul>
                 </div>
-                <ul class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
-                    <li class="breadcrumb-item">History for {{ $user->name }}</li>
-                </ul>
+                <div class="page-header-right ms-auto">
+                    <a href="{{ route('users.session') }}" class="btn btn-primary">← Back</a>
+                </div>
             </div>
-            <div class="page-header-right ms-auto">
-                <a href="{{ route('users.session') }}" class="btn btn-primary">← Back</a>
-            </div>
-        </div>
 
-    </div>
-</main>
+        </div>
+    </main>
 
 
     <div class="crm-page-container">
@@ -43,19 +43,19 @@
                             </thead>
                             <tbody>
                                 @php
-    $session = $sessions[$user->id] ?? null;
-    $latestLogin = $user->loginHistories->last();
+                                    $session = $sessions[$user->id] ?? null;
+                                    $latestLogin = $user->loginHistories->last();
 
-    $isLoggedIn = false;
+                                    $isLoggedIn = false;
 
-    if ($session) {
-        // session->last_activity is stored as UNIX timestamp
-        $lastActivity = \Carbon\Carbon::createFromTimestamp($session->last_activity);
-        $expiryTime = $lastActivity->copy()->addMinutes(config('session.lifetime'));
+                                    if ($session) {
+                                        // session->last_activity is stored as UNIX timestamp
+                                        $lastActivity = \Carbon\Carbon::createFromTimestamp($session->last_activity);
+                                        $expiryTime = $lastActivity->copy()->addMinutes(config('session.lifetime'));
 
-        // if not expired yet, user is still logged in
-        $isLoggedIn = now()->lt($expiryTime);
-    }
+                                        // if not expired yet, user is still logged in
+                                        $isLoggedIn = now()->lt($expiryTime);
+                                    }
                                 @endphp
 
                                 @foreach ($user->loginHistories as $index => $history)

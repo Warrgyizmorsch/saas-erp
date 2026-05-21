@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('shared::layouts.app')
 
 @section('content')
     <style>
@@ -39,14 +39,13 @@
             color: #dc3545;
         }
 
-.modal-backdrop.show {
-    opacity: 0;
-}
+        .modal-backdrop.show {
+            opacity: 0;
+        }
 
-.modal-backdrop {
-    position: static;
-}
-
+        .modal-backdrop {
+            position: static;
+        }
     </style>
 
     <main>
@@ -63,7 +62,7 @@
                     </ul>
                 </div>
                 <div class="page-header-right ms-auto d-flex" style="gap:10px;">
-                    
+
                     <a href="javascript:void(0);" class="btn btn-icon btn-light-brand" data-bs-toggle="collapse"
                         data-bs-target="#collapseOne">
                         Filter
@@ -95,7 +94,7 @@
                                 </select>
                             </div>
 
-                            
+
 
                             <div class="col-md-4 d-flex">
                                 <button class="btn btn-primary me-2" type="submit">Filter</button>
@@ -172,7 +171,8 @@
 
                                         <div class="modal fade" id="delete{{ $subject->id }}" tabindex="-1"
                                             aria-labelledby="deleteLabel{{ $subject->id }}" aria-hidden="true">
-                                            <div class="modal-dialog" style="display: flex; justify-content: center; align-items:center; height: 100vh;">
+                                            <div class="modal-dialog"
+                                                style="display: flex; justify-content: center; align-items:center; height: 100vh;">
                                                 <div class="modal-content">
                                                     <div class="modal-header">
                                                         <h5 class="modal-title" id="deleteLabel{{ $subject->id }}">Confirm
@@ -186,7 +186,8 @@
                                                     <div class="modal-footer">
                                                         <button type="button" class="btn btn-secondary"
                                                             data-bs-dismiss="modal">Close</button>
-                                                        <form action="{{ route('crm-subject-pages.destroy', $subject->id) }}" method="POST">
+                                                        <form action="{{ route('crm-subject-pages.destroy', $subject->id) }}"
+                                                            method="POST">
                                                             @csrf
                                                             @method('DELETE')
                                                             <button type="submit" class="btn btn-danger">Delete</button>

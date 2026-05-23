@@ -28,15 +28,19 @@ Route::middleware([
         $activeUsersCount = \Modules\Shared\App\Models\User::where('is_deleted', 0)->count();
 
         // Total active sessions
-        $activeSessions = \Modules\Shared\App\Models\Session::count();
+        $activeSessions = \DB::table('sessions')
+            ->join('users', 'sessions.user_id', '=', 'users.id')
+            ->where('users.tenant_id', tenant('id'))
+            ->count();
 
         $crmLeadsCount = 0;
         if ($isCrmEnabled && class_exists('\Modules\CRM\App\Models\Leads')) {
-            $crmLeadsCount = \Modules\CRM\App\Models\Leads::count();
+            $crmLeadsCount = \Modules\CRM\App\Models\Leads::whereHas('owner')->count();
         }
 
         // Recent login history with user info
-        $recentLogins = \Modules\Shared\App\Models\LoginHistory::with('user')
+        $recentLogins = \Modules\Shared\App\Models\LoginHistory::whereHas('user')
+            ->with('user')
             ->orderBy('id', 'desc')
             ->limit(5)
             ->get();
@@ -47,6 +51,7 @@ Route::middleware([
             ->orderBy('id', 'desc')
             ->limit(5)
             ->get();
+
 
         return view('shared::dashboard', compact(
             'tenant',

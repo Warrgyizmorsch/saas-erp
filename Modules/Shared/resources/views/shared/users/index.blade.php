@@ -1,6 +1,16 @@
 @extends('shared::layouts.app')
 
 @section('content')
+    @php
+        $maxUsers = tenant('max_users');
+        $isLimitReached = false;
+        $activeUsersCount = 0;
+        if ($maxUsers) {
+            $activeUsersCount = \Modules\Shared\App\Models\User::where('tenant_id', tenant('id'))->where('is_deleted', 0)->count();
+            $isLimitReached = $activeUsersCount >= $maxUsers;
+        }
+    @endphp
+
     <style>
         .profile-img {
             width: 40px;
@@ -28,9 +38,15 @@
                     </ul>
                 </div>
                 <div class="page-header-right ms-auto">
-                    <a href="{{ route('users.create') }}" class="btn btn-primary me-2">
-                        <i class="feather-plus me-2"></i> Add User
-                    </a>
+                    @if($isLimitReached)
+                        <button class="btn btn-secondary me-2" disabled title="Plan Limit Reached (Max {{ $maxUsers }} users)" style="cursor: not-allowed; opacity: 0.65;">
+                            <i class="fas fa-lock me-2"></i> Add User
+                        </button>
+                    @else
+                        <a href="{{ route('users.create') }}" class="btn btn-primary me-2">
+                            <i class="feather-plus me-2"></i> Add User
+                        </a>
+                    @endif
                     <a href="javascript:void(0);" class="btn btn-icon btn-light-brand" data-bs-toggle="collapse"
                         data-bs-target="#collapseOne">
                         Filter
@@ -72,6 +88,33 @@
     </main>
 
     <div class="crm-page-container">
+
+        <!-- Plan Limits Alerts -->
+        @if($maxUsers)
+            <div class="alert alert-info border-0 shadow-sm d-flex align-items-center justify-content-between p-3 mb-4 rounded-3" style="background-color: #eff6ff; border-left: 5px solid #2563eb !important; border-radius: 12px !important;">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="fas fa-info-circle text-primary" style="font-size: 20px;"></i>
+                    <span class="text-secondary" style="font-weight: 500;">
+                        Subscription Package User Limit: <strong class="text-dark">{{ $activeUsersCount }}</strong> active user(s) created of <strong class="text-dark">{{ $maxUsers }}</strong> allowed on your plan.
+                    </span>
+                </div>
+                @if($isLimitReached)
+                    <span class="badge bg-danger rounded-pill px-3 py-2">Plan Limit Reached</span>
+                @else
+                    <span class="badge bg-primary rounded-pill px-3 py-2">Plan Active</span>
+                @endif
+            </div>
+        @endif
+
+        @if($isLimitReached)
+            <div class="alert alert-warning border-0 shadow-sm d-flex align-items-center gap-3 p-3 mb-4 rounded-3" style="background-color: #fffbeb; border-left: 5px solid #d97706 !important; color: #92400e; border-radius: 12px !important;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 24px; color: #d97706;"></i>
+                <div>
+                    <strong style="font-size: 15px; display: block; margin-bottom: 2px;">User Creation Blocked</strong>
+                    <span>You have reached the maximum user creation limit for your current package. Please upgrade your subscription plan to add new users.</span>
+                </div>
+            </div>
+        @endif
 
         <!-- Table -->
         <div class="card">

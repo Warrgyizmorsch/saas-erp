@@ -136,7 +136,7 @@
 
                 <div class="col-lg-8">
                     <h1 class="display-5 fw-bold mb-3">
-                        Welcome, {{ $tenant->id }}
+                        Welcome, {{ $tenant->company_name ?? $tenant->id }}
                     </h1>
 
                     <p class="lead text-light opacity-75">
@@ -196,66 +196,126 @@
 
             <div class="row g-4">
 
-                <!-- Tenant ID -->
-                <div class="col-md-6">
+                <!-- Company Name -->
+                <div class="col-md-4">
                     <div class="info-card">
-
                         <div class="info-label">
-                            Tenant ID
+                            Company Name
                         </div>
-
                         <div class="info-value">
+                            {{ $tenant->company_name ?? 'N/A' }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Industry -->
+                <div class="col-md-4">
+                    <div class="info-card">
+                        <div class="info-label">
+                            Industry Sector
+                        </div>
+                        <div class="info-value">
+                            {{ $tenant->industry ?? 'N/A' }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Company Size -->
+                <div class="col-md-4">
+                    <div class="info-card">
+                        <div class="info-label">
+                            Company Size
+                        </div>
+                        <div class="info-value">
+                            {{ $tenant->company_size ?? 'N/A' }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Operational Country -->
+                <div class="col-md-4">
+                    <div class="info-card">
+                        <div class="info-label">
+                            Operational Country
+                        </div>
+                        <div class="info-value">
+                            {{ $tenant->country ?? 'N/A' }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Phone -->
+                <div class="col-md-4">
+                    <div class="info-card">
+                        <div class="info-label">
+                            Contact Phone
+                        </div>
+                        <div class="info-value">
+                            {{ $tenant->phone ?? 'N/A' }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tax / Business ID -->
+                <div class="col-md-4">
+                    <div class="info-card">
+                        <div class="info-label">
+                            Tax / Business ID
+                        </div>
+                        <div class="info-value">
+                            {{ $tenant->tax_id ?? 'Not Provided' }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tenant ID -->
+                <div class="col-md-4">
+                    <div class="info-card">
+                        <div class="info-label">
+                            Tenant Workspace ID
+                        </div>
+                        <div class="info-value text-muted" style="font-family: monospace;">
                             {{ $tenant->id }}
                         </div>
-
                     </div>
                 </div>
 
                 <!-- Created At -->
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <div class="info-card">
-
                         <div class="info-label">
                             Created At
                         </div>
-
                         <div class="info-value">
                             {{ \Carbon\Carbon::parse($tenant->created_at)->format('d M Y, h:i A') }}
                         </div>
-
                     </div>
                 </div>
 
                 <!-- Updated At -->
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <div class="info-card">
-
                         <div class="info-label">
                             Last Updated
                         </div>
-
                         <div class="info-value">
                             {{ \Carbon\Carbon::parse($tenant->updated_at)->format('d M Y, h:i A') }}
                         </div>
-
                     </div>
                 </div>
 
                 <!-- Domains -->
-                <div class="col-md-6">
+                <div class="col-12">
                     <div class="info-card">
-
                         <div class="info-label mb-3">
-                            Tenant Domains
+                            Tenant Domain Operations
                         </div>
-
                         @foreach($tenant->domains as $domain)
-                            <div class="domain-badge mb-2">
+                            <div class="domain-badge mb-2 me-2">
                                 <i class="bi bi-globe2 me-2"></i>
                                 {{ $domain->domain }}
                             </div>
                         @endforeach
-
                     </div>
                 </div>
 

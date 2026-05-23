@@ -7,24 +7,35 @@ use Illuminate\Support\Facades\Route;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
-        web: __DIR__ . '/../routes/web.php',
         commands: __DIR__ . '/../routes/console.php',
         health: '/up',
         then: function () {
-            // Only register tenant routes if there's a subdomain
+            // Determine central domains dynamically
             $host = request()->getHost();
-            $centralDomains = config('tenancy.central_domains', []);
+            $centralDomains = config('tenancy.central_domains', ['127.0.0.1', 'localhost']);
             $isCentralDomain = in_array($host, $centralDomains);
 
-            if (!$isCentralDomain) {
+            if ($isCentralDomain) {
+                // Central Domain - load standard web and auth routes
+                Route::middleware('web')
+                    ->group(base_path('routes/web.php'));
+            } else {
+                // Tenant Subdomain - load tenant routes and auth routes wrapped in InitializeTenancyByDomain
                 Route::middleware([
                     'web',
                     \Stancl\Tenancy\Middleware\InitializeTenancyByDomain::class,
-                ])
-                    ->group(base_path('routes/tenant.php'));
+                ])->group(function () {
+                    if (file_exists(base_path('routes/tenant.php'))) {
+                        require base_path('routes/tenant.php');
+                    }
+                    if (file_exists(base_path('routes/auth.php'))) {
+                        require base_path('routes/auth.php');
+                    }
+                });
             }
         },
     )
+
     ->withMiddleware(function ($middleware) {
         $middleware->alias([
             'module.enabled' => \App\Http\Middleware\ModuleEnabled::class,

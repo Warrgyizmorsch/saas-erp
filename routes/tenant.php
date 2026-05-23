@@ -27,20 +27,25 @@ Route::middleware([
 
         $totalUsers = class_exists('\Modules\Shared\App\Models\User') ? \Modules\Shared\App\Models\User::count() : 0;
         $activeUsersCount = class_exists('\Modules\Shared\App\Models\User') ? \Modules\Shared\App\Models\User::where('is_deleted', 0)->count() : 0;
-        $activeSessions = class_exists('\Modules\Shared\App\Models\Session') ? \Modules\Shared\App\Models\Session::count() : 0;
+        
+        $activeSessions = DB::table('sessions')
+            ->join('users', 'sessions.user_id', '=', 'users.id')
+            ->where('users.tenant_id', tenant('id'))
+            ->count();
 
         $crmLeadsCount = 0;
         if ($isCrmEnabled && class_exists('\Modules\CRM\App\Models\Leads')) {
-            $crmLeadsCount = \Modules\CRM\App\Models\Leads::count();
+            $crmLeadsCount = \Modules\CRM\App\Models\Leads::whereHas('owner')->count();
         }
 
         $recentLogins = class_exists('\Modules\Shared\App\Models\LoginHistory') 
-            ? \Modules\Shared\App\Models\LoginHistory::with('user')->orderBy('id', 'desc')->limit(5)->get() 
+            ? \Modules\Shared\App\Models\LoginHistory::whereHas('user')->with('user')->orderBy('id', 'desc')->limit(5)->get() 
             : collect();
 
         $recentUsers = class_exists('\Modules\Shared\App\Models\User') 
             ? \Modules\Shared\App\Models\User::with('role')->where('is_deleted', 0)->orderBy('id', 'desc')->limit(5)->get() 
             : collect();
+
 
         return view('dashboard', compact(
             'tenant',

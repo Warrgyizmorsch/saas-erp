@@ -609,9 +609,10 @@
                                     <a href="javascript:void(0);" class="d-flex align-items-center justify-content-center gap-3"
                                         data-bs-toggle="offcanvas" data-bs-target="#userProfileDetails">
                                         <div class="avatar-image">
-                                            <img src="{{ $lead->user->image ? asset('storage/' . $lead->user->image) : '/images/blank.jpeg' }}"
+                                            <img src="{{ optional($lead->user)->image ? asset('storage/' . $lead->user->image) : '/images/blank.jpeg' }}"
                                                 class="img-fluid" alt="image">
                                         </div>
+
                                         <div class="d-none d-sm-block">
                                             <div class="fw-bold d-flex align-items-center">
                                                 {{ optional($lead->user)->name ?? 'User' }}</div>

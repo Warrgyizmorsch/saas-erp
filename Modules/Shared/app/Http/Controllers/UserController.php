@@ -16,7 +16,7 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        $query = User::where('is_deleted', 0);
+        $query = User::where('tenant_id', tenant('id'))->where('is_deleted', 0);
 
         // Search across name, email, contact_no
         if ($request->filled('search')) {
@@ -48,6 +48,15 @@ class UserController extends Controller
 
     public function create()
     {
+        // Enforce subscription package user limits
+        $maxUsers = tenant('max_users');
+        if ($maxUsers) {
+            $currentUsersCount = User::where('tenant_id', tenant('id'))->where('is_deleted', 0)->count();
+            if ($currentUsersCount >= $maxUsers) {
+                return redirect()->route('users.index')->with('error', 'You have reached the maximum user limit of ' . $maxUsers . ' for your current package. Please upgrade your plan to add more users.');
+            }
+        }
+
         $roles = Role::get();
 
         return view('shared::shared.users.store', compact('roles'));
@@ -55,9 +64,18 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
+        // Enforce subscription package user limits on form submit
+        $maxUsers = tenant('max_users');
+        if ($maxUsers) {
+            $currentUsersCount = User::where('tenant_id', tenant('id'))->where('is_deleted', 0)->count();
+            if ($currentUsersCount >= $maxUsers) {
+                return redirect()->route('users.index')->with('error', 'Action blocked: You have reached the maximum user limit of ' . $maxUsers . ' for your current package.');
+            }
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users',
+            'email' => 'required|email|unique:users,email,NULL,id,tenant_id,' . tenant('id'),
             'role_id' => 'required|exists:roles,id',
             'country_code' => 'nullable|string|max:5',
             'contact_no' => 'nullable|string|max:20',
@@ -71,6 +89,7 @@ class UserController extends Controller
         }
 
         $validated['password'] = Hash::make('user@123');
+        $validated['tenant_id'] = tenant('id');
 
         User::create($validated);
 
@@ -79,16 +98,25 @@ class UserController extends Controller
 
     public function edit(User $user)
     {
+        if ($user->tenant_id !== tenant('id')) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $roles = Role::get();
         return view('shared::shared.users.store', compact('roles', 'user'));
     }
 
     public function update(Request $request, User $user)
     {
+        if ($user->tenant_id !== tenant('id')) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $request->validate([
             'name' => 'required|string',
-            'email' => 'required|email|unique:users,email,' . $user->id,
+            'email' => 'required|email|unique:users,email,' . $user->id . ',id,tenant_id,' . tenant('id'),
             'country_code' => 'required',
+
             'contact_no' => 'required',
             'role_id' => 'required|exists:roles,id',
             'image' => 'nullable|image|max:2048',
@@ -113,6 +141,10 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
+        if ($user->tenant_id !== tenant('id')) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $user->update(['is_deleted' => 1]);
 
         return redirect()->route('users.index')
@@ -126,8 +158,8 @@ class UserController extends Controller
 
         $userRole = Role::get();
 
-        // Step 2: Build user query with loginHistories
-        $query = User::with('loginHistories');
+        // Step 2: Build user query with loginHistories (scoped by tenant)
+        $query = User::where('tenant_id', tenant('id'))->with('loginHistories');
 
         // Conditionally apply role filter
         if ($request->filled('role_id')) {
@@ -211,7 +243,7 @@ class UserController extends Controller
     {
         $loggedInUserIds = DB::table('sessions')->pluck('user_id')->unique()->filter();
 
-        $query = User::with('loginHistories');
+        $query = User::where('tenant_id', tenant('id'))->with('loginHistories');
         $userRole = Role::get();
 
         // Conditionally apply role filter
@@ -254,7 +286,7 @@ class UserController extends Controller
 
     public function leadHistory(Request $request, $userId)
     {
-        $user = User::findOrFail($userId);
+        $user = User::where('tenant_id', tenant('id'))->findOrFail($userId);
 
         $date = $request->get('date', now()->toDateString());
 
@@ -316,7 +348,7 @@ class UserController extends Controller
             'is_active' => 'required|in:0,1'
         ]);
 
-        $user = User::findOrFail($id);
+        $user = User::where('tenant_id', tenant('id'))->findOrFail($id);
         $user->is_active = $request->is_active;
         $user->save();
 

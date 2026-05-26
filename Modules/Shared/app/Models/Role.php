@@ -19,4 +19,10 @@ class Role extends Model
     {
         return $this->hasMany(RolePermission::class);
     }
+
+    // Dynamic slug accessor
+    public function getSlugAttribute()
+    {
+        return \Illuminate\Support\Str::slug($this->name, '_');
+    }
 }

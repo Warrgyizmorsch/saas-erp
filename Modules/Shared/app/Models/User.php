@@ -68,4 +68,49 @@ class User extends Authenticatable
     {
         return $this->hasMany(UserWorkLog::class);
     }
+
+    // HRMS Employee relationship
+    public function employee()
+    {
+        if (\Schema::hasColumn('users', 'employee_id')) {
+            return $this->belongsTo(\Modules\HRMS\App\Models\Employee::class, 'employee_id');
+        }
+        return $this->belongsTo(\Modules\HRMS\App\Models\Employee::class, 'email', 'email');
+    }
+
+    // Fallback accessor for employee_id
+    public function getEmployeeIdAttribute()
+    {
+        if (isset($this->attributes['employee_id']) && !empty($this->attributes['employee_id'])) {
+            return $this->attributes['employee_id'];
+        }
+        try {
+            if (class_exists(\Modules\HRMS\App\Models\Employee::class)) {
+                $employee = \Modules\HRMS\App\Models\Employee::where('email', $this->email)->first();
+                return $employee ? $employee->id : null;
+            }
+        } catch (\Exception $e) {
+            // ignore
+        }
+        return null;
+    }
+
+    // Accessor for hrm_role slug
+    public function getHrmRoleAttribute()
+    {
+        if (isset($this->attributes['role']) && !empty($this->attributes['role'])) {
+            return $this->attributes['role'];
+        }
+
+        if ($this->role_id == 1) {
+            return 'super_admin';
+        }
+
+        $roleRelation = $this->role()->first();
+        if ($roleRelation) {
+            return str_replace(' ', '_', strtolower($roleRelation->name));
+        }
+
+        return 'employee';
+    }
 }

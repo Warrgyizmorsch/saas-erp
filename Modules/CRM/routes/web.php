@@ -16,6 +16,7 @@ use Modules\CRM\App\Http\Controllers\NewleadController;
 use Modules\CRM\App\Http\Controllers\UniversityDetailController;
 use Modules\CRM\App\Http\Controllers\WhatsAppController;
 use Modules\CRM\App\Http\Controllers\DashboardController;
+use Modules\Shared\App\Http\Controllers\UserController;
 
 // Public routes (without auth)
 Route::get('/send-whatsapp-all', [WhatsAppController::class, 'sendAll'])

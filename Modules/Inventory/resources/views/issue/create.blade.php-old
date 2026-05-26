@@ -1,0 +1,554 @@
+<x-app-layout>
+    <style>
+        .main-content { padding: 20px; }
+        .form-label-bold { font-weight: 600; font-size: 0.85rem; color: #4a5568; margin-bottom: 4px; }
+        .table thead th { background-color: #f8f9fa; text-transform: uppercase; font-size: 0.75rem; color: #718096; border-bottom: 2px solid #edf2f7; }
+        .is-invalid-custom { border: 2px solid #e53e3e !important; background-color: #fff5f5 !important; }
+        .error-msg { color: #e53e3e; font-size: 0.7rem; font-weight: bold; margin-top: 2px; }
+        .table-container { border: 1px solid #edf2f7; border-radius: 8px; background: #fff; }
+        .cloned-row { background-color: #fdfdfd; border-left: 3px solid #4299e1; }
+        .stock-indicator { font-size: 0.9rem; }
+        .lock-badge { font-size: 0.72rem; padding: 3px 8px; border-radius: 999px; background: #fff5f5; color: #c53030; border: 1px solid #fed7d7; }
+    </style>
+
+    <div class="px-4 mt-3">
+        @if(session('success'))
+            <div class="alert alert-success border-0 shadow-sm alert-dismissible fade show">
+                <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+    </div>
+
+    <div class="main-content">
+        <div class="card shadow-sm border-0 rounded-lg">
+            <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold text-dark">
+                    <i class="feather feather-file-text me-2 text-primary"></i>
+                    {{ 'New Issue Slip' }}
+                </h5>
+                <span class="badge rounded-pill bg-soft-primary text-primary px-3 py-2 border border-primary">
+                    Requisition: #{{ $requisition->requisition_slip_no }}
+                </span>
+            </div>
+
+            <div class="card-body p-4">
+                <form action="{{ route('issue.store') }}" method="POST" id="issueForm">
+                    @csrf
+                    <input type="hidden" name="requisition_id" value="{{ $requisition->id }}">
+                    <input type="hidden" name="project_id" value="{{ $requisition->project_id }}">
+
+                    {{-- HEADER INFO --}}
+                    <div class="row g-4 mb-5">
+                        <div class="col-md-3">
+                            <label class="form-label-bold">Issue Slip No</label>
+                            <input type="text" name="issue_slip_no" class="form-control bg-light fw-bold" value="{{ $issueSlipNo }}" readonly>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label-bold">Transaction Date</label>
+                            <input type="date" name="issue_date" class="form-control" value="{{ $today }}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label-bold">Project / Site</label>
+                            <div class="py-2 fw-semibold text-primary">
+                                <i class="feather feather-map-pin me-1"></i> {{ $requisition->project->name ?? 'N/A' }}
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- ITEMS TABLE --}}
+                    <div class="table-container mb-4 shadow-sm">
+                        <table class="table table-hover align-middle mb-0" id="itemsTable">
+                            <thead>
+                                <tr>
+                                    <th class="ps-4" width="70px">Split</th>
+                                    <th>Material / Model</th>
+                                    <th class="text-end" width="120px">In Stock</th>
+                                    <th class="text-end" width="120px">Pending</th>
+                                    <th class="text-end" width="150px">Today Issue</th>
+                                    <th width="180px">Status</th>
+                                    <th class="pe-4">Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @php $globalIndex = 0; @endphp
+
+                                @foreach($requisition->rows as $row)
+                                    @php
+                                        $inventory = $row->inventory;
+                                        if(!$inventory) continue;
+
+                                        $alreadyIssued = \App\Models\IssueSlipRow::where('requisition_slip_row_id', $row->id)->sum('issue_qty');
+                                        $pendingQty = (float)($row->quantity); // keep same as your current
+                                        $available  = (float)($inventory->available_stock ?? 0);
+
+                                        if($pendingQty <= 0) continue;
+
+                                        $classif = (string)($inventory->classification ?? '');
+
+                                        // ✅ from controller (only for SEMI_FINISH)
+                                        $usableFinish = (float)($row->usable_finish_stock ?? 0);
+                                        $machiningAvail = (float)($row->machining_stock ?? 0);
+                                    @endphp
+
+                                    <tr class="item-row"
+                                        data-row-id="{{ $row->id }}"
+                                        data-inventory-id="{{ $inventory->id }}"
+                                        data-classification="{{ $classif }}"
+                                        data-available="{{ $available }}"
+                                        data-usable="{{ $usableFinish }}"
+                                        data-machining="{{ $machiningAvail }}"
+                                        data-max-pending="{{ $pendingQty }}"
+                                    >
+                                        <td class="ps-4 text-center split-cell">
+                                            <button type="button" class="btn btn-sm btn-outline-primary clone-row rounded-circle">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                        </td>
+
+                                        <td class="material-cell">
+                                            <div class="fw-bold text-dark">
+                                                {{ $inventory->name }}
+                                                @if($classif === 'SEMI_FINISH')
+                                                    <span class="badge bg-warning text-dark ms-2">Semi Finish</span>
+                                                @endif
+                                                @if($classif === 'FINISH')
+                                                    <span class="badge bg-success ms-2">Finish</span>
+                                                @endif
+                                            </div>
+                                            <div class="small text-muted">{{ $inventory->model }}</div>
+                                        </td>
+
+                                        <td class="text-end stock-cell">
+                                            <span class="stock-indicator fw-bold {{ $available <= 0 ? 'text-danger' : 'text-success' }}" data-stock="{{ $available }}">
+                                                {{ number_format($available, 2) }}
+                                            </span>
+                                        </td>
+
+                                        <td class="text-end text-muted fw-semibold pending-cell">
+                                            <span class="pending-label">{{ number_format($row->pending_qty, 2) }}</span>
+                                        </td>
+
+
+                                        <td>
+                                            <input type="number"
+                                                   name="items[{{ $globalIndex }}][issue_qty]"
+                                                   class="form-control form-control-sm text-end issueQty"
+                                                   value="0" min="0" step="0.01">
+                                            <div class="error-msg d-none"></div>
+                                        </td>
+
+                                        <td>
+                                            <select name="items[{{ $globalIndex }}][status]"
+                                                    class="form-select form-select-sm bg-light border-0 statusSelect">
+                                                <option value="full">Full</option>
+                                                <option value="partial_out_of_stock">Out of Stock</option>
+                                                <option value="partial_machining">Machining</option>
+                                            </select>
+
+                                            <input type="hidden" name="items[{{ $globalIndex }}][status_mirror]" class="statusMirror" value="full">
+                                        </td>
+
+                                        <td class="pe-4">
+                                            <input type="text" name="items[{{ $globalIndex }}][description]" value="{{ $row->description }}" class="form-control form-control-sm bg-light border-0">
+                                            <input type="hidden" name="items[{{ $globalIndex }}][inventory_id]" value="{{ $inventory->id }}">
+                                            <input type="hidden" name="items[{{ $globalIndex }}][row_id]" value="{{ $row->id }}">
+                                        </td>
+                                    </tr>
+
+                                    @php $globalIndex++; @endphp
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {{-- FOOTER --}}
+                    <div class="row g-4 mt-2">
+                        <div class="col-lg-7">
+                            <label class="form-label-bold">Notes / Comments</label>
+                            <textarea name="comment" class="form-control border-light" rows="2" placeholder="Write any specific instructions here...">{{ $issue->comment ?? '' }}</textarea>
+                        </div>
+
+                        <div class="col-lg-5 text-end">
+                            <div class="mb-3">
+                                <span class="text-muted small">Sum of Current Entry</span>
+                                <h3 class="fw-bold text-primary mb-0" id="display_total_issue">0.00</h3>
+                            </div>
+                            <button type="submit" id="submitBtn" class="btn btn-primary btn-lg px-5 rounded-pill shadow">
+                                <i class="feather feather-check-circle me-1"></i> Process Issue
+                            </button>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        let globalIndex = {{ $globalIndex }};
+        const tableBody = document.querySelector('#itemsTable tbody');
+        const submitBtn = document.getElementById('submitBtn');
+
+        const toNum = (v) => {
+            const n = parseFloat(v);
+            return Number.isFinite(n) ? n : 0;
+        };
+
+        const isLockedOutRow = (row) => row.dataset.locked === "1";
+
+        function setStatus(row, value, lock=false) {
+            const select = row.querySelector('.statusSelect');
+            const mirror = row.querySelector('.statusMirror');
+            if (select) select.value = value;
+            if (mirror) mirror.value = value;
+
+            if (lock && select) {
+                select.disabled = true;
+                if (!row.querySelector('.lock-badge')) {
+                    const badge = document.createElement('span');
+                    badge.className = 'lock-badge ms-2';
+                    badge.innerText = 'Locked';
+                    select.parentElement.appendChild(badge);
+                }
+            } else if (select) {
+                select.disabled = false;
+                const badge = row.querySelector('.lock-badge');
+                if (badge) badge.remove();
+            }
+        }
+
+        function syncStatusMirror(row) {
+            const select = row.querySelector('.statusSelect');
+            const mirror = row.querySelector('.statusMirror');
+            if (select && mirror) mirror.value = select.value;
+        }
+
+        function makeOutOfStockLockedRow(row, qty) {
+            const input = row.querySelector('.issueQty');
+            row.dataset.locked = "1";
+            if (input) {
+                input.value = qty.toFixed(2);
+                input.readOnly = true;
+            }
+            setStatus(row, 'partial_out_of_stock', true);
+        }
+
+        function makeMachiningRow(row, qty) {
+            const input = row.querySelector('.issueQty');
+            row.dataset.locked = "0"; // machining editable
+            if (input) {
+                input.value = qty.toFixed(2);
+                input.readOnly = false;
+            }
+            setStatus(row, 'partial_machining', false);
+        }
+
+        function makeIssuedRow(row, qty) {
+            const input = row.querySelector('.issueQty');
+            if (input) {
+                input.value = qty.toFixed(2);
+                input.readOnly = false;
+            }
+            setStatus(row, 'full', false);
+            row.dataset.locked = "0";
+        }
+
+        function createCloneAfterRow(baseRow, options) {
+            const clone = baseRow.cloneNode(true);
+            clone.classList.add('cloned-row');
+
+            clone.querySelectorAll('[name]').forEach(el => {
+                const oldName = el.getAttribute('name');
+                if (!oldName) return;
+                el.setAttribute('name', oldName.replace(/\[\d+\]/, `[${globalIndex}]`));
+            });
+
+            const err = clone.querySelector('.error-msg');
+            if (err) { err.classList.add('d-none'); err.innerText = ''; }
+            const input = clone.querySelector('.issueQty');
+            if (input) { input.value = "0"; input.readOnly = false; }
+
+            const mirror = clone.querySelector('.statusMirror');
+            if (mirror) mirror.value = clone.querySelector('.statusSelect')?.value || 'full';
+
+            if (options.hideCells) {
+                clone.querySelector('.material-cell').innerHTML = '<span class="text-muted small">↳ Split Entry</span>';
+                clone.querySelector('.stock-cell').innerHTML = '';
+                clone.querySelector('.pending-cell').innerHTML = '';
+            }
+
+            if (options.showRemove) {
+                clone.querySelector('td.split-cell').innerHTML =
+                    `<button type="button" class="btn btn-sm btn-outline-danger remove-row rounded-circle"><i class="fas fa-times"></i></button>`;
+            }
+
+            if (!options.keepSplit && !options.showRemove) {
+                clone.querySelector('td.split-cell').innerHTML = '';
+            }
+
+            if (options.qty != null) {
+                clone.querySelector('.issueQty').value = options.qty.toFixed(2);
+            }
+
+            baseRow.after(clone);
+            globalIndex++;
+            return clone;
+        }
+
+        function hasAnyCloneForRowId(rowId) {
+            const rows = document.querySelectorAll(`.item-row[data-row-id="${rowId}"]`);
+            return rows.length > 1;
+        }
+
+        function refreshSplitButtons() {
+            document.querySelectorAll('.item-row').forEach(row => {
+                const classification = (row.dataset.classification || '').trim();
+                const rowId = row.dataset.rowId;
+
+                const splitCell = row.querySelector('.split-cell');
+                const btn = splitCell ? splitCell.querySelector('.clone-row') : null;
+
+                if (isLockedOutRow(row)) {
+                    if (splitCell) splitCell.innerHTML = '';
+                    return;
+                }
+
+                if (classification === 'SEMI_FINISH') {
+                    if (btn) btn.disabled = false;
+                    return;
+                }
+
+                if (hasAnyCloneForRowId(rowId)) {
+                    if (splitCell) splitCell.innerHTML = '';
+                    return;
+                }
+
+                const available = toNum(row.dataset.available);
+                const pending = toNum(row.dataset.maxPending);
+                if (available > 0 && available < pending) {
+                    return;
+                }
+
+                if (splitCell) splitCell.innerHTML = '';
+            });
+        }
+
+        // ✅ AUTO SPLIT LOGIC (UPDATED FOR SEMI_FINISH => FULL + MACHINING + OUT OF STOCK)
+        function autoSplitOnLoad() {
+            const baseRows = Array.from(document.querySelectorAll('.item-row')).filter(r => !r.classList.contains('cloned-row'));
+
+            baseRows.forEach(row => {
+                const classification = (row.dataset.classification || '').trim();
+                const pending = toNum(row.dataset.maxPending);
+                const available = toNum(row.dataset.available);
+
+                // ✅ SEMI_FINISH special:
+                // usableFinish = Machining In, machiningAvail = available - usableFinish
+                if (classification === 'SEMI_FINISH') {
+                    const usableFinish = toNum(row.dataset.usable);
+                    const machiningAvail = toNum(row.dataset.machining);
+
+                    let remaining = pending;
+
+                    const fullQty = Math.min(remaining, usableFinish);
+                    remaining -= fullQty;
+
+                    const machiningQty = Math.min(remaining, machiningAvail);
+                    remaining -= machiningQty;
+
+                    const outQty = Math.max(remaining, 0);
+
+                    // base row => FULL (if fullQty > 0 else keep 0 full)
+                    makeIssuedRow(row, fullQty);
+                    syncStatusMirror(row);
+
+                    // machining clone if needed
+                    if (machiningQty > 0) {
+                        const mClone = createCloneAfterRow(row, {
+                            qty: machiningQty,
+                            hideCells: true,
+                            keepSplit: false,
+                            showRemove: true
+                        });
+                        makeMachiningRow(mClone, machiningQty);
+                        syncStatusMirror(mClone);
+                    }
+
+                    // out-of-stock clone if needed (locked)
+                    if (outQty > 0) {
+                        const oClone = createCloneAfterRow(row, {
+                            qty: outQty,
+                            lockedOut: true,
+                            hideCells: true,
+                            keepSplit: false,
+                            showRemove: true
+                        });
+                        makeOutOfStockLockedRow(oClone, outQty);
+                        syncStatusMirror(oClone);
+                    }
+
+                    return;
+                }
+
+                // ✅ Existing logic for FINISH (and others)
+                const shouldAuto = (classification === 'FINISH' || classification === '');
+
+                if (!shouldAuto) {
+                    syncStatusMirror(row);
+                    return;
+                }
+
+                if (available <= 0 && pending > 0) {
+                    makeOutOfStockLockedRow(row, pending);
+                    syncStatusMirror(row);
+                    return;
+                }
+
+                if (available > 0 && pending > available) {
+                    const issuePart = available;
+                    const outPart = pending - available;
+
+                    makeIssuedRow(row, issuePart);
+                    syncStatusMirror(row);
+
+                    const clone = createCloneAfterRow(row, {
+                        qty: outPart,
+                        lockedOut: true,
+                        hideCells: true,
+                        keepSplit: false,
+                        showRemove: true
+                    });
+                    makeOutOfStockLockedRow(clone, outPart);
+                    syncStatusMirror(clone);
+                    return;
+                }
+
+                makeIssuedRow(row, 0);
+                syncStatusMirror(row);
+            });
+
+            refreshSplitButtons();
+        }
+
+        function updateCalculations() {
+            let totalIssue = 0;
+            let hasError = false;
+
+            const issuedByInventory = {};
+
+            document.querySelectorAll('.item-row').forEach(row => {
+                const invId = row.querySelector('input[name*="[inventory_id]"]')?.value;
+                const qty = toNum(row.querySelector('.issueQty')?.value);
+
+                const status = row.querySelector('.statusSelect')?.value
+                            || row.querySelector('.statusMirror')?.value
+                            || 'full';
+
+                totalIssue += qty;
+
+                if (status !== 'partial_out_of_stock') {
+                    if (invId) issuedByInventory[invId] = (issuedByInventory[invId] || 0) + qty;
+                }
+
+                syncStatusMirror(row);
+            });
+
+            document.querySelectorAll('.item-row').forEach(row => {
+                const input = row.querySelector('.issueQty');
+                const errorDiv = row.querySelector('.error-msg');
+
+                if (!input || !errorDiv) return;
+
+                const invId = row.querySelector('input[name*="[inventory_id]"]')?.value;
+                const qty = toNum(input.value);
+
+                const status = row.querySelector('.statusSelect')?.value
+                            || row.querySelector('.statusMirror')?.value
+                            || 'full';
+
+                const available = toNum(row.dataset.available);
+                const maxPending = toNum(row.dataset.maxPending);
+
+                let errorText = "";
+
+                const rowId = row.dataset.rowId;
+                const groupRows = document.querySelectorAll(`.item-row[data-row-id="${rowId}"]`);
+                let groupTotal = 0;
+                groupRows.forEach(r => groupTotal += toNum(r.querySelector('.issueQty')?.value));
+                if (groupTotal > maxPending + 0.000001) errorText = "Exceeds Pending";
+
+                if (!errorText && status !== 'partial_out_of_stock') {
+                    const totalIssued = issuedByInventory[invId] || 0;
+                    if (totalIssued > available + 0.000001) errorText = "Low Stock";
+                }
+
+                if (errorText) {
+                    input.classList.add('is-invalid-custom');
+                    errorDiv.innerText = errorText;
+                    errorDiv.classList.remove('d-none');
+                    hasError = true;
+                } else {
+                    input.classList.remove('is-invalid-custom');
+                    errorDiv.classList.add('d-none');
+                    errorDiv.innerText = '';
+                }
+            });
+
+            document.getElementById('display_total_issue').innerText = totalIssue.toFixed(2);
+            submitBtn.disabled = hasError;
+        }
+
+        tableBody.addEventListener('input', function(e){
+            const row = e.target.closest('.item-row');
+            if (row) syncStatusMirror(row);
+            updateCalculations();
+        });
+
+        tableBody.addEventListener('change', function(e){
+            const row = e.target.closest('.item-row');
+            if (row) syncStatusMirror(row);
+            updateCalculations();
+        });
+
+        tableBody.addEventListener('click', function(e) {
+            const btn = e.target.closest('button');
+            if (!btn) return;
+
+            if (btn.classList.contains('clone-row')) {
+                const row = btn.closest('tr');
+                if (!row) return;
+
+                const classification = (row.dataset.classification || '').trim();
+                if (classification !== 'SEMI_FINISH') {
+                    const rowId = row.dataset.rowId;
+                    if (hasAnyCloneForRowId(rowId)) return;
+                }
+
+                const clone = createCloneAfterRow(row, {
+                    qty: 0,
+                    hideCells: true,
+                    keepSplit: false,
+                    showRemove: true
+                });
+
+                setStatus(clone, 'partial_machining', false);
+                syncStatusMirror(clone);
+
+                refreshSplitButtons();
+                updateCalculations();
+            }
+
+            if (btn.classList.contains('remove-row')) {
+                btn.closest('tr')?.remove();
+                refreshSplitButtons();
+                updateCalculations();
+            }
+        });
+
+        autoSplitOnLoad();
+        updateCalculations();
+    });
+    </script>
+</x-app-layout>

@@ -22,12 +22,12 @@ class EmployeeController extends Controller
      */
     public function index(Request $request)
     {
-        $isAdmin = in_array(auth()->user()->role_id, [1, 3]);
+        $isAdmin = in_array(auth()->user()->role_id, [1, 2]);
 
         // Self-heal/Sync all users whose role is Employee (role_id = 2) into the employees table
         if ($isAdmin) {
             try {
-                $employeeUsers = User::where('role_id', 2)->get();
+                $employeeUsers = User::where('role_id', 11)->get();
                 foreach ($employeeUsers as $u) {
                     $emp = Employee::where('id', $u->employee_id)
                         ->orWhere('email', $u->email)
@@ -55,7 +55,7 @@ class EmployeeController extends Controller
             } catch (\Exception $e) {
                 // Ignore gracefully
             }
-        } else if (auth()->user()->role_id == 2) {
+        } else if (auth()->user()->role_id == 11) {
             // Self-heal the current logged-in employee user if they don't have an employee record
             try {
                 $u = auth()->user();

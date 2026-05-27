@@ -200,6 +200,31 @@
             letter-spacing: 0.3px;
         }
 
+        .lead-select-btn {
+            background: rgba(56, 88, 249, 0.05);
+            color: #3858f9;
+            border: 1.5px solid rgba(56, 88, 249, 0.15);
+            padding: 5px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            text-transform: capitalize;
+            letter-spacing: 0.3px;
+        }
+
+        .lead-select-btn:hover,
+        .lead-select-btn:focus {
+            background: rgba(56, 88, 249, 0.12);
+            border-color: #3858f9;
+            color: #3858f9;
+        }
+
         /* Status Colors */
         .status-pending {
             background: rgba(100, 116, 139, 0.1) !important;
@@ -611,13 +636,15 @@
 
             if (!link) return;
 
-            // Ignore invalid links
+            // Ignore invalid links, downloads, or export URLs
             if (
                 !link.href ||
                 link.href.includes("javascript:") ||
                 link.href.includes("#") ||
                 link.hasAttribute("target") ||
-                link.hasAttribute("download")
+                link.hasAttribute("download") ||
+                link.href.includes("export") ||
+                link.classList.contains("no-loader")
             ) {
                 return;
             }

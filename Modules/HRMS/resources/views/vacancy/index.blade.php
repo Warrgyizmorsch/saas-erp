@@ -194,11 +194,11 @@
 
                                 <tbody>
                                     @foreach($applications as $app)
-                                    <tr>
+                                    <tr class="job-row">
 
                                         {{-- BASIC INFORMATION --}}
                                         <td>
-                                            <div class="fw-semibold">{{ $app->name }}</div>
+                                            <div class="fw-semibold job-name">{{ $app->name }}</div>
 
                                             <div class="small text-muted">
                                                 <i class="feather-mail me-1"></i> {{ $app->email }}
@@ -212,7 +212,7 @@
                                                 <i class="feather-book me-1"></i> {{ $app->qualification }}
                                             </div>
 
-                                            <div class="small text-muted">
+                                            <div class="small text-muted job-department">
                                                 <i class="feather-grid me-1"></i> {{ $app->department->name ?? 'N/A' }}
                                             </div>
 
@@ -256,11 +256,11 @@
 
                                         {{-- STATUS --}}
                                         <td>
-                                            <form method="POST" action="{{ url('/job-applications/update-status/'.$app->id) }}">
+                                            <form method="POST" action="{{ route('job.update-status', $app->id) }}">
                                                 @csrf
 
                                                 <select name="status" style="width: 120px;"
-                                                    class="form-select form-select-sm"
+                                                    class="form-select form-select-sm job-status-select"
                                                     onchange="this.form.submit()">
 
                                                     <option value="Pending" {{ $app->status == 'Pending' ? 'selected' : '' }}>Pending</option>
@@ -306,7 +306,7 @@
         </div>
 
         <div class="offcanvas-body">
-            <form action="{{ url('/job-vacancy/store') }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('job.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <!-- Basic Information -->
                 <div class="card border-0 shadow-sm mb-4">

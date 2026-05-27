@@ -1756,7 +1756,7 @@
                     showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Yes, delete them!'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        fetch('{{ url("/daily-tasks/bulk-delete") }}', {
+                        fetch('{{ route("daily-tasks.bulk-delete") }}', {
                             method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
                             body: JSON.stringify({ ids: checked })
                         }).then(res => res.json()).then(data => { if (data.success) { Toast.fire({ icon: 'success', title: data.success }).then(() => location.reload()); } });
@@ -1827,7 +1827,7 @@
                 // Form action and method
                 document.getElementById('methodField').innerHTML = '<input type="hidden" name="_method" value="PUT">';
                 const formObj = document.getElementById('taskForm');
-                if (formObj) formObj.action = `/daily-tasks/${task.id}`;
+                if (formObj) formObj.action = `/hrms/daily-tasks/${task.id}`;
 
                 // Show Offcanvas
                 const offElement = document.getElementById('taskOffcanvas');
@@ -1841,7 +1841,7 @@
                 const form = document.getElementById('taskForm');
                 if (form) {
                     form.reset();
-                    form.action = `{{ url('/daily-tasks') }}`;
+                    form.action = `{{ route('daily-tasks.store') }}`;
                 }
                 const label = document.getElementById('taskOffcanvasLabel');
                 if (label) label.innerText = 'Create Task';
@@ -1935,7 +1935,7 @@
             }
 
             function loadFollowUpHistory(taskId) {
-                fetch(`/daily-tasks/${taskId}/follow-ups`)
+                fetch(`/hrms/daily-tasks/${taskId}/follow-ups`)
                     .then(res => res.json())
                     .then(data => {
                         globalFollowUps = data;
@@ -2386,7 +2386,7 @@
                 btn.innerText = 'SUBMITTING...'; btn.disabled = true;
 
                 const followUpId = document.getElementById('followUpId').value;
-                const url = followUpId ? `/daily-tasks/follow-up/${followUpId}` : '{{ url("/daily-tasks/follow-up") }}';
+                const url = followUpId ? `/hrms/daily-tasks/follow-up/${followUpId}` : '{{ route("daily-tasks.follow-up.store") }}';
                 const formData = new FormData(this);
                 if (followUpId) {
                     formData.append('_method', 'PUT');
@@ -2425,7 +2425,7 @@
                 form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
                 form.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
 
-                const url = document.getElementById('methodField').innerHTML !== '' ? `/daily-tasks/${document.getElementById('taskId').value}` : '/daily-tasks';
+                const url = document.getElementById('methodField').innerHTML !== '' ? `/hrms/daily-tasks/${document.getElementById('taskId').value}` : '/hrms/daily-tasks';
                 const formData = new FormData(form);
                 
                 // Add summernote content manually if needed, though FormData usually catches textarea
@@ -2587,7 +2587,7 @@
                     showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Yes, delete it!'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        fetch(`/daily-tasks/follow-up/${id}`, {
+                        fetch(`/hrms/daily-tasks/follow-up/${id}`, {
                             method: 'DELETE',
                             headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' }
                         }).then(res => res.json()).then(data => {
@@ -2717,7 +2717,7 @@
 
                 let employee_id = $("#assignTo").val();
 
-                fetch(`/daily-tasks/${id}/status`,
+                fetch(`/hrms/daily-tasks/${id}/status`,
                 {
                     method:'PATCH',
                     headers:{
@@ -2750,7 +2750,7 @@
             }
 
             function showHistory(id){
-                fetch(`/daily-task-history/${id}`)
+                fetch(`/hrms/daily-task-history/${id}`)
                 .then(res => {
                     if (!res.ok) {
                         throw new Error('Failed to load history');
@@ -2799,7 +2799,7 @@
             }
 
             function updateTaskPriority(id, priority) {
-                fetch(`/daily-tasks/${id}/priority`, {
+                fetch(`/hrms/daily-tasks/${id}/priority`, {
                     method: 'PATCH',
                     headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}',

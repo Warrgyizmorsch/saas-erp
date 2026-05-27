@@ -750,6 +750,8 @@
                 minimumResultsForSearch: 0,
                 placeholder: "Select an option",
                 allowClear: true
+            }).on('change.select2', function () {
+                applyFilters();
             });
 
             // Quick View Click Handler (Safest way)

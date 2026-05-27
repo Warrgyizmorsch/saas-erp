@@ -625,9 +625,9 @@
                     return dept.toString().toLowerCase().replace(/[^a-z0-9]/g, '');
                 };
 
-                const filteredEmployees = allEmployees.filter(emp =>
-                    normalizeDept(emp.department) === normalizeDept(selectedDepartment)
-                );
+                const filteredEmployees = selectedDepartment
+                    ? allEmployees.filter(emp => normalizeDept(emp.department) === normalizeDept(selectedDepartment))
+                    : allEmployees;
 
                 filteredEmployees.forEach(function (emp) {
                     const empId = String(emp.id);

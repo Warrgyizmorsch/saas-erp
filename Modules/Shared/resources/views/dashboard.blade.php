@@ -40,7 +40,7 @@
                         <i class="feather-globe"></i>
                     </div>
                     <div class="d-flex justify-content-between align-items-start mb-3">
-                        <div class="avatar-text avatar-md bg-white-20 rounded-3 text-white">
+                        <div class="avatar-text avatar-md bg-black rounded-3 text-white">
                             <i class="feather-home fs-20"></i>
                         </div>
                         <span class="badge bg-white-20 text-white rounded-pill px-2.5 py-1 fs-11">Tenant Profile</span>

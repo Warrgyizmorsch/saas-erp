@@ -34,7 +34,7 @@
                 </div>
                 <div class="d-flex align-items-center pe-2 gap-2">
                     <a href="{{ route('leave.export', request()->all()) }}"
-                        class="btn btn-light-brand text-muted fw-bold small d-flex align-items-center px-4 shadow-sm"
+                        class="btn btn-light-brand text-muted fw-bold small d-flex align-items-center px-4 shadow-sm no-loader"
                         style="border-radius: 10px; height: 42px; border: 1.5px solid #e2e8f0; background: #fff; text-decoration: none;">
                         <i data-feather="download" style="width: 16px; height: 16px;" class="me-2"></i> Export
                     </a>
@@ -276,7 +276,7 @@
                 </div>
                 @if($leaves->hasPages())
                     <div class="card-footer bg-white border-top p-3 small d-flex justify-content-end">
-                        {{ $leaves->links() }}
+                        {{ $leaves->links('pagination::bootstrap-5') }}
                     </div>
                 @endif
             </div>

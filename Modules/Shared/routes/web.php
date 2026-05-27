@@ -14,7 +14,8 @@ Route::middleware([
     'web',
     InitializeTenancyByDomain::class,
     'auth',
-    'verified'
+    'verified',
+    'check.permission'
 ])->group(function () {
 
     Route::get('/dashboard', function () {

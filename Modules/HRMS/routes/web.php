@@ -21,7 +21,8 @@ Route::middleware([
     InitializeTenancyByDomain::class,
     'auth',
     'verified',
-    'module.enabled:HRMS'
+    'module.enabled:HRMS',
+    'check.permission'
 ])->prefix('hrms')->group(function () {
 
     // Sync Attendance

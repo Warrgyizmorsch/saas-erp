@@ -35,7 +35,8 @@ Route::middleware([
     InitializeTenancyByDomain::class,
     'auth',
     'verified',
-    'module.enabled:Inventory'
+    'module.enabled:Inventory',
+    'check.permission'
 ])->prefix('inventory')->group(function () {
 
     // Main / Dashboard Routes

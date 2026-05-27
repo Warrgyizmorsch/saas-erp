@@ -50,7 +50,7 @@ Route::middleware([
     'auth',
     'verified',
     'module.enabled:CRM',
-    // 'check.permission'
+    'check.permission'
 ])->prefix('crm')->group(function () {
 
     Route::get('/', [DashboardController::class, 'index'])->name('crm.dashboard');

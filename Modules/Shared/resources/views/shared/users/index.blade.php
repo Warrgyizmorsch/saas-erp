@@ -129,7 +129,6 @@
                             <th>Country Code</th>
                             <th>Contact No</th>
                             <th>Joined</th>
-                            <th>Status</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -151,18 +150,6 @@
                                 <td>{{ $user->country_code }}</td>
                                 <td>{{ $user->contact_no }}</td>
                                 <td>{{ $user->created_at->format('d M Y') }}</td>
-                                <td>
-                                    <form action="{{ route('users.userUpdateStatus', $user->id) }}" method="POST">
-                                        @csrf
-                                        @method('PATCH')
-
-                                        <select name="is_active" class="form-select" data-select2-selector="status"
-                                            onchange="this.form.submit()">
-                                            <option value="1" {{ $user->is_active ? 'selected' : '' }}>Active</option>
-                                            <option value="0" {{ !$user->is_active ? 'selected' : '' }}>Inactive</option>
-                                        </select>
-                                    </form>
-                                </td>
                                 <td>
                                     <div class="action-links">
                                         <a href="{{ route('users.edit', $user) }}" class="btn-edit">

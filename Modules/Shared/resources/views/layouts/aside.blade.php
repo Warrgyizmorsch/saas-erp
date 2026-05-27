@@ -95,10 +95,9 @@ function renderMenuItem($item)
 
             <a href="{{ route('dashboard') }}" class="b-brand">
 
-                <img src="https://cdn-icons-png.flaticon.com/512/5038/5038539.png" alt="Logo" class="logo logo-lg"
-                    style="max-height:50px;">
+                <img src="{{ asset('images/mewar-logo.png') }}" alt="Logo" class="logo logo-lg" style="height: 110px;">
 
-                <img src="https://cdn-icons-png.flaticon.com/512/5038/5038539.png" alt="Small Logo" class="logo logo-sm">
+                <img src="{{ asset('images/mewar-gear-logo.png') }}" alt="Small Logo" class="logo logo-sm" style="height: 50px; width: 50px;">
 
             </a>
 

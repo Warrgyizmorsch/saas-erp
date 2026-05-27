@@ -490,6 +490,20 @@
             font-size: 13px;
             font-weight: 500;
         }
+
+        .nxl-navigation .navbar-content .nxl-link .nxl-micon i {
+            font-size: 15px !important;
+        }
+
+        html:not(.minimenu) .nxl-navigation .nxl-link {
+            margin: 1px 11px;
+            padding: 8px 14px;
+        }
+
+        .nxl-navigation .navbar-content .nxl-link {
+            font-weight: 500 !important;
+            color: #4b5563 !important;
+        }
     </style>
 </head>
 

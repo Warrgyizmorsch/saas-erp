@@ -17,7 +17,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Modules\\CRM\\": "app/",
+            "Modules\\CRM\\": "App/",
             "Modules\\CRM\\Database\\Factories\\": "database/factories/",
             "Modules\\CRM\\Database\\Seeders\\": "database/seeders/"
         }

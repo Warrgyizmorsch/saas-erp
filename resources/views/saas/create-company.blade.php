@@ -555,12 +555,16 @@
 
                                     <div class="col-12">
                                         <label class="form-label">Company Subdomain</label>
+                                        @php
+                                            $host = request()->getHost();
+                                            $suffix = filter_var($host, FILTER_VALIDATE_IP) ? '.' . $host . '.nip.io' : '.' . $host;
+                                        @endphp
                                         <div class="input-group">
                                             <input type="text" name="subdomain" class="form-control text-lowercase" placeholder="acme" value="{{ old('subdomain') }}" required>
-                                            <span class="input-group-text">.localhost</span>
+                                            <span class="input-group-text">{{ $suffix }}</span>
                                         </div>
                                         <small class="text-muted mt-1 d-block">
-                                            Creates a dedicated tenant domain: e.g. <span class="fw-semibold">acme.localhost</span>
+                                            Creates a dedicated tenant domain: e.g. <span class="fw-semibold">acme{{ $suffix }}</span>
                                         </small>
                                     </div>
                                 </div>

@@ -16,10 +16,13 @@ return [
      *
      * Only relevant if you're using the domain or subdomain identification middleware.
      */
-    'central_domains' => [
+    'central_domains' => array_filter([
         '127.0.0.1',
         'localhost',
-    ],
+        env('CENTRAL_DOMAIN'),
+        // Automatically include the host if it is a bare IP address to allow easy local network access to central site
+        (app()->bound('request') && filter_var(request()->getHost(), FILTER_VALIDATE_IP)) ? request()->getHost() : null,
+    ]),
 
     /**
      * Tenancy bootstrappers are executed when tenancy is initialized.

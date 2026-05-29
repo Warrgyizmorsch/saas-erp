@@ -13,7 +13,9 @@ return Application::configure(basePath: dirname(__DIR__))
             // Determine central domains dynamically
             $host = request()->getHost();
             $centralDomains = config('tenancy.central_domains', ['127.0.0.1', 'localhost']);
-            $isCentralDomain = in_array($host, $centralDomains);
+            
+            // Treat host as a central domain if it is in central domains or is a bare IP address
+            $isCentralDomain = in_array($host, $centralDomains) || filter_var($host, FILTER_VALIDATE_IP) !== false;
 
             if ($isCentralDomain) {
                 // Central Domain - load standard web and auth routes

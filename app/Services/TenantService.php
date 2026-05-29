@@ -14,8 +14,10 @@ class TenantService
         ]);
 
         // Create domain
+        $host = app()->bound('request') ? request()->getHost() : 'localhost';
+        $suffix = filter_var($host, FILTER_VALIDATE_IP) ? '.' . $host . '.nip.io' : '.' . $host;
         $tenant->domains()->create([
-            'domain' => "{$tenantId}.localhost",
+            'domain' => $tenantId . $suffix,
         ]);
 
         // Create database automatically

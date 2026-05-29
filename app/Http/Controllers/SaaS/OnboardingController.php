@@ -19,7 +19,9 @@ class OnboardingController extends Controller
     public function store(Request $request)
     {
         // 1. Construct the fully qualified domain for clean database uniqueness validation
-        $domain = strtolower($request->subdomain) . '.localhost';
+        $host = $request->getHost();
+        $suffix = filter_var($host, FILTER_VALIDATE_IP) ? '.' . $host . '.nip.io' : '.' . $host;
+        $domain = strtolower($request->subdomain) . $suffix;
         $request->merge(['domain' => $domain]);
 
         // 2. Perform robust validation to prevent database unique constraint crashes
@@ -80,6 +82,8 @@ class OnboardingController extends Controller
         }
 
         // 8. Redirect the user directly to the new tenant's login/dashboard page
-        return redirect('http://' . $domain . ':8000');
+        $port = $request->getPort();
+        $portSuffix = $port && $port != 80 && $port != 443 ? ':' . $port : '';
+        return redirect('http://' . $domain . $portSuffix);
     }
 }

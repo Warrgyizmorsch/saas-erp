@@ -84,6 +84,12 @@ class OnboardingController extends Controller
         // 8. Redirect the user directly to the new tenant's login/dashboard page
         $port = $request->getPort();
         $portSuffix = $port && $port != 80 && $port != 443 ? ':' . $port : '';
+
+        // If on the live domain, redirect to the path-based tenant dashboard fallback
+        if ($host === 'mewar.warrgyizmorsch.com' || env('APP_ENV') === 'production') {
+            return redirect('/t/' . $tenant->id);
+        }
+
         return redirect('http://' . $domain . $portSuffix);
     }
 }

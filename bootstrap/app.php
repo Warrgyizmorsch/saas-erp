@@ -21,6 +21,21 @@ return Application::configure(basePath: dirname(__DIR__))
                 // Central Domain - load standard web and auth routes
                 Route::middleware('web')
                     ->group(base_path('routes/web.php'));
+
+                // ALSO register tenant routes under /t/{tenant} path-based identification for live domain fallback
+                Route::prefix('t/{tenant}')
+                    ->middleware([
+                        'web',
+                        \Stancl\Tenancy\Middleware\InitializeTenancyByPath::class,
+                        \App\Http\Middleware\SetTenantUrlDefaults::class,
+                    ])->group(function () {
+                        if (file_exists(base_path('routes/tenant.php'))) {
+                            require base_path('routes/tenant.php');
+                        }
+                        if (file_exists(base_path('routes/auth.php'))) {
+                            require base_path('routes/auth.php');
+                        }
+                    });
             } else {
                 // Tenant Subdomain - load tenant routes and auth routes wrapped in InitializeTenancyByDomain
                 Route::middleware([

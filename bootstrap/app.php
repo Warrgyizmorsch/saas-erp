@@ -10,6 +10,17 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__ . '/../routes/console.php',
         health: '/up',
         then: function () {
+            // Load standard web and auth routes
+            Route::middleware('web')
+                ->group(base_path('routes/web.php'));
+
+            // Load tenant routes on the central domain for session-based tenancy
+            if (file_exists(base_path('routes/tenant.php'))) {
+                Route::middleware('web')
+                    ->group(base_path('routes/tenant.php'));
+            }
+
+            /* Commented out subdomain code for now as requested
             // Determine central domains dynamically
             $host = request()->getHost();
             $centralDomains = config('tenancy.central_domains', ['127.0.0.1', 'localhost']);
@@ -35,10 +46,14 @@ return Application::configure(basePath: dirname(__DIR__))
                     }
                 });
             }
+            */
         },
     )
 
     ->withMiddleware(function ($middleware) {
+        $middleware->web(append: [
+            \App\Http\Middleware\InitializeTenancyBySession::class,
+        ]);
         $middleware->alias([
             'module.enabled' => \App\Http\Middleware\ModuleEnabled::class,
             'check.permission' => \App\Http\Middleware\CheckPermission::class,

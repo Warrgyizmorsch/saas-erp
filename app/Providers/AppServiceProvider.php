@@ -11,7 +11,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(
+            \Stancl\Tenancy\Middleware\InitializeTenancyByDomain::class,
+            \App\Http\Middleware\InitializeTenancyBySession::class
+        );
     }
 
     /**

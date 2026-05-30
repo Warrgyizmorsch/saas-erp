@@ -4,11 +4,12 @@ use Illuminate\Support\Facades\Route;
 
 // Public tenant profile page
 Route::get('/', function () {
-
-    return view('tenantprofile', [
-        'tenant' => tenant()
-    ]);
-
+    if (session()->has('tenant_id') || tenant()) {
+        return view('tenantprofile', [
+            'tenant' => tenant()
+        ]);
+    }
+    return view('welcome');
 });
 
 // Protected routes

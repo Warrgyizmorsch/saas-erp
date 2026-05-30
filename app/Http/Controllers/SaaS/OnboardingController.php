@@ -81,10 +81,17 @@ class OnboardingController extends Controller
             ]);
         }
 
-        // 8. Redirect the user directly to the new tenant's login/dashboard page
+        // Store tenant ID in session for session-based tenancy identification
+        session(['tenant_id' => $tenant->id]);
+
+        /* Commented out subdomain redirection for now as requested
         $port = $request->getPort();
         $portSuffix = $port && $port != 80 && $port != 443 ? ':' . $port : '';
 
         return redirect('http://' . $domain . $portSuffix);
+        */
+
+        // Redirect directly to register to allow creating the tenant user
+        return redirect()->route('register');
     }
 }

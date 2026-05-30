@@ -20,6 +20,10 @@ class SetTenantUrlDefaults
             URL::defaults([
                 'tenant' => tenant('id'),
             ]);
+        } elseif (auth()->check() && auth()->user()->tenant_id) {
+            URL::defaults([
+                'tenant' => auth()->user()->tenant_id,
+            ]);
         }
 
         return $next($request);

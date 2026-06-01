@@ -221,7 +221,7 @@
                                 <tbody>
                                     @forelse($PurchaseOrders as $index => $po)
 
-                                    <tr style="{{ (in_array(Auth::user()->role_id, [1,2]) && $po->is_late) ? 'background-color: #f8d7da !important;' : '' }}">
+                                    <tr style="{{ (Auth::user()->isAdmin() && $po->is_late) ? 'background-color: #f8d7da !important;' : '' }}">
 
                                         <td>{{ $index+1 }}</td>
 

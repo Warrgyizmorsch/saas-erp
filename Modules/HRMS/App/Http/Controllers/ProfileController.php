@@ -158,11 +158,15 @@ class ProfileController extends Controller
 
         $currentUser = $request->user();
         $targetUser = $currentUser;
-        $userRole = strtolower($currentUser->hrm_role ?? '');
 
-        // If admin/super-admin is changing another user's password
-        if ($request->filled('target_user_id') && str_contains($userRole, 'admin')) {
-            $targetUser = \App\Models\User::find($request->target_user_id);
+        if ($request->filled('target_user_id')) {
+            $resolvedUser = \App\Models\User::find($request->target_user_id);
+            if ($resolvedUser && $currentUser->id !== $resolvedUser->id) {
+                if (!$currentUser->canManageUser($resolvedUser)) {
+                    return back()->withErrors(['target_user_id' => 'You do not have permission to change this user\'s password.']);
+                }
+                $targetUser = $resolvedUser;
+            }
         }
 
         $newPassword = $validated['password'];

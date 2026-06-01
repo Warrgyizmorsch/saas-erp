@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\TenantModule;
+use Modules\Shared\App\Services\AuthorityService;
 
 if (!function_exists('tenant_module_enabled')) {
 
@@ -22,3 +23,24 @@ if (!function_exists('tenant_module_enabled')) {
             ->exists();
     }
 }
+
+if (!function_exists('canManageRole')) {
+    function canManageRole($currentRole, $targetRole): bool
+    {
+        return app(AuthorityService::class)->canManageRole($currentRole, $targetRole);
+    }
+}
+
+if (!function_exists('canManageUser')) {
+    function canManageUser($currentUser, $targetUser): bool
+    {
+        return app(AuthorityService::class)->canManageUser($currentUser, $targetUser);
+    }
+}
+
+if (!function_exists('canManageEmployee')) {
+    function canManageEmployee($currentUser, $targetEmployee): bool
+    {
+        return app(AuthorityService::class)->canManageEmployee($currentUser, $targetEmployee);
+    }
+}

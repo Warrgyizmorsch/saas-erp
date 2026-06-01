@@ -28,7 +28,7 @@
             </button>
 
             @if(!isset($project))
-            @if(auth()->user()->role_id != 6)
+            @if(!auth()->user()->isHOD())
             <button class="btn btn-primary" data-bs-toggle="collapse" data-bs-target="#collapseOne">
                 <i class="feather-plus me-2"></i> Create Project
             </button>
@@ -675,7 +675,7 @@
                                 <div class="hstack gap-2 justify-content-end">
 
                                     <!-- Edit -->
-                                    @if(auth()->user()->role_id !== 6)
+                                    @if(!auth()->user()->isHOD())
                                     <a href="{{ route('project.edit', $p->id) }}" class="avatar-text avatar-md">
                                         <i class="feather feather-edit-3"></i>
                                     </a>
@@ -687,7 +687,7 @@
 
                                    
 
-                                    @if(auth()->user()->role_id !== 6)
+                                    @if(!auth()->user()->isHOD())
                                     <button class="btn btn-sm d-inline-flex align-items-center gap-1 custome"
                                         data-bs-toggle="offcanvas"
                                         data-bs-target="#deleteProject{{ $p->id }}">
@@ -765,7 +765,7 @@
                                                 <small class="text-muted">End Date</small>
                                                 <div>{{ $p->end_date ?? '-' }}</div>
                                             </div>
-                                            @if(auth()->user()->role_id !== 6)
+                                            @if(!auth()->user()->isHOD())
                                             <div class="col-6">
                                                 <small class="text-muted">Budget</small>
                                                 <div class="fw-bold text-success">₹ {{ number_format($p->budget) }}</div>

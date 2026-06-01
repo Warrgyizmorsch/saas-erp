@@ -25,9 +25,10 @@ class LeadsExport implements FromCollection, WithHeadings
     {
         $query = Leads::with(['user', 'owner', 'bucket', 'attributes']);
 
-        // Role restriction
-        if (auth()->user()->role_id == 3) {
-            $query->where('lead_owner', auth()->id());
+        // Role restriction (Dynamic Authority Level Scoping)
+        if (auth()->user()->role_id !== 1) {
+            $allowedUserIds = auth()->user()->getSubordinateUserIds();
+            $query->whereIn('lead_owner', $allowedUserIds);
         }
 
         // 🔍 Search filter

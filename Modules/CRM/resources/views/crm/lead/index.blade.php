@@ -413,7 +413,7 @@
                 @endif
 
                 {{-- Only admin should see social ads columns --}}
-                @if(Auth::user()->role_id == 3)
+                @if(Auth::user()->isAccount())
                     <label><input type="checkbox" data-column="13"> Url</label>
                 @endif
 

@@ -170,7 +170,7 @@
                                 <tbody>
                                     @forelse($jobCard as $index => $jc)
                                     
-                                    <tr class="single-item" style="{{ (in_array(Auth::user()->role_id, [1,2]) && $jc->is_late) ? 'background-color: #f8d7da !important;' : '' }}">
+                                    <tr class="single-item" style="{{ (Auth::user()->isAdmin() && $jc->is_late) ? 'background-color: #f8d7da !important;' : '' }}">
 
                                         <td>{{ $index+1 }}</td>
 

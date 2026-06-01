@@ -222,7 +222,7 @@
 
                                             {{-- Edit for Supervisor if rejected by HOD --}}
                                             @if(
-                                            auth()->user()->role_id == 3 &&
+                                            auth()->user()->isAccount() &&
                                             $rs->status == 'rejected_hod' &&
                                             $rs->created_by == auth()->id()
                                             )
@@ -234,7 +234,7 @@
                                             @endif
 
                                             {{-- Admin edit --}}
-                                            @if(auth()->user()->role_id == 1)
+                                            @if(auth()->user()->isSuperAdmin())
                                             <a href="{{ route('request-slip.edit', $rs->id) }}"
                                                 class="btn btn-light btn-sm"
                                                 title="Edit Request Slip">
@@ -244,7 +244,7 @@
 
                                             {{-- HR edit --}}
                                             @if(
-                                                auth()->user()->role_id == 8 &&
+                                                auth()->user()->isHR() &&
                                                 in_array($rs->status, ['Hold', 'Pending'])
                                             )
                                                 <a href="{{ route('request-slip.safety.edit', $rs->id) }}"
@@ -263,7 +263,7 @@
 
                                             {{-- HR Delete --}}
                                             @if(
-                                                auth()->user()->role_id == 8 &&
+                                                auth()->user()->isHR() &&
                                                 in_array($rs->status, ['Hold', 'Pending'])
                                             )
                                                 <button type="button" class="btn btn-light btn-sm"
@@ -281,7 +281,7 @@
 
 
                                             {{-- History Offcanvas (Admin only) --}}
-                                            @if(auth()->user()->role_id == 1)
+                                            @if(auth()->user()->isSuperAdmin())
                                             <a href="javascript:void(0)"
                                                 class="btn btn-light btn-sm"
                                                 title="View History"

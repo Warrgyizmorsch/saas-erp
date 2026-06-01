@@ -374,7 +374,7 @@
                                                     class="btn btn-light btn-sm" title="View Details">
                                                     <i class="fa fa-eye"></i>
                                                 </a>
-                                                @if((auth()->user()->role_id == '1' || auth()->user()->role_id == '2') && $rs->status === 'Pending' )
+                                                @if(auth()->user()->isAdmin() && $rs->status === 'Pending' )
                                                 <button type="button" class="btn btn-light btn-sm"
                                                     data-bs-toggle="offcanvas"
                                                     data-bs-target="#deleteInventory{{ $rs->id }}">
@@ -687,7 +687,7 @@
                                                                         <th>Machine</th>
                                                                         <th>Project</th>
                                                                         <th>Remark</th>
-                                                                        @if(auth()->user()->role_id == 1)
+                                                                        @if(auth()->user()->isSuperAdmin())
                                                                         <th>By</th>
                                                                         @endif
                                                                     </tr>
@@ -729,7 +729,7 @@
                                                                         <td>{{ $mName }}</td>
                                                                         <td>{{ $pName }}</td>
                                                                         <td class="text-truncate-1-line" style="max-width:260px;">{{ $c->remark ?? '-' }}</td>
-                                                                        @if(auth()->user()->role_id == 1)
+                                                                        @if(auth()->user()->isSuperAdmin())
                                                                         <td>{{ $cBy }}</td>
                                                                         @endif
                                                                     </tr>
@@ -873,7 +873,7 @@
                                             View
                                         </button>
 
-                                        @if((auth()->user()->role_id == '1' || auth()->user()->role_id == '2') && $rs->status === 'Pending')
+                                        @if(auth()->user()->isAdmin() && $rs->status === 'Pending')
                                         <button class="btn btn-danger btn-sm"
                                             data-bs-toggle="offcanvas"
                                             data-bs-target="#deleteInventory{{ $rs->id }}">
@@ -1214,7 +1214,7 @@
                                                             Machining: {{ $row->pending_qty ?? 0 }}
                                                         </div>
 
-                                                        @if (in_array(Auth::user()->role_id,[1,2]))
+                                                        @if (Auth::user()->isAdmin())
                                                         <div class="col-12 text-danger fw-bold">
                                                             Exceed Qty: {{ $row->exited_qty ?? 0 }}
                                                         </div>

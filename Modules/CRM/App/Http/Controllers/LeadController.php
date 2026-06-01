@@ -39,9 +39,23 @@ class LeadController extends Controller
 
         ]);
 
-        // 👤 Restrict for role_id = 3 (counselors/agents)
-        if (auth()->user()->role_id == 3) {
-            $query->where('lead_owner', auth()->id());
+        $loggedInUser = auth()->user();
+        $loggedInRole = $loggedInUser->role ?? \Modules\Shared\App\Models\Role::find($loggedInUser->role_id);
+        $loggedInLevel = $loggedInRole ? $loggedInRole->authority_level : 0;
+
+        $allowedUserIdsQuery = \App\Models\User::where('is_deleted', 0);
+        if ($loggedInUser->role_id !== 1) {
+            $allowedUserIdsQuery->where(function ($q) use ($loggedInUser, $loggedInLevel) {
+                $q->where('id', $loggedInUser->id)
+                  ->orWhereHas('role', function ($qr) use ($loggedInLevel) {
+                      $qr->where('authority_level', '<', $loggedInLevel);
+                  });
+            });
+        }
+        $allowedUserIds = $allowedUserIdsQuery->pluck('id');
+
+        if ($loggedInUser->role_id !== 1) {
+            $query->whereIn('lead_owner', $allowedUserIds);
         }
 
         // 🔍 Global Search (name, contact, email)
@@ -1108,6 +1122,25 @@ class LeadController extends Controller
 
         $query = Leads::leftJoin('buckets', 'buckets.id', '=', 'leads.lead_bucket_id');
 
+        $loggedInUser = auth()->user();
+        $loggedInRole = $loggedInUser->role ?? \Modules\Shared\App\Models\Role::find($loggedInUser->role_id);
+        $loggedInLevel = $loggedInRole ? $loggedInRole->authority_level : 0;
+
+        $allowedUserIdsQuery = \App\Models\User::where('is_deleted', 0);
+        if ($loggedInUser->role_id !== 1) {
+            $allowedUserIdsQuery->where(function ($q) use ($loggedInUser, $loggedInLevel) {
+                $q->where('id', $loggedInUser->id)
+                  ->orWhereHas('role', function ($qr) use ($loggedInLevel) {
+                      $qr->where('authority_level', '<', $loggedInLevel);
+                  });
+            });
+        }
+        $allowedUserIds = $allowedUserIdsQuery->pluck('id');
+
+        if ($loggedInUser->role_id !== 1) {
+            $query->whereIn('leads.lead_owner', $allowedUserIds);
+        }
+
         if ($from && $to) {
             // Both dates provided → filter by range
             $query->whereBetween(DB::raw('DATE(leads.date)'), [$from, $to]);
@@ -1225,11 +1258,32 @@ class LeadController extends Controller
         //     ->distinct()
         //     ->pluck('created_by');
 
-        $allUsers = Leads::whereIn('lead_owner', function ($query) {
+        $loggedInUser = auth()->user();
+        $loggedInRole = $loggedInUser->role ?? \Modules\Shared\App\Models\Role::find($loggedInUser->role_id);
+        $loggedInLevel = $loggedInRole ? $loggedInRole->authority_level : 0;
+
+        $allowedUserIdsQuery = \App\Models\User::where('is_deleted', 0);
+        if ($loggedInUser->role_id !== 1) {
+            $allowedUserIdsQuery->where(function ($q) use ($loggedInUser, $loggedInLevel) {
+                $q->where('id', $loggedInUser->id)
+                  ->orWhereHas('role', function ($qr) use ($loggedInLevel) {
+                      $qr->where('authority_level', '<', $loggedInLevel);
+                  });
+            });
+        }
+        $allowedUserIds = $allowedUserIdsQuery->pluck('id');
+
+        $allUsersQuery = Leads::whereIn('lead_owner', function ($query) {
             $query->select('id')
                 ->from('users')
                 ->where('is_deleted', 0);
-        })
+        });
+
+        if ($loggedInUser->role_id !== 1) {
+            $allUsersQuery->whereIn('lead_owner', $allowedUserIds);
+        }
+
+        $allUsers = $allUsersQuery
             ->select('lead_owner')
             ->distinct()
             ->pluck('lead_owner');
@@ -1350,6 +1404,7 @@ class LeadController extends Controller
         $hotLeads = Leads::with('user', 'bucket')
             ->select('id', 'lead_owner', 'lead_bucket_id', 'lead_status', 'campaign_name', 'lead_engagement_status', 'uid', 'applying_country_for_a_visa', 'what_course_are_you_planning_to_study', 'verified_lead', 'date')
             ->whereBetween(DB::raw('DATE(date)'), [$from, $to])
+            ->whereIn('lead_owner', $allUsers)
             ->where('lead_engagement_status', 'hot')
             ->orderBy('id', 'desc')
             ->get();
@@ -1369,6 +1424,7 @@ class LeadController extends Controller
             $leadsForTransitions = Leads::with('user')
                 ->select('id', 'lead_owner', 'campaign_name', 'lead_engagement_status', 'uid', 'applying_country_for_a_visa', 'what_course_are_you_planning_to_study', 'verified_lead', 'date')
                 ->whereIn('id', array_merge($warmToHotLeadIds, $hotToWarmLeadIds))
+                ->whereIn('lead_owner', $allUsers)
                 ->get()
                 ->keyBy('id');
         }
@@ -2019,9 +2075,28 @@ class LeadController extends Controller
         // parent null buckets
         $buckets = Bucket::whereNull('parent_id')->where('is_deleted', 0)->get();
 
+        $loggedInUser = auth()->user();
+        $loggedInRole = $loggedInUser->role ?? \Modules\Shared\App\Models\Role::find($loggedInUser->role_id);
+        $loggedInLevel = $loggedInRole ? $loggedInRole->authority_level : 0;
+
+        $allowedUserIdsQuery = \App\Models\User::where('is_deleted', 0);
+        if ($loggedInUser->role_id !== 1) {
+            $allowedUserIdsQuery->where(function ($q) use ($loggedInUser, $loggedInLevel) {
+                $q->where('id', $loggedInUser->id)
+                  ->orWhereHas('role', function ($qr) use ($loggedInLevel) {
+                      $qr->where('authority_level', '<', $loggedInLevel);
+                  });
+            });
+        }
+        $allowedUserIds = $allowedUserIdsQuery->pluck('id');
+
         $query = Leads::with('owner')
             ->select('lead_owner')
             ->selectRaw('COUNT(*) as total_leads');
+
+        if ($loggedInUser->role_id !== 1) {
+            $query->whereIn('lead_owner', $allowedUserIds);
+        }
 
         // dynamic bucket counts
         foreach ($buckets as $bucket) {
@@ -2074,10 +2149,16 @@ class LeadController extends Controller
         $data = $query->paginate($perPage)
             ->appends($request->query());
 
-        $councillors = User::whereIn(
+        $councillorsQuery = User::whereIn(
             'id',
             Leads::pluck('lead_owner')->unique()
-        )->pluck('name', 'id');
+        );
+
+        if ($loggedInUser->role_id !== 1) {
+            $councillorsQuery->whereIn('id', $allowedUserIds);
+        }
+
+        $councillors = $councillorsQuery->pluck('name', 'id');
 
         return view(
             'crm::crm.lead.councillor-report',

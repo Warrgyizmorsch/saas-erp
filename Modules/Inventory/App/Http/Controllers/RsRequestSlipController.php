@@ -345,7 +345,7 @@ class RsRequestSlipController extends Controller
                 'total_qty'           => 0,
                 'store_rs'            => 1,
                 'edited_by'           => auth()->user()->id,
-                'status'              => auth()->user()->role_id == 6 ? 'Approved HOD' : 'Pending',
+                'status'              => auth()->user()->isHOD() ? 'Approved HOD' : 'Pending',
             ]);
 
             if (!$slip) {
@@ -883,7 +883,7 @@ class RsRequestSlipController extends Controller
         $rs   = RequestSlip::findOrFail($id);
         $user = Auth::user();
 
-        if ($user->role_id != 4 && $user->role_id != 1) {
+        if (!$user->isPurchase() && !$user->isSuperAdmin()) {
             return back()->with('error', 'You are not authorized to perform this action.');
         }
 
@@ -915,7 +915,7 @@ class RsRequestSlipController extends Controller
         $rs   = RequestSlip::findOrFail($id);
         $user = Auth::user();
 
-        if ($user->role_id != 4 && $user->role_id != 1) {
+        if (!$user->isPurchase() && !$user->isSuperAdmin()) {
             return back()->with('error', 'You are not authorized to perform this action.');
         }
 
@@ -924,7 +924,7 @@ class RsRequestSlipController extends Controller
         }
 
 
-        $status = Auth::user()->role_id == 1 ? 'rejected_admin' : 'rejected_hod';
+        $status = Auth::user()->isSuperAdmin() ? 'rejected_admin' : 'rejected_hod';
 
         $rs->update([
             'status'  => $status,
@@ -949,7 +949,7 @@ class RsRequestSlipController extends Controller
         $rs   = RequestSlip::findOrFail($id);
         $user = Auth::user();
 
-        if ($rs->created_by != $user->id || $user->role_id != 3) {
+        if ($rs->created_by != $user->id || !$user->isAccount()) {
             return back()->with('error', 'You are not authorized to resubmit this slip.');
         }
 
@@ -979,7 +979,7 @@ class RsRequestSlipController extends Controller
         $rs   = RequestSlip::with('items')->findOrFail($id);
         $user = Auth::user();
 
-        if (!in_array($user->role_id, [1, 5])) {
+        if (!$user->isStoreAdmin() && !$user->isSuperAdmin()) {
             return back()->with('error', 'You are not authorized to perform this action.');
         }
 

@@ -99,8 +99,28 @@ class EmployeeController extends Controller
 
         $baseQuery = Employee::query();
 
+        $loggedInUser = auth()->user();
+        $loggedInRole = $loggedInUser->role ?? Role::find($loggedInUser->role_id);
+        $loggedInLevel = $loggedInRole ? $loggedInRole->authority_level : 0;
+
         if (!$isAdmin) {
             $baseQuery->where('id', auth()->user()->employee_id);
+        } else if ($loggedInUser->role_id !== 1) {
+            $baseQuery->where(function($q) use ($loggedInLevel) {
+                $q->whereHas('user', function($uq) use ($loggedInLevel) {
+                    $uq->whereHas('role', function($rq) use ($loggedInLevel) {
+                        $rq->where('authority_level', '<', $loggedInLevel);
+                    });
+                })
+                ->orWhere(function($oq) use ($loggedInLevel) {
+                    $oq->whereDoesntHave('user');
+                    
+                    $restrictedRoleNames = Role::where('authority_level', '>=', $loggedInLevel)->pluck('name')->toArray();
+                    $restrictedRoleSlugs = array_map(fn($n) => str_replace(' ', '_', strtolower($n)), $restrictedRoleNames);
+                    
+                    $oq->whereNotIn('role', array_merge($restrictedRoleNames, $restrictedRoleSlugs));
+                });
+            });
         }
 
         $employeeFilterOptions = (clone $baseQuery)
@@ -158,7 +178,17 @@ class EmployeeController extends Controller
     {
         $departments = Department::where('is_active', true)->orderBy('name')->get();
         $designations = Designation::where('is_active', true)->orderBy('name')->get();
-        $roles = Role::orderBy('name')->get();
+        
+        $loggedInUser = auth()->user();
+        $loggedInRole = $loggedInUser->role ?? Role::find($loggedInUser->role_id);
+        $loggedInLevel = $loggedInRole ? $loggedInRole->authority_level : 0;
+
+        if ($loggedInUser->role_id === 1) {
+            $roles = Role::orderBy('name')->get();
+        } else {
+            $roles = Role::where('authority_level', '<', $loggedInLevel)->orderBy('name')->get();
+        }
+
         return view('hrms::employees.create', compact('departments', 'designations', 'roles'));
     }
 
@@ -182,6 +212,23 @@ class EmployeeController extends Controller
                 'basic_salary' => 'required|numeric|min:0',
                 'working_mode' => 'required|in:Office,Work from home',
             ]);
+
+            $roleSlug = $request->role;
+            $targetRole = Role::all()->first(function($r) use ($roleSlug) {
+                return strtolower(str_replace(' ', '_', $r->name)) === strtolower(str_replace(' ', '_', $roleSlug))
+                    || strtolower($r->name) === strtolower($roleSlug)
+                    || (isset($r->slug) && $r->slug === $roleSlug);
+            });
+
+            $loggedInUser = auth()->user();
+            $loggedInRole = $loggedInUser->role ?? Role::find($loggedInUser->role_id);
+            $loggedInLevel = $loggedInRole ? $loggedInRole->authority_level : 0;
+
+            if ($loggedInUser->role_id !== 1) {
+                if (!$targetRole || $targetRole->authority_level >= $loggedInLevel) {
+                    return back()->withErrors(['role' => 'You cannot assign a role with an authority level equal to or greater than your own.'])->withInput();
+                }
+            }
 
             return DB::transaction(function () use ($request) {
                 $data = $request->all();
@@ -255,6 +302,9 @@ class EmployeeController extends Controller
     public function show($id)
     {
         $employee = Employee::findOrFail($id);
+        if (!auth()->user()->canManageEmployee($employee)) {
+            abort(403, 'Unauthorized action.');
+        }
         return view('hrms::employees.show', compact('employee'));
     }
 
@@ -264,6 +314,9 @@ class EmployeeController extends Controller
     public function getJson($id)
     {
         $employee = Employee::findOrFail($id);
+        if (!auth()->user()->canManageEmployee($employee)) {
+            abort(403, 'Unauthorized action.');
+        }
         return response()->json($employee);
     }
 
@@ -400,17 +453,14 @@ class EmployeeController extends Controller
     {
         $user = auth()->user();
         $employeeId = $id ?? $user->employee_id;
-        // dd($employeeId);
         if (!$employeeId) {
             abort(403, 'No employee linked');
         }
 
         $employee = Employee::findOrFail($employeeId);
 
-        // FIXED AUTH LOGIC
-        $isAdmin = in_array($user->role_id, [1, 3]);
-
-        if (!$isAdmin && $user->employee_id != $employeeId) {
+        // Security Check: Enforce canManageEmployee
+        if (!canManageEmployee($user, $employee)) {
             abort(403, 'Unauthorized Access');
         }
 
@@ -525,9 +575,21 @@ class EmployeeController extends Controller
     public function edit($id)
     {
         $employee = Employee::findOrFail($id);
+        if (!auth()->user()->canManageEmployee($employee)) {
+            abort(403, 'Unauthorized action.');
+        }
         $departments = Department::where('is_active', true)->orderBy('name')->get();
         $designations = Designation::where('is_active', true)->orderBy('name')->get();
-        $roles = Role::orderBy('name')->get();
+        
+        $loggedInUser = auth()->user();
+        $loggedInRole = $loggedInUser->role ?? Role::find($loggedInUser->role_id);
+        $loggedInLevel = $loggedInRole ? $loggedInRole->authority_level : 0;
+
+        if ($loggedInUser->role_id === 1) {
+            $roles = Role::orderBy('name')->get();
+        } else {
+            $roles = Role::where('authority_level', '<', $loggedInLevel)->orderBy('name')->get();
+        }
         return view('hrms::employees.edit', compact('employee', 'departments', 'designations', 'roles'));
     }
 
@@ -538,6 +600,27 @@ class EmployeeController extends Controller
     {
         try {
             $employee = Employee::findOrFail($id);
+            if (!auth()->user()->canManageEmployee($employee)) {
+                abort(403, 'Unauthorized action.');
+            }
+
+            $roleSlug = $request->role;
+            $targetRole = Role::all()->first(function($r) use ($roleSlug) {
+                return strtolower(str_replace(' ', '_', $r->name)) === strtolower(str_replace(' ', '_', $roleSlug))
+                    || strtolower($r->name) === strtolower($roleSlug)
+                    || (isset($r->slug) && $r->slug === $roleSlug);
+            });
+
+            $loggedInUser = auth()->user();
+            $loggedInRole = $loggedInUser->role ?? Role::find($loggedInUser->role_id);
+            $loggedInLevel = $loggedInRole ? $loggedInRole->authority_level : 0;
+
+            if ($loggedInUser->role_id !== 1) {
+                if (!$targetRole || $targetRole->authority_level >= $loggedInLevel) {
+                    return back()->withErrors(['role' => 'You cannot assign a role with an authority level equal to or greater than your own.'])->withInput();
+                }
+            }
+
             // Find existing user by employee_id or email
             $user = User::where('employee_id', $employee->id)
                 ->orWhere('email', $employee->email)
@@ -674,6 +757,9 @@ class EmployeeController extends Controller
     public function destroy($id)
     {
         $employee = Employee::findOrFail($id);
+        if (!auth()->user()->canManageEmployee($employee)) {
+            abort(403, 'Unauthorized action.');
+        }
         $employee->delete();
 
         return redirect()->route('employees.index')

@@ -21,6 +21,21 @@ class NewleadController extends Controller
 {
     public function index(Request $request)
     {
+        $loggedInUser = auth()->user();
+        $loggedInRole = $loggedInUser->role ?? \Modules\Shared\App\Models\Role::find($loggedInUser->role_id);
+        $loggedInLevel = $loggedInRole ? $loggedInRole->authority_level : 0;
+
+        $allowedUserIdsQuery = \App\Models\User::where('is_deleted', 0);
+        if ($loggedInUser->role_id !== 1) {
+            $allowedUserIdsQuery->where(function ($q) use ($loggedInUser, $loggedInLevel) {
+                $q->where('id', $loggedInUser->id)
+                  ->orWhereHas('role', function ($qr) use ($loggedInLevel) {
+                      $qr->where('authority_level', '<', $loggedInLevel);
+                  });
+            });
+        }
+        $allowedUserIds = $allowedUserIdsQuery->pluck('id');
+
         // 1. Eager Load Relations (Same as your old code)
         $query = Leads::with([
             'user',
@@ -39,8 +54,8 @@ class NewleadController extends Controller
                 ]);
 
         // 2. Role-based restrictions
-        if (auth()->check() && auth()->user()->role_id == 3) {
-            $query->where('lead_owner', auth()->id());
+        if ($loggedInUser->role_id !== 1) {
+            $query->whereIn('lead_owner', $allowedUserIds);
         }
 
         // 3. APPLY ALL YOUR FILTERS
@@ -169,10 +184,10 @@ class NewleadController extends Controller
         // 4. Counts
         $user = auth()->user();
         $filteredLeadCount = $query->count();
-        if ($user->role_id == 1 || $user->role_id == 2) {
+        if ($user->role_id == 1) {
             $totalLeadsCount = Leads::count();
         } else {
-            $totalLeadsCount = Leads::where('lead_owner', $user->id)->count();
+            $totalLeadsCount = Leads::whereIn('lead_owner', $allowedUserIds)->count();
         }
         // 5. Pagination (Appends query preserves filters on next pages)
         $perPage = request('per_page', 20);
@@ -221,9 +236,9 @@ class NewleadController extends Controller
         $buckets = Bucket::whereNull('parent_id')
             ->where('is_deleted', 0)
             ->withCount([
-                'leads' => function ($q) {
-                    if (auth()->check() && auth()->user()->role_id == 3) {
-                        $q->where('lead_owner', auth()->id());
+                'leads' => function ($q) use ($user, $allowedUserIds) {
+                    if ($user->role_id !== 1) {
+                        $q->whereIn('lead_owner', $allowedUserIds);
                     }
                 }
             ])
@@ -238,14 +253,14 @@ class NewleadController extends Controller
             $childBuckets = Bucket::where('parent_id', $request->bucket_id)
                 ->where('is_deleted', 0)
                 ->select('buckets.*')
-                ->selectSub(function ($q) use ($request) {
+                ->selectSub(function ($q) use ($request, $allowedUserIds, $user) {
 
                     $q->from('leads')
                         ->selectRaw('COUNT(*)')
                         ->where('leads.lead_bucket_id', $request->bucket_id)
                         ->whereColumn('leads.lead_status', 'buckets.name')
-                        ->when(auth()->check() && auth()->user()->role_id == 3, function ($qq) {
-                            $qq->where('leads.lead_owner', auth()->id());
+                        ->when(auth()->check() && $user->role_id !== 1, function ($qq) use ($allowedUserIds) {
+                            $qq->whereIn('leads.lead_owner', $allowedUserIds);
                         });
                 }, 'leads_count')
                 ->get();
@@ -256,9 +271,9 @@ class NewleadController extends Controller
                 ->whereNull('parent_id')
                 ->where('is_deleted', 0)
                 ->withCount([
-                    'leads' => function ($q) {
-                        if (auth()->check() && auth()->user()->role_id == 3) {
-                            $q->where('lead_owner', auth()->id());
+                    'leads' => function ($q) use ($user, $allowedUserIds) {
+                        if ($user->role_id !== 1) {
+                            $q->whereIn('lead_owner', $allowedUserIds);
                         }
                     }
                 ])
@@ -271,9 +286,9 @@ class NewleadController extends Controller
             $filterBucket = Bucket::whereNull('parent_id')
                 ->where('is_deleted', 0)
                 ->withCount([
-                    'leads' => function ($q) {
-                        if (auth()->check() && auth()->user()->role_id == 3) {
-                            $q->where('lead_owner', auth()->id());
+                    'leads' => function ($q) use ($user, $allowedUserIds) {
+                        if ($user->role_id !== 1) {
+                            $q->whereIn('lead_owner', $allowedUserIds);
                         }
                     }
                 ])
@@ -284,9 +299,9 @@ class NewleadController extends Controller
         $mainbuckets = Bucket::whereNull('parent_id')
             ->where('is_deleted', 0)
             ->withCount([
-                'leads' => function ($q) {
-                    if (auth()->check() && auth()->user()->role_id == 3) {
-                        $q->where('lead_owner', auth()->id());
+                'leads' => function ($q) use ($user, $allowedUserIds) {
+                    if ($user->role_id !== 1) {
+                        $q->whereIn('lead_owner', $allowedUserIds);
                     }
                 }
             ])
@@ -301,20 +316,25 @@ class NewleadController extends Controller
         $deletedLeadsCount = Leads::whereNotNull('lead_bucket_id')
             ->where('lead_bucket_id', '!=', '')
             ->whereNotIn('lead_bucket_id', $mainBucketIds)
-            ->when(auth()->check() && auth()->user()->role_id == 3, function ($q) {
-                $q->where('lead_owner', auth()->id());
+            ->when(auth()->check() && $user->role_id !== 1, function ($q) use ($allowedUserIds) {
+                $q->whereIn('lead_owner', $allowedUserIds);
             })
             ->count();
 
         $categorys = Category::where('is_active', 1)->get();
 
-        $owners = User::whereIn('role_id', [1, 3])->where('is_deleted', 0)->get();
+        $ownersQuery = User::whereIn('role_id', [1, 3])->where('is_deleted', 0);
+        if ($user->role_id !== 1) {
+            $ownersQuery->whereIn('id', $allowedUserIds);
+        }
+        $owners = $ownersQuery->get();
+
         $sources = LeadSource::pluck('source_name')->toArray();
         $today = Carbon::today();
         $followupsQuery = Leads::query();
         // Role restriction same rakho
-        if (auth()->check() && auth()->user()->role_id == 3) {
-            $followupsQuery->where('lead_owner', auth()->id());
+        if (auth()->check() && $user->role_id !== 1) {
+            $followupsQuery->whereIn('lead_owner', $allowedUserIds);
         }
 
         $type = $request->followup_type_filter ?? 'upcoming';

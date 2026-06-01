@@ -107,7 +107,7 @@
                                 </a>
 
                                 {{-- EDIT --}}
-                                @if(in_array(auth()->user()->role_id, [1, 3]))
+                                @if(auth()->user()->isAdmin() || auth()->user()->isAccount())
                                     <a href="{{ route('request-slip.safety.edit', $rs->id) }}"
                                        class="avatar-text avatar-md bg-success text-white"
                                        title="Edit">

@@ -39,11 +39,11 @@ class ApprovalController extends Controller
              * 3      → sirf apni + pending_hod/rejected_hod nahi
              * Others → sirf apni
              */
-            if (in_array($user->role_id, [1, 2])) {
+            if ($user->isAdmin()) {
 
                 // No created_by restriction (status filter default Pending/Hold will apply later)
 
-            } elseif ($user->role_id == 6) {
+            } elseif ($user->isHOD()) {
 
                 $query->where('created_by', '!=', $user->id)
                     ->where('store_rs', '1')
@@ -54,7 +54,7 @@ class ApprovalController extends Controller
                                     ->where('hold_by', $user->id);
                             });
                     });
-            } elseif ($user->role_id == 5) {
+            } elseif ($user->isStoreAdmin()) {
 
                 $query->where('store_rs', '1')
                     ->where(function ($q) use ($user) {
@@ -163,7 +163,7 @@ class ApprovalController extends Controller
 
         $user = Auth::user();
 
-        if ($user->role_id != 4 && $user->role_id != 1) {
+        if (!$user->isPurchase() && !$user->isSuperAdmin()) {
             return back()->with('error', 'You are not authorized to perform this action.');
         }
 
@@ -199,7 +199,7 @@ class ApprovalController extends Controller
 
         $user = Auth::user();
 
-        if ($user->role_id != 4 && $user->role_id != 1) {
+        if (!$user->isPurchase() && !$user->isSuperAdmin()) {
             return back()->with('error', 'You are not authorized to perform this action.');
         }
 

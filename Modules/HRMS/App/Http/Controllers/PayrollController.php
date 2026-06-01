@@ -271,6 +271,10 @@ class PayrollController extends Controller
     public function storeAttendance(Request $request)
     {
         foreach ($request->employees as $emp) {
+            $employee = Employee::findOrFail($emp['employee_id']);
+            if (!canManageEmployee(auth()->user(), $employee)) {
+                abort(403, 'Unauthorized action.');
+            }
 
             // skip if everything empty and absent
             if (
@@ -347,6 +351,13 @@ class PayrollController extends Controller
             $employeeId = $request->employee_id;
 
             $employee = Employee::findOrFail($employeeId);
+
+            if (!canManageEmployee(auth()->user(), $employee)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized action.'
+                ], 403);
+            }
 
             // 📅 Month Setup
             $date = Carbon::createFromFormat('Y-m', $month)->startOfMonth();
@@ -552,6 +563,10 @@ class PayrollController extends Controller
         try {
             $employee = Employee::findOrFail($request->employee_id);
 
+            if (!canManageEmployee(auth()->user(), $employee)) {
+                return back()->with('error', 'Unauthorized action.');
+            }
+
             $start = \Carbon\Carbon::parse($request->from_date)->startOfMonth();
             $end = \Carbon\Carbon::parse($request->to_date)->endOfMonth();
 
@@ -635,6 +650,15 @@ class PayrollController extends Controller
     {
         try {
             $data = $request->all();
+            $employee = Employee::findOrFail($data['employee_id']);
+
+            if (!canManageEmployee(auth()->user(), $employee)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized action.'
+                ], 403);
+            }
+
             $payroll = Payroll::updateOrCreate(
                 ['employee_id' => $data['employee_id'], 'month' => $data['month']],
                 $data
@@ -979,9 +1003,34 @@ class PayrollController extends Controller
 
     public function editByDate($attendance_date)
     {
-        $attendances = Attendance::with('employee')
-            ->whereDate('attendance_date', $attendance_date)
-            ->get();
+        $attendancesQuery = Attendance::with('employee')
+            ->whereDate('attendance_date', $attendance_date);
+
+        $loggedInUser = auth()->user();
+        $loggedInRole = $loggedInUser->role ?? Role::find($loggedInUser->role_id);
+        $loggedInLevel = $loggedInRole ? $loggedInRole->authority_level : 0;
+
+        if ($loggedInUser->role_id !== 1) {
+            $attendancesQuery->whereHas('employee', function($eq) use ($loggedInLevel) {
+                $eq->where(function($q) use ($loggedInLevel) {
+                    $q->whereHas('user', function($uq) use ($loggedInLevel) {
+                        $uq->whereHas('role', function($rq) use ($loggedInLevel) {
+                            $rq->where('authority_level', '<', $loggedInLevel);
+                        });
+                    })
+                    ->orWhere(function($oq) use ($loggedInLevel) {
+                        $oq->whereDoesntHave('user');
+                        
+                        $restrictedRoleNames = Role::where('authority_level', '>=', $loggedInLevel)->pluck('name')->toArray();
+                        $restrictedRoleSlugs = array_map(fn($n) => str_replace(' ', '_', strtolower($n)), $restrictedRoleNames);
+                        
+                        $oq->whereNotIn('role', array_merge($restrictedRoleNames, $restrictedRoleSlugs));
+                    });
+                });
+            });
+        }
+
+        $attendances = $attendancesQuery->get();
 
         if ($attendances->isEmpty()) {
             return redirect()->back()->with('error', 'No attendance records found for this date.');
@@ -1060,6 +1109,10 @@ class PayrollController extends Controller
     public function updateByDate(Request $request, $attendance_date)
     {
         foreach ($request->employees as $emp) {
+            $employee = Employee::findOrFail($emp['employee_id']);
+            if (!canManageEmployee(auth()->user(), $employee)) {
+                abort(403, 'Unauthorized action.');
+            }
 
             $attendance = Attendance::whereDate('attendance_date', $attendance_date)
                 ->where('employee_id', $emp['employee_id'])
@@ -1131,6 +1184,15 @@ class PayrollController extends Controller
     {
         try {
             $attendance = Attendance::findOrFail($id);
+            $employee = Employee::findOrFail($attendance->employee_id);
+
+            if (!canManageEmployee(auth()->user(), $employee)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized action.'
+                ], 403);
+            }
+
             $attendance->delete();
 
             return response()->json([
@@ -1151,7 +1213,35 @@ class PayrollController extends Controller
     public function destroyAttendanceByDate($date)
     {
         try {
-            Attendance::where('attendance_date', $date)->delete();
+            $loggedInUser = auth()->user();
+            if ($loggedInUser->role_id !== 1) {
+                $allowedEmployees = Employee::query();
+                $loggedInRole = $loggedInUser->role ?? Role::find($loggedInUser->role_id);
+                $loggedInLevel = $loggedInRole ? $loggedInRole->authority_level : 0;
+                
+                $allowedEmployees->where(function($q) use ($loggedInLevel) {
+                    $q->whereHas('user', function($uq) use ($loggedInLevel) {
+                        $uq->whereHas('role', function($rq) use ($loggedInLevel) {
+                            $rq->where('authority_level', '<', $loggedInLevel);
+                        });
+                    })
+                    ->orWhere(function($oq) use ($loggedInLevel) {
+                        $oq->whereDoesntHave('user');
+                        
+                        $restrictedRoleNames = Role::where('authority_level', '>=', $loggedInLevel)->pluck('name')->toArray();
+                        $restrictedRoleSlugs = array_map(fn($n) => str_replace(' ', '_', strtolower($n)), $restrictedRoleNames);
+                        
+                        $oq->whereNotIn('role', array_merge($restrictedRoleNames, $restrictedRoleSlugs));
+                    });
+                });
+                $allowedEmployeeIds = $allowedEmployees->pluck('id')->toArray();
+                
+                Attendance::where('attendance_date', $date)
+                    ->whereIn('employee_id', $allowedEmployeeIds)
+                    ->delete();
+            } else {
+                Attendance::where('attendance_date', $date)->delete();
+            }
 
             return response()->json([
                 'success' => true,
@@ -1259,22 +1349,13 @@ class PayrollController extends Controller
     {
         try {
             $user = auth()->user();
-            $role = str_replace(' ', '_', strtolower($user->hrm_role ?? 'employee'));
-            $isAdmin = in_array($role, ['super_admin', 'manager', 'hr_executive', 'hr_intern', 'business_operation_head']);
-            $isTeamLeader = in_array($role, ['team_leader']);
+            $employee = Employee::findOrFail($request->employee_id);
 
-            $query = Attendance::with('employee')->where('employee_id', $request->employee_id);
-
-            // Security check for Team Leader
-            if ($isTeamLeader) {
-                $department = $user->employee->department ?? null;
-                $targetEmployee = Employee::find($request->employee_id);
-                if ($department && $targetEmployee && $targetEmployee->department !== $department) {
-                    return response()->json(['success' => false, 'message' => 'Unauthorized access to employee data.'], 403);
-                }
-            } elseif (!$isAdmin && $request->employee_id != $user->employee_id) {
+            if (!canManageEmployee($user, $employee)) {
                 return response()->json(['success' => false, 'message' => 'Unauthorized access.'], 403);
             }
+
+            $query = Attendance::with('employee')->where('employee_id', $request->employee_id);
 
             if ($request->filled('start_date')) {
                 $query->whereDate('attendance_date', '>=', $request->start_date);
@@ -1337,6 +1418,10 @@ class PayrollController extends Controller
     {
         $employee = Employee::findOrFail($employee_id);
 
+        if (!canManageEmployee(auth()->user(), $employee)) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $query = Attendance::where('employee_id', $employee_id);
 
         // if single record edit from eye tab
@@ -1353,6 +1438,11 @@ class PayrollController extends Controller
 
     public function updateByName(Request $request, $employee_id)
     {
+        $employee = Employee::findOrFail($employee_id);
+        if (!canManageEmployee(auth()->user(), $employee)) {
+            abort(403, 'Unauthorized action.');
+        }
+
         foreach ($request->attendance_ids as $id) {
             $checkIn = $request->check_in[$id] ?? null;
             $checkOut = $request->check_out[$id] ?? null;
@@ -1393,7 +1483,35 @@ class PayrollController extends Controller
         try {
             $dates = $request->dates;
             if (!empty($dates)) {
-                Attendance::whereIn('attendance_date', $dates)->delete();
+                $loggedInUser = auth()->user();
+                if ($loggedInUser->role_id !== 1) {
+                    $allowedEmployees = Employee::query();
+                    $loggedInRole = $loggedInUser->role ?? Role::find($loggedInUser->role_id);
+                    $loggedInLevel = $loggedInRole ? $loggedInRole->authority_level : 0;
+                    
+                    $allowedEmployees->where(function($q) use ($loggedInLevel) {
+                        $q->whereHas('user', function($uq) use ($loggedInLevel) {
+                            $uq->whereHas('role', function($rq) use ($loggedInLevel) {
+                                $rq->where('authority_level', '<', $loggedInLevel);
+                            });
+                        })
+                        ->orWhere(function($oq) use ($loggedInLevel) {
+                            $oq->whereDoesntHave('user');
+                            
+                            $restrictedRoleNames = Role::where('authority_level', '>=', $loggedInLevel)->pluck('name')->toArray();
+                            $restrictedRoleSlugs = array_map(fn($n) => str_replace(' ', '_', strtolower($n)), $restrictedRoleNames);
+                            
+                            $oq->whereNotIn('role', array_merge($restrictedRoleNames, $restrictedRoleSlugs));
+                        });
+                    });
+                    $allowedEmployeeIds = $allowedEmployees->pluck('id')->toArray();
+                    
+                    Attendance::whereIn('attendance_date', $dates)
+                        ->whereIn('employee_id', $allowedEmployeeIds)
+                        ->delete();
+                } else {
+                    Attendance::whereIn('attendance_date', $dates)->delete();
+                }
             }
 
             return response()->json([

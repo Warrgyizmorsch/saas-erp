@@ -164,7 +164,7 @@
                                 </a>
 
                                 {{-- EDIT --}}
-                                @if(in_array(auth()->user()->role_id, [1, 3]))
+                                @if(auth()->user()->isAccount() || auth()->user()->isSuperAdmin())
                                     <a href="{{ route('request-slip.edit', $rs->id) }}"
                                        class="avatar-text avatar-md bg-success text-white"
                                        title="Edit">
@@ -218,7 +218,7 @@
                                         <th class="text-end">Issued</th>
                                         <th class="text-end">Out Of Stock</th>
                                         <th class="text-end">Machining</th>
-                                        @if (in_array(Auth::user()->role_id, [1,2]))
+                                        @if (Auth::user()->isAdmin())
                                             <th class="text-end">Exceed Qty</th>
                                         @endif
                                         <th>Description </th>
@@ -268,7 +268,7 @@
                                             <td class="text-end">{{ $row->issued_qty ?? 0 }}</td>
                                             <td class="text-end">{{ $row->order_qty ?? 0 }}</td>
                                             <td class="text-end">{{ $row->pending_qty ?? 0 }}</td>
-                                            @if (in_array(Auth::user()->role_id, [1,2]))
+                                            @if (Auth::user()->isAdmin())
                                              <td class="text-end fw-bold {{ $isExited ? 'text-danger' : '' }}">
                                                 {{ $row->exited_qty ?? 0 }}
                                             </td>

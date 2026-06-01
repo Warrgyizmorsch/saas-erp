@@ -69,13 +69,12 @@ class ProfileController extends Controller
             'password' => ['required', 'confirmed', Password::defaults()],
         ]);
 
-        // Security check: Only Admin (role_id = 1) can edit other users' passwords.
-        // Regular users can only update their own password.
-        if ($loggedInUser->role_id !== 1 && (int)$validated['user_id'] !== $loggedInUser->id) {
+        $targetUser = User::findOrFail($validated['user_id']);
+
+        if (!$loggedInUser->canManageUser($targetUser)) {
             return back()->withErrors(['user_id' => 'You do not have permission to change this user\'s password.']);
         }
 
-        $targetUser = User::findOrFail($validated['user_id']);
         $targetUser->password = Hash::make($validated['password']);
         $targetUser->save();
 

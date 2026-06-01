@@ -276,7 +276,11 @@ class InventoryController extends Controller
 
     public function addInventory()
     {
-        $suppliers = User::where('is_delete', 0)->where('role_id', 5)->get();
+        $suppliers = User::where('is_delete', 0)
+            ->whereHas('role', function ($q) {
+                $q->where('authority_level', 60);
+            })
+            ->get();
         $items = Inventory::with('unit')->where('is_deleted', 0)->get(); // fetch all items, regardless of is_deleted
 
         $supplierInventory = SupplierInventory::with('supplier', 'inventory')

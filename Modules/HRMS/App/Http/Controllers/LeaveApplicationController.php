@@ -197,8 +197,15 @@ class LeaveApplicationController extends Controller
         $data['status'] = 'pending';
 
         // Ensure employee_id is set (fallback for non-admin users)
-        if (empty($data['employee_id'])) {
-            $data['employee_id'] = auth()->user()->employee_id;
+        $employeeId = $data['employee_id'] ?? auth()->user()->employee_id;
+        if (empty($employeeId)) {
+            return response()->json(['success' => false, 'message' => 'No employee linked.'], 403);
+        }
+        $data['employee_id'] = $employeeId;
+
+        $employee = Employee::findOrFail($employeeId);
+        if (auth()->user()->employee_id != $employee->id && !canManageEmployee(auth()->user(), $employee)) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized action.'], 403);
         }
 
         if ($request->leave_category === 'Gatepass Leave') {
@@ -229,7 +236,6 @@ class LeaveApplicationController extends Controller
 
         // LeaveApplication::create($data);
         $leave = LeaveApplication::create($data);
-        $employee = Employee::findOrFail($data['employee_id']);
 
         Mail::to('mdkaif14104@gmail.com')
             ->send((new LeaveApplicationMail($leave, $employee))->replyTo($employee->email));
@@ -278,6 +284,12 @@ class LeaveApplicationController extends Controller
         ]);
 
         $leave = LeaveApplication::findOrFail($request->leave_id);
+        $employee = Employee::findOrFail($leave->employee_id);
+
+        if (!canManageEmployee(auth()->user(), $employee)) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized action.'], 403);
+        }
+
         $oldStatus = $leave->status;
         $newStatus = $request->status;
 
@@ -347,6 +359,12 @@ class LeaveApplicationController extends Controller
     public function destroy($id)
     {
         $leave = LeaveApplication::findOrFail($id);
+        $employee = Employee::findOrFail($leave->employee_id);
+
+        if (!canManageEmployee(auth()->user(), $employee)) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized action.'], 403);
+        }
+
         $leave->delete();
         return response()->json(['success' => true, 'message' => 'Leave application deleted']);
     }
@@ -354,11 +372,23 @@ class LeaveApplicationController extends Controller
     public function getDetails($id)
     {
         $leave = LeaveApplication::with('employee')->findOrFail($id);
+        $employee = $leave->employee;
+
+        if ($employee && auth()->user()->employee_id != $employee->id && !canManageEmployee(auth()->user(), $employee)) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized action.'], 403);
+        }
+
         return response()->json($leave);
     }
 
     public function getEmployeeLeaves($employeeId)
     {
+        $employee = Employee::findOrFail($employeeId);
+
+        if (auth()->user()->employee_id != $employee->id && !canManageEmployee(auth()->user(), $employee)) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized action.'], 403);
+        }
+
         $leaves = LeaveApplication::where('employee_id', $employeeId)
             ->orderBy('start_date', 'desc')
             ->get();

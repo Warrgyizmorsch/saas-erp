@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Role extends Model
 {
-    protected $fillable = ['name', 'is_deleted', 'guard_name'];
+    protected $fillable = ['name', 'is_deleted', 'guard_name', 'authority_level'];
 
     // Role has many Users
     public function users()
@@ -24,5 +24,10 @@ class Role extends Model
     public function getSlugAttribute()
     {
         return \Illuminate\Support\Str::slug($this->name, '_');
+    }
+
+    public function canManageRole($targetRole): bool
+    {
+        return canManageRole($this, $targetRole);
     }
 }

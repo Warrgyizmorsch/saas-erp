@@ -5,6 +5,7 @@ namespace Modules\Inventory\App\Models;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Modules\Shared\App\Models\User;
 
 class JobCard extends Model
 {

@@ -10,7 +10,7 @@ class SupplierController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Supplier::with('category');
+        $query = Supplier::with('category')->orderBy('id', 'desc');
 
         // Supplier Name filter
         if ($request->filled('supplier_name')) {
@@ -106,7 +106,8 @@ class SupplierController extends Controller
             'supplier_type'     => 'New',
         ]);
 
-        return redirect()->back()->with('success', 'Supplier created successfully!');
+         return redirect()->route('suppliers.index')
+    ->with('success', 'Supplier created successfully!');
     }
 
 

@@ -129,7 +129,7 @@ class IssueController extends Controller
             $item = $row->inventory;
             if (!$item) continue;
 
-            $rows = \App\Models\StockTransaction::where('inventory_id', $item->id)->get();
+            $rows = StockTransaction::where('inventory_id', $item->id)->get();
 
             $in     = $rows->where('txn_type', 'In')->where('ref_type', '!=', 'Finish')->sum('quantity');
             $out    = $rows->where('txn_type', 'Out')->where('ref_type', '!=', 'Machining')->sum('quantity');
@@ -165,8 +165,8 @@ class IssueController extends Controller
 
     public function edit($id)
     {
-        $suppliers = \App\Models\Supplier::all();
-        $issue = \App\Models\Issue::with(['rows.inventory', 'rows.supplier' ,'requisitionSlip.rows'])->findOrFail($id);
+        $suppliers = Supplier::all();
+        $issue = Issue::with(['rows.inventory', 'rows.supplier' ,'requisitionSlip.rows'])->findOrFail($id);
         $requisition = $issue->requisitionSlip;
 
         $machiningTotals = $issue->rows
@@ -189,7 +189,7 @@ class IssueController extends Controller
             $item = $row->inventory;
             if (!$item) continue;
 
-            $txnRows = \App\Models\StockTransaction::where('inventory_id', $item->id)->get();
+            $txnRows = StockTransaction::where('inventory_id', $item->id)->get();
 
             // Stock Buckets Calculation
             $in     = $txnRows->where('txn_type', 'In')->where('ref_type', '!=', 'Finish')->sum('quantity');

@@ -1,3 +1,6 @@
+@php
+    $categories = $categories ?? \Modules\Inventory\App\Models\Category::orderBy('name')->get();
+@endphp
 <div class="modal fade-scale" id="addSupplierModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-xl">
         <div class="modal-content">
@@ -247,6 +250,11 @@
 
             </div>
 
-        </div>
     </div>
 </div>
+
+<style>
+    .select2-container--open {
+        z-index: 99999 !important;
+    }
+</style>

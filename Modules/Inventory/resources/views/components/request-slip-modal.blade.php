@@ -222,7 +222,7 @@ $(document).on('change','#project_id',function(){
     let projectId = $(this).val();
     if(!projectId) return;
 
-    $.get("/request-slip/products/"+projectId,function(res){
+    $.get("/inventory/request-slip/products/"+projectId,function(res){
 
         buildMachinesOptions(res);
 
@@ -296,7 +296,7 @@ $(document).on('change','.machine-select',function(){
         return;
     }
 
-    $.get(`/request-slip/product-items/${machineId}`,function(res){
+    $.get(`/inventory/request-slip/product-items/${machineId}`,function(res){
 
         let options = `<option value="">Select</option>`;
 

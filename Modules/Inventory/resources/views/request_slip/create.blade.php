@@ -425,7 +425,7 @@
 
         function fetchMachines(projectId, cb) {
             $.ajax({
-                url: "/request-slip/products/" + projectId,
+                url: "/inventory/request-slip/products/" + projectId,
                 type: "GET",
                 success: function(machines) {
                     machinesOptionsHtml = buildMachinesOptions(machines);
@@ -578,7 +578,7 @@
             const rsId = window.RS_ID || '';
 
             $.ajax({
-                url: "/request-slip/product-items/" + machineId + "?project_id=" + projectId + "&rs_id=" + rsId,
+                url: "/inventory/request-slip/product-items/" + machineId + "?project_id=" + projectId + "&rs_id=" + rsId,
                 type: "GET",
                 success: function(resp) {
                     const rows = resp.data ?? resp;
@@ -647,7 +647,7 @@
             calcExitedForRow($row);
         });
 
-        document.addEventListener("DOMContentLoaded", function() {
+        $(document).ready(function() {
             if ($('#product_items_list tr').length === 0) {
                 addRow();
             } else {

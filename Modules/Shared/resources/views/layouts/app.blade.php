@@ -583,7 +583,7 @@
             // AJAX loader
             $(document).ajaxStart(function () {
 
-                $("#globalLoader").fadeIn();
+                $("#globalLoader").css("display", "flex").hide().fadeIn();
 
             });
 

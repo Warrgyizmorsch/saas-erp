@@ -66,7 +66,7 @@ class RsRequestSlipController extends Controller
             'rows.machine',
             'rows.pieces' => function ($q) {
                 $q->where('is_completed', 0)
-                    ->with('inventory'); 
+                    ->with('inventory');
             },
             'issue',
             'issue.rows.inventory',
@@ -176,11 +176,11 @@ class RsRequestSlipController extends Controller
 
             // ✅ history (latest first)
             $hist = Consumption::whereIn('request_slips_id', $rsIds)
-             ->with(['inventory', 'user'])
+                ->with(['inventory', 'user'])
                 ->orderByDesc('id')
                 ->get();
 
-              
+
             foreach ($hist as $c) {
                 $consumptionHistoryByRs[$c->request_slips_id][] = $c;
 
@@ -220,17 +220,17 @@ class RsRequestSlipController extends Controller
             || $request->filled('project');
 
 
-           
-             $modelprojects = Project::orderBy('name')->get();
 
-             // Logged-in user department
-            
+        $modelprojects = Project::orderBy('name')->get();
 
-           // Generate next Requisition Slip No (safe way using rs_id)
-            $last = RequestSlip::orderBy('rs_id', 'desc')->first();
-            $nextRsId = $last ? ($last->rs_id + 1) : 1;
+        // Logged-in user department
 
-            $nextSlipNo = 'RS-' . str_pad($nextRsId, 5, '0', STR_PAD_LEFT);
+
+        // Generate next Requisition Slip No (safe way using rs_id)
+        $last = RequestSlip::orderBy('rs_id', 'desc')->first();
+        $nextRsId = $last ? ($last->rs_id + 1) : 1;
+
+        $nextSlipNo = 'RS-' . str_pad($nextRsId, 5, '0', STR_PAD_LEFT);
 
 
 
@@ -240,8 +240,8 @@ class RsRequestSlipController extends Controller
             'projects',
             'machines',
             'isFilterActive',
-            'modelprojects',  
-             'nextSlipNo' 
+            'modelprojects',
+            'nextSlipNo'
         ));
     }
 
@@ -297,8 +297,9 @@ class RsRequestSlipController extends Controller
 
     public function store(Request $request)
     {
+                   
         $validator = Validator::make($request->all(), [
-            'project_id'             => 'required|exists:projects,id',
+            'project_id'             => 'required|exists:inventory_projects,id',
             'items.machine_id.*'     => 'required|exists:products,id',
             'items.inventory_id.*'   => 'required|exists:inventories,id',
             'items.quantity.*'       => 'required|numeric|min:1',
@@ -313,6 +314,9 @@ class RsRequestSlipController extends Controller
             'items.need_qty.*.required'      => 'Need qty missing.',
         ]);
 
+        
+
+
         if ($validator->fails()) {
             return redirect()
                 ->back()
@@ -320,6 +324,8 @@ class RsRequestSlipController extends Controller
                 ->withInput()
                 ->with('show_add_form', true);
         }
+
+        
 
         try {
             $payload = $this->validateAndNormalize($request);
@@ -450,7 +456,6 @@ class RsRequestSlipController extends Controller
                 ]);
             }
 
-
             DB::commit();
 
 
@@ -462,7 +467,7 @@ class RsRequestSlipController extends Controller
 
             DB::rollBack();
 
-
+            dd($e->getMessage());
             \Log::error('RequestSlip Store Failed', [
                 'message' => $e->getMessage(),
                 'file'    => $e->getFile(),
@@ -482,7 +487,7 @@ class RsRequestSlipController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'project_id'             => 'required|exists:projects,id',
+            'project_id'             => 'required|exists:inventory_projects,id',
             'items.machine_id.*'     => 'required|exists:products,id',
             'items.inventory_id.*'   => 'required|exists:inventories,id',
             'items.quantity.*'       => 'required|numeric|min:1',
@@ -1749,7 +1754,7 @@ class RsRequestSlipController extends Controller
             'rows.machine',
             'rows.pieces' => function ($q) {
                 $q->where('is_completed', 0)
-                    ->with('inventory'); 
+                    ->with('inventory');
             },
             'issue',
             'issue.rows.inventory',
@@ -1851,13 +1856,13 @@ class RsRequestSlipController extends Controller
             }
 
             // ✅ history (latest first)
-             $hist = Consumption::whereIn('request_slips_id', $rsIds)
-             ->with(['inventory', 'user'])
+            $hist = Consumption::whereIn('request_slips_id', $rsIds)
+                ->with(['inventory', 'user'])
                 ->orderByDesc('id')
                 ->get();
 
 
-                
+
             foreach ($hist as $c) {
                 $consumptionHistoryByRs[$c->request_slips_id][] = $c;
 
@@ -1898,12 +1903,12 @@ class RsRequestSlipController extends Controller
             $request->filled('user') ||
             $request->filled('project');
 
-            $modelprojects = Project::orderBy('name')->get();
+        $modelprojects = Project::orderBy('name')->get();
 
-             $last = RequestSlip::orderBy('rs_id', 'desc')->first();
-            $nextRsId = $last ? ($last->rs_id + 1) : 1;
+        $last = RequestSlip::orderBy('rs_id', 'desc')->first();
+        $nextRsId = $last ? ($last->rs_id + 1) : 1;
 
-            $nextSlipNo = 'RS-' . str_pad($nextRsId, 5, '0', STR_PAD_LEFT);
+        $nextSlipNo = 'RS-' . str_pad($nextRsId, 5, '0', STR_PAD_LEFT);
 
         return view('inventory::request_slip.view-all', compact(
             'requestSlips',
@@ -1911,8 +1916,8 @@ class RsRequestSlipController extends Controller
             'projects',
             'machines',
             'isFilterActive',
-             'modelprojects',  
-             'nextSlipNo' 
+            'modelprojects',
+            'nextSlipNo'
         ));
     }
 }

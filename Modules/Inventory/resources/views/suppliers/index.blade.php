@@ -291,9 +291,9 @@
         </div>
 
     </div>
-    @push('scripts')
+     @push('scripts')
     <script>
-         document.addEventListener("DOMContentLoaded", function() {
+         $(document).ready(function() {
             $('#supplier-filter').select2({
                 placeholder: 'All Suppliers',
                 allowClear: false,

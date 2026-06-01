@@ -167,7 +167,7 @@
         }
     </style>
 
-    @section('scripts')
+    @push('scripts')
     <script>
         let machinesOptionsHtml = `<option value="">-- Select Machine --</option>`;
         let machinesLoadedForProject = null;
@@ -243,6 +243,6 @@
             $(this).toggleClass('feather-plus-circle feather-minus-circle');
         });
     </script>
-    @endsection
+    @endpush
 
 @endsection

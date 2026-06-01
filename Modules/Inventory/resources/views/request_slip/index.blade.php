@@ -1533,7 +1533,7 @@
                 }
 
                 $.ajax({
-                    url: "/request-slip/products/" + projectId,
+                    url: "/inventory/request-slip/products/" + projectId,
                     type: "GET",
                     success: function(machines) {
 
@@ -1573,7 +1573,7 @@
             });
 
             // Page load (filters already applied)
-            document.addEventListener("DOMContentLoaded", function() {
+            $(document).ready(function() {
 
                 // init select2
                 $('#filter_project_id').select2({
@@ -1633,7 +1633,7 @@
                FETCH MACHINES
             ================================ */
             function fetchMachines(projectId, cb) {
-                $.get("/request-slip/products/" + projectId, function(machines) {
+                $.get("/inventory/request-slip/products/" + projectId, function(machines) {
                     machinesOptionsHtml = buildMachinesOptions(machines);
                     machinesLoadedForProject = projectId;
                     cb && cb();
@@ -1751,7 +1751,7 @@
 
                 let projectId = $('#project_id').val();
 
-                $.get(`/request-slip/product-items/${machineId}?project_id=${projectId}`, function(resp) {
+                $.get(`/inventory/request-slip/product-items/${machineId}?project_id=${projectId}`, function(resp) {
 
                     let rows = resp.data ?? resp;
 
@@ -1890,7 +1890,7 @@
 
         @if(session('show_add_form'))
         <script>
-            document.addEventListener("DOMContentLoaded", function() {
+            $(document).ready(function() {
                 let modal = new bootstrap.Modal(document.getElementById('addRSModal'));
                 modal.show();
             });

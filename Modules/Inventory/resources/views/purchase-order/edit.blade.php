@@ -537,12 +537,15 @@
     </template>
 
     @push('scripts')
+    <script src="https://cdn.ckeditor.com/ckeditor5/36.0.1/classic/ckeditor.js"></script>
     <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    $(document).ready(function () {
 
         let rowIndex = @json(count($PurchaseOrder->items));
 
-        ClassicEditor.create(document.querySelector('#terms_and_conditions')).catch(e => console.error(e));
+        if (typeof ClassicEditor !== 'undefined') {
+            ClassicEditor.create(document.querySelector('#terms_and_conditions')).catch(e => console.error(e));
+        }
 
         $('#supplier-select').select2({
             placeholder: 'Search Supplier', width: '100%', minimumInputLength: 0,

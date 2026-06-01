@@ -1344,13 +1344,16 @@ $defaultTerms = "<h6>Terms and Conditions</h6>
     <x-inventory::add-supplier-modal />
 
     @push('scripts')
+    <script src="https://cdn.ckeditor.com/ckeditor5/36.0.1/classic/ckeditor.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        $(document).ready(function() {
 
             let rowIndex = @json(count($Request_items));
 
             // ── CKEditor ────────────────────────────────────────────────
-            ClassicEditor.create(document.querySelector('#terms_and_conditions')).catch(e => console.error(e));
+            if (typeof ClassicEditor !== 'undefined') {
+                ClassicEditor.create(document.querySelector('#terms_and_conditions')).catch(e => console.error(e));
+            }
 
             // ── Supplier modal fix ───────────────────────────────────────
             const supModal = document.getElementById('addSupplierModal');

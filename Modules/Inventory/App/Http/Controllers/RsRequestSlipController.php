@@ -273,6 +273,25 @@ class RsRequestSlipController extends Controller
         ]);
     }
 
+    public function edit($id)
+    {
+        $projects = Project::orderBy('name')->get();
+        $requestSlip = RequestSlip::with(['rows.inventory', 'rows.machine'])->findOrFail($id);
+
+        $nextSlipNo = $requestSlip->requisition_slip_no;
+
+        return view('inventory::request_slip.create', [
+            'projects'      => $projects,
+            'products'      => [],          // matches create() variable signature
+            'inventory'     => collect(),   // matches create() variable signature
+            'department_id' => Auth::user()->department_id,
+            'employee_id'   => Auth::id(),
+            'nextSlipNo'    => $nextSlipNo,
+            'requestSlip'   => $requestSlip,
+            'isEdit'        => true,
+        ]);
+    }
+
 
 
 

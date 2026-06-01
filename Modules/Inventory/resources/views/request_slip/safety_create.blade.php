@@ -79,8 +79,11 @@
 
                         {{-- COMMENT --}}
                         <div class="col-lg-8">
-                            <label class="form-label">Comment</label>
-                            <textarea name="comment" class="form-control" rows="2"
+                            <label class="form-label">Comment
+                                <i class="feather-plus-circle bg-soft-primary text-primary d-md-none comment-toggle"
+                                    style="cursor:pointer;"></i>
+                            </label>
+                            <textarea name="comment" class="form-control comment-box" rows="2"
                                 placeholder="Enter Comment">{{ old('comment', $isEdit ? $requestSlip->comment : '') }}</textarea>
                         </div>
                     </div>
@@ -94,7 +97,7 @@
                                 </div>
 
                                 <div class="table-responsive">
-                                    <table class="table table-striped mb-0">
+                                    <table class="table table-striped mb-0 mobile-table">
                                         <thead>
                                             <tr>
                                                 <!-- <th style="min-width:220px;">Machine</th> -->
@@ -117,7 +120,7 @@
                                                 <input type="hidden" name="items[row_id][]" value="{{ $oldItems['row_id'][$i] ?? '' }}">
 
                                                 {{-- INVENTORY --}}
-                                                <td>
+                                                <td data-label="Inventory Item">
                                                     <select name="items[inventory_id][]" class="form-select item-select"
                                                         data-selected="{{ $oldItems['inventory_id'][$i] ?? '' }}">
                                                         <option value="">-- Select Inventory --</option>
@@ -130,7 +133,7 @@
                                                 </td>
 
                                                 {{-- QUANTITY --}}
-                                                <td>
+                                                <td data-label="Quantity">
                                                     <input type="number" name="items[quantity][]" class="form-control"
                                                         value="{{ $qty }}" min="1" placeholder="Quantity">
 
@@ -149,7 +152,7 @@
                                                 </td>
 
                                                 {{-- DESCRIPTION --}}
-                                                <td>
+                                                <td data-label="Description">
                                                     <input type="text" name="items[description][]" class="form-control"
                                                         value="{{ $oldItems['description'][$i] ?? '' }}" placeholder="Description">
                                                 </td>
@@ -170,7 +173,7 @@
                                                 <input type="hidden" name="items[row_id][]" value="{{ $row->id }}">
 
                                                 {{-- INVENTORY --}}
-                                                <td>
+                                                <td data-label="Inventory Item">
                                                     <select name="items[inventory_id][]" class="form-select item-select">
                                                         <option value="">-- Select Inventory --</option>
 
@@ -185,7 +188,7 @@
 
 
                                                 {{-- QUANTITY --}}
-                                                <td>
+                                                <td data-label="Quantity">
                                                     <input type="number" name="items[quantity][]" class="form-control"
                                                         value="{{ $row->quantity }}" min="1" placeholder="Quantity">
 
@@ -194,7 +197,7 @@
                                                 </td>
 
                                                 {{-- DESCRIPTION --}}
-                                                <td>
+                                                <td data-label="Description">
                                                     <input type="text" name="items[description][]" class="form-control"
                                                         value="{{ $row->description }}" placeholder="Description">
                                                 </td>
@@ -222,11 +225,10 @@
                     </div>
 
                     {{-- SUBMIT --}}
-                    <div class="mt-3 d-flex justify-content-end">
-                                               
-                            <button class="btn btn-primary">
-                                {{ $isEdit ? 'Update Request Slip' : 'Save Request Slip' }}
-                            </button>
+                    <div class="sticky-save-bar d-flex justify-content-end">
+                        <button class="btn btn-primary mobile-full-btn">
+                            {{ $isEdit ? 'Update Request Slip' : 'Save Request Slip' }}
+                        </button>
                     </div>                    
 
 
@@ -236,7 +238,7 @@
         </div>
     </div>
 
-    @section('scripts')
+    @push('scripts')
    <script>
     window.RS_ID = {{ $isEdit ? (int)$requestSlip->id : 0 }};
     window.INVENTORIES = @json($inventory);
@@ -283,13 +285,13 @@
         <tr>
             <input type="hidden" name="items[row_id][]" value="">            
 
-            <td>
+            <td data-label="Inventory Item">
                 <select name="items[inventory_id][]" class="form-select item-select">
                     ${buildInventoryOptions()}
                 </select>
             </td>
 
-            <td>
+            <td data-label="Quantity">
                 <input type="number" name="items[quantity][]" class="form-control qty-input" placeholder="Quantity" min="1">
 
                 <input type="hidden" name="items[need_qty][]" class="form-control inv-qty mt-1" readonly
@@ -299,7 +301,7 @@
                        placeholder="Exited Qty (Auto)">
             </td>
 
-            <td>
+            <td data-label="Description">
                 <input type="text" name="items[description][]" class="form-control" placeholder="Description">
             </td>
 
@@ -313,16 +315,12 @@
 
         $('#product_items_list').append(rowHtml);
         activateSelect2Scoped($('#product_items_list tr:last'));
-
-        const projectId = $('#project_id').val();
-        
     }
 
     $(document).on('click', '.remove-row', function() {
         $(this).closest('tr').remove();
     });    
 
-    
     // ✅ Inventory change -> need_qty set + exited recalc
     $(document).on('change', '.item-select', function() {
         const $row = $(this).closest('tr');
@@ -346,16 +344,23 @@
         calcExitedForRow($row);
     });
 
-    document.addEventListener("DOMContentLoaded", function() {
+    // Toggle comments visibility in mobile
+    $(document).on('click', '.comment-toggle', function() {
+        $('.comment-box').slideToggle(200);
+        $(this).toggleClass('feather-plus-circle feather-minus-circle');
+    });
+
+    $(document).ready(function() {
         if ($('#product_items_list tr').length === 0) {
             addRow();
         } else {
             activateSelect2Scoped($('#product_items_list'));
         }
 
+        $(document).on('click', '#add_inventory_btn', function() {
+            addRow();
+        });
     });
-
-    document.querySelector("#add_inventory_btn").addEventListener("click", addRow);
 </script>
 
     <style>
@@ -407,7 +412,79 @@
             background: #e2e8f0;
             flex-shrink: 0;
         }
+
+        .sticky-save-bar {
+            position: sticky;
+            bottom: 0;
+            background: #fff;
+            padding: 10px 16px;
+            border-top: 1px solid #eee;
+            z-index: 1000;
+        }
+
+        .select2-container {
+            z-index: 1;
+        }
+
+        .card,
+        .card-body,
+        .main-content {
+            overflow: visible !important;
+        }
+
+        @media (max-width: 768px) {
+            .sticky-save-bar {
+                position: fixed;
+                left: 0;
+                right: 0;
+            }
+
+            .comment-box {
+                display: none;
+            }
+
+            .mobile-full-btn {
+                width: 100%;
+            }
+
+            .mobile-table thead {
+                display: none;
+            }
+
+            .mobile-table tbody tr {
+                display: block;
+                border: 1px solid #eee;
+                border-radius: 10px;
+                margin-bottom: 12px;
+                padding: 12px;
+                background: #fff;
+            }
+
+            .mobile-table tbody td {
+                display: block;
+                width: 100%;
+                border: none;
+                padding: 6px 0;
+            }
+
+            .table-responsive .table tr td {
+                padding: 8px 8px;
+            }
+
+            .mobile-table tbody td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                font-size: 12px;
+                color: #666;
+                display: block;
+                margin-bottom: 3px;
+            }
+
+            .mobile-table tbody td:last-child {
+                text-align: right;
+            }
+        }
     </style>
-    @endsection
+    @endpush
 
 @endsection

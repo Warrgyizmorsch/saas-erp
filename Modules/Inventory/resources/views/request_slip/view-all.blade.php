@@ -1509,7 +1509,7 @@
             }
         </style>
 
-        @section('scripts')
+        @push('scripts')
         <!-- <script>
         let filterMachineOptions = `<option value="">All Machines</option>`;
 
@@ -1596,8 +1596,9 @@
             $('#deleteForm').attr('action', '/request-slip/destroy/' + id);
         });
     </script> -->
+        @endpush
 
-        @section('scripts')
+        @push('scripts')
         <script>
             const supModal = document.getElementById('addRSModal');
             if (supModal) document.body.appendChild(supModal);
@@ -1986,7 +1987,6 @@
             });
         </script>
         @endif
-        @endsection
-        @endsection
+        @endpush
 
 @endsection

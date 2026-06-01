@@ -1507,7 +1507,7 @@
                 overflow-y: auto;
             }
         </style>
-        @section('scripts')
+        @push('scripts')
         <script>
             const supModal = document.getElementById('addRSModal');
             if (supModal) document.body.appendChild(supModal);
@@ -1896,6 +1896,6 @@
             });
         </script>
         @endif
-        @endsection
+        @endpush
 
 @endsection

@@ -392,7 +392,7 @@
         }
          
     </style>
-    @section('scripts')
+    @push('scripts')
     <script>
         let machinesOptionsHtml = `<option value="">-- Select Machine --</option>`;
         let machinesLoadedForProject = null;
@@ -660,9 +660,9 @@
             }
         });
 
-        document.querySelector("#add_inventory_btn").addEventListener("click", addRow);
+        $(document).on('click', '#add_inventory_btn', addRow);
     </script>
 
-    @endsection
+    @endpush
 
 @endsection

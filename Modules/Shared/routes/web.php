@@ -20,7 +20,10 @@ Route::middleware([
 
     Route::get('/dashboard', function () {
         $tenant = tenant();
-        $domain = optional($tenant->domains->first())->domain ?? request()->getHost();
+        if (!$tenant) {
+            return redirect('/create-company');
+        }
+        $domain = $tenant->domains->first()?->domain ?? request()->getHost();
         $isCrmEnabled = tenant_module_enabled('CRM');
         $isInventoryEnabled = tenant_module_enabled('Inventory');
         $isHrmsEnabled = tenant_module_enabled('HRMS');

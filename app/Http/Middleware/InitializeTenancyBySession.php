@@ -57,6 +57,21 @@ class InitializeTenancyBySession
             }
         }
 
+        // 5. Fallback: Initialize tenancy by domain if not already initialized (e.g. when accessing via subdomain directly)
+        if (!tenant()) {
+            $host = $request->getHost();
+            $domainRecord = \DB::table('domains')->where('domain', $host)->first();
+            if ($domainRecord) {
+                $tenant = \App\Models\Tenant::find($domainRecord->tenant_id);
+                if ($tenant) {
+                    tenancy()->initialize($tenant);
+                    if ($request->hasSession()) {
+                        $request->session()->put('tenant_id', $tenant->id);
+                    }
+                }
+            }
+        }
+
         return $next($request);
     }
 }

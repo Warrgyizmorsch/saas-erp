@@ -291,6 +291,7 @@
         </div>
 
     </div>
+    @push('scripts')
     <script>
          document.addEventListener("DOMContentLoaded", function() {
             $('#supplier-filter').select2({
@@ -325,4 +326,5 @@
             }
         });
     </script>
+    @endpush
 @endsection

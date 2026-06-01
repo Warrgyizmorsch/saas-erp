@@ -1343,7 +1343,7 @@ $defaultTerms = "<h6>Terms and Conditions</h6>
 
     <x-inventory::add-supplier-modal />
 
-    @section('scripts')
+    @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
 
@@ -1799,6 +1799,6 @@ $defaultTerms = "<h6>Terms and Conditions</h6>
 
         });
     </script>
-    @endsection
+    @endpush
 
 @endsection

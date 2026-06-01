@@ -536,7 +536,7 @@
         </tr>
     </template>
 
-    @section('scripts')
+    @push('scripts')
     <script>
     document.addEventListener('DOMContentLoaded', function () {
 
@@ -766,6 +766,6 @@ $(document).ready(function () {
 
 });
 </script>
-    @endsection
+    @endpush
 
 @endsection

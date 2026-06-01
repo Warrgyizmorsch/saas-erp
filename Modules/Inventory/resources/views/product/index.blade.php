@@ -407,9 +407,9 @@
         </div>
     </div>
 
-    <!-- JS -->
+    @push('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        $(document).ready(function() {
 
             const container = document.getElementById('item-rows');
             const btnAdd = document.getElementById('btn-add-row');
@@ -508,5 +508,5 @@
 
         });
     </script>
-
+    @endpush
 @endsection

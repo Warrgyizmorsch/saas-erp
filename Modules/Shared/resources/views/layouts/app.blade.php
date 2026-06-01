@@ -567,8 +567,6 @@
     <script src="{{ asset('crm-assets/assets/js/theme-customizer-init.min.js') }}"></script>
     <script src="{{ asset('crm-assets/assets/js/analytics-init.min.js') }}"></script>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
     {{-- Extra Scripts from child views --}}
     @stack('scripts')
 

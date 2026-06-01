@@ -530,8 +530,19 @@
     </div>
     </div>
 
-  <script>
-     document.addEventListener("DOMContentLoaded", function() {
+    @push('scripts')
+    <style>
+        .select2-container {
+            z-index: 9999 !important;
+        }
+        #filterCollapse,
+        .card,
+        .card-body {
+            overflow: visible !important;
+        }
+    </style>
+    <script>
+        $(document).ready(function() {
             $('#inventory-filter').select2({
                 placeholder: 'Inventory',
                 allowClear: false,
@@ -563,5 +574,6 @@
                 $('#inventory-filter').append(option).trigger('change');
             }
         });
-  </script>  
+    </script>  
+    @endpush
 @endsection

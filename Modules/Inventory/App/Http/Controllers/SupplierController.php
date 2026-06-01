@@ -74,7 +74,7 @@ class SupplierController extends Controller
         $numericCode = (int) str_replace('SUP-', '', $supplierCode);
 
         $validated = $request->validate([
-            'category'          => 'required|exists:categories,id',
+            'category'          => 'required|exists:inventory_categories,id',
             'supplier_name'     => 'required|string|max:255',
             'supplier_code'     => 'required|string|max:100|unique:suppliers,supplier_code',
             'email'             => 'nullable|email|max:255',
@@ -143,7 +143,7 @@ class SupplierController extends Controller
 
 
         $validated = $request->validate([
-            'category'          => 'required|exists:categories,id',
+            'category'          => 'required|exists:inventory_categories,id',
             'supplier_name'     => 'required|string|max:255',
             'supplier_code'     => 'required|string|max:100|unique:suppliers,supplier_code,' . $item->id,
             'email'             => 'nullable|email|max:255',

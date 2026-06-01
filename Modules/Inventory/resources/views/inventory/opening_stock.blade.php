@@ -241,6 +241,17 @@
         }
     </style>
 
+    @push('scripts')
+    <style>
+        .select2-container {
+            z-index: 9999 !important;
+        }
+        #filterCollapse,
+        .card,
+        .card-body {
+            overflow: visible !important;
+        }
+    </style>
     <script>
         function fillEmptyWithZero() {
             document.querySelectorAll('.opening-stock-input').forEach(el => {
@@ -251,7 +262,7 @@
         function clearAllInputs() {
             document.querySelectorAll('.opening-stock-input').forEach(el => el.value = '');
         }
-        document.addEventListener("DOMContentLoaded", function() {
+        $(document).ready(function() {
             $('#inventory-filter').select2({
                 placeholder: 'Inventory',
                 allowClear: false,
@@ -325,5 +336,6 @@
             initSupplierSelect(document);
         });
     </script>
+    @endpush
 @endsection
 ``

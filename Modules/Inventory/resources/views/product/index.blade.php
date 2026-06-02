@@ -21,7 +21,7 @@
         </div>
 
         <!-- BUTTONS -->
-        @if(auth()->user()->role_id != 6)
+        @if(!auth()->user()->isHOD())
         <div class="d-flex gap-2">
             <button id="filterBtn" class="btn btn-icon btn-light-brand" data-bs-toggle="collapse" data-bs-target="#filterCollapse">
                 <i class="feather-filter"></i>

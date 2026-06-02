@@ -378,6 +378,90 @@ WORKFLOW ANALYTICS
 
                     </div>
 
+                    {{-- Project Documents --}}
+                    <div class="ps-documents-card">
+
+                        <div class="ps-documents-header">
+                            <div>
+                                <div class="ps-documents-title">Project Documents</div>
+                                <div class="ps-documents-sub">Upload and manage project files</div>
+                            </div>
+
+                            <form action="{{ route('project.documents.upload', $project->id) }}"
+                                method="POST"
+                                enctype="multipart/form-data">
+                                @csrf
+
+                                <button type="button" class="ps-doc-upload-btn" id="docUploadBtn">
+                                    <i class="feather feather-upload"></i>
+                                    Upload
+                                </button>
+
+                                <input type="file" id="projectDocInput" name="documents[]" multiple hidden>
+
+                            </form>
+                        </div>
+
+                        <div class="ps-documents-list">
+
+                            @forelse($project->documents as $doc)
+
+                            <div class="ps-doc-item">
+
+                                <div class="ps-doc-icon">
+                                    <i class="feather feather-file-text"></i>
+                                </div>
+
+                                <div class="ps-doc-info">
+                                    <div class="ps-doc-name">
+                                        {{ $doc->file_name }}
+                                    </div>
+
+                                    <div class="ps-doc-meta">
+                                        {{ strtoupper($doc->file_type) }}
+                                    </div>
+                                </div>
+
+                                <div class="ps-doc-actions">
+
+                                    <a href="{{ route('project.documents.view', $doc->id) }}"
+                                        target="_blank">
+                                        <i class="feather feather-eye"></i>
+                                    </a>
+
+                                    <a href="{{ route('project.documents.download', $doc->id) }}">
+                                        <i class="feather feather-download"></i>
+                                    </a>
+
+                                    <form action="{{ route('project.documents.delete', $doc->id) }}"
+                                        method="POST"
+                                        onsubmit="return confirm('Delete this document?')">
+
+                                        @csrf
+                                        @method('DELETE')
+
+                                        <button type="submit" class="danger">
+                                            <i class="feather feather-trash-2"></i>
+                                        </button>
+
+                                    </form>
+
+                                </div>
+
+                            </div>
+
+                            @empty
+
+                            <div class="ps-doc-empty">
+                                No documents uploaded yet
+                            </div>
+
+                            @endforelse
+
+                        </div>
+
+                    </div>
+
                     {{-- Note --}}
                     @if($project->comment)
                     <div class="ps-note">
@@ -764,6 +848,165 @@ WORKFLOW ANALYTICS
             background: #fefce8;
             color: #713f12;
             border: 1px solid #fef08a;
+        }
+
+        /* ── Project Documents Styles ── */
+        .ps-documents-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 260px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 4px;
+        }
+
+        .ps-documents-list::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .ps-documents-list::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 999px;
+        }
+
+        .ps-documents-list::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        .ps-documents-card {
+            background: #fff;
+            border: 1px solid var(--ps-border-soft);
+            border-radius: var(--ps-radius);
+            padding: 18px;
+            margin-top: 18px;
+            margin-bottom: 18px;
+        }
+
+        .ps-documents-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .ps-documents-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--ps-text);
+        }
+
+        .ps-documents-sub {
+            font-size: 12px;
+            color: var(--ps-text-muted);
+        }
+
+        .ps-doc-upload-btn {
+            border: none;
+            background: var(--ps-primary);
+            color: #fff;
+            border-radius: 10px;
+            padding: 8px 14px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .ps-doc-upload-btn:hover {
+            background: #4338ca;
+            transform: translateY(-1px);
+        }
+
+        .ps-doc-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--ps-bg);
+            border: 1px solid var(--ps-border-soft);
+            border-radius: 12px;
+            padding: 10px;
+        }
+
+        .ps-doc-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: var(--ps-primary-lt);
+            color: var(--ps-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ps-doc-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .ps-doc-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--ps-text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .ps-doc-meta {
+            font-size: 11px;
+            color: var(--ps-text-muted);
+        }
+
+        .ps-doc-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .ps-doc-actions a,
+        .ps-doc-actions button {
+            width: 28px;
+            height: 28px;
+            border: none;
+            border-radius: 8px;
+            background: #fff;
+            color: var(--ps-text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            transition: all 0.15s;
+        }
+
+        .ps-doc-actions a:hover,
+        .ps-doc-actions button:hover {
+            color: var(--ps-primary);
+            background: var(--ps-primary-lt);
+        }
+
+        .ps-doc-actions button.danger {
+            color: var(--ps-red);
+        }
+
+        .ps-doc-actions button.danger:hover {
+            color: var(--ps-red);
+            background: var(--ps-red-lt);
+        }
+
+        .ps-doc-empty {
+            border: 1px dashed var(--ps-border);
+            border-radius: 12px;
+            padding: 14px;
+            text-align: center;
+            color: var(--ps-text-muted);
+            font-size: 12px;
+            font-weight: 600;
         }
 
         /* Header Buttons */
@@ -1668,6 +1911,21 @@ SEGMENT PROGRESS
 
             window.workflowChartObj.render();
 
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const uploadBtn = document.getElementById('docUploadBtn');
+            const fileInput = document.getElementById('projectDocInput');
+
+            uploadBtn?.addEventListener('click', function() {
+                fileInput.click();
+            });
+
+            fileInput?.addEventListener('change', function() {
+                this.closest('form').submit();
+            });
         });
     </script>
 

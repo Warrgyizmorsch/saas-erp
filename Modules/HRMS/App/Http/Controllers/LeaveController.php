@@ -31,13 +31,40 @@ class LeaveController extends Controller
         $isTeamLeader = false;
 
         if ($isAdmin) {
-            $employees = Employee::orderBy('name', 'asc')->get();
+            $employeeQuery = Employee::orderBy('name', 'asc');
+            
+            if ($user->role_id !== 1) {
+                $loggedInRole = $user->role ?? Role::find($user->role_id);
+                $loggedInLevel = $loggedInRole ? $loggedInRole->authority_level : 0;
+                
+                $employeeQuery->where(function($q) use ($loggedInLevel) {
+                    $q->whereHas('user', function($uq) use ($loggedInLevel) {
+                        $uq->whereHas('role', function($rq) use ($loggedInLevel) {
+                            $rq->where('authority_level', '<', $loggedInLevel);
+                        });
+                    })
+                    ->orWhere(function($oq) use ($loggedInLevel) {
+                        $oq->whereDoesntHave('user');
+                        
+                        $restrictedRoleNames = Role::where('authority_level', '>=', $loggedInLevel)->pluck('name')->toArray();
+                        $restrictedRoleSlugs = array_map(fn($n) => str_replace(' ', '_', strtolower($n)), $restrictedRoleNames);
+                        
+                        $oq->whereNotIn('role', array_merge($restrictedRoleNames, $restrictedRoleSlugs));
+                    });
+                });
+            }
+            
+            $employees = $employeeQuery->get();
+            $employeeIds = $employees->pluck('id')->toArray();
+
             $allotments = LeaveAllotment::where('month', $month)
                 ->where('year', $year)
+                ->whereIn('employee_id', $employeeIds)
                 ->get()
                 ->keyBy('employee_id');
 
             $history = LeaveAllotment::with('employee')
+                ->whereIn('employee_id', $employeeIds)
                 ->orderBy('year', 'desc')
                 ->orderBy('month', 'desc')
                 ->orderBy('created_at', 'desc')
@@ -105,13 +132,42 @@ class LeaveController extends Controller
         $allotments = $request->input('allotments', []);
         $employeeIds = array_keys($allotments);
 
-        // Remove allotments for employees who were removed from the list in UI
+        $allowedEmployees = Employee::whereIn('id', $employeeIds);
+        $loggedInUser = auth()->user();
+        if ($loggedInUser->role_id !== 1) {
+            $loggedInRole = $loggedInUser->role ?? Role::find($loggedInUser->role_id);
+            $loggedInLevel = $loggedInRole ? $loggedInRole->authority_level : 0;
+            
+            $allowedEmployees->where(function($q) use ($loggedInLevel) {
+                $q->whereHas('user', function($uq) use ($loggedInLevel) {
+                    $uq->whereHas('role', function($rq) use ($loggedInLevel) {
+                        $rq->where('authority_level', '<', $loggedInLevel);
+                    });
+                })
+                ->orWhere(function($oq) use ($loggedInLevel) {
+                    $oq->whereDoesntHave('user');
+                    
+                    $restrictedRoleNames = Role::where('authority_level', '>=', $loggedInLevel)->pluck('name')->toArray();
+                    $restrictedRoleSlugs = array_map(fn($n) => str_replace(' ', '_', strtolower($n)), $restrictedRoleNames);
+                    
+                    $oq->whereNotIn('role', array_merge($restrictedRoleNames, $restrictedRoleSlugs));
+                });
+            });
+        }
+        $allowedEmployeeIds = $allowedEmployees->pluck('id')->toArray();
+
+        // Remove allotments for employees who were removed from the list in UI (scoped to authorized employees only)
         LeaveAllotment::where('month', $month)
             ->where('year', $year)
+            ->whereIn('employee_id', $allowedEmployeeIds)
             ->whereNotIn('employee_id', $employeeIds)
             ->delete();
 
         foreach ($allotments as $employeeId => $count) {
+            if (!in_array($employeeId, $allowedEmployeeIds)) {
+                continue;
+            }
+
             LeaveAllotment::updateOrCreate(
                 [
                     'employee_id' => $employeeId,
@@ -148,7 +204,32 @@ class LeaveController extends Controller
 
     private function calculateBalances($employees = null)
     {
-        $employees = $employees ?? Employee::orderBy('name', 'asc')->get();
+        if ($employees === null) {
+            $employeeQuery = Employee::orderBy('name', 'asc');
+            
+            $loggedInUser = auth()->user();
+            if ($loggedInUser && $loggedInUser->role_id !== 1) {
+                $loggedInRole = $loggedInUser->role ?? Role::find($loggedInUser->role_id);
+                $loggedInLevel = $loggedInRole ? $loggedInRole->authority_level : 0;
+                
+                $employeeQuery->where(function($q) use ($loggedInLevel) {
+                    $q->whereHas('user', function($uq) use ($loggedInLevel) {
+                        $uq->whereHas('role', function($rq) use ($loggedInLevel) {
+                            $rq->where('authority_level', '<', $loggedInLevel);
+                        });
+                    })
+                    ->orWhere(function($oq) use ($loggedInLevel) {
+                        $oq->whereDoesntHave('user');
+                        
+                        $restrictedRoleNames = Role::where('authority_level', '>=', $loggedInLevel)->pluck('name')->toArray();
+                        $restrictedRoleSlugs = array_map(fn($n) => str_replace(' ', '_', strtolower($n)), $restrictedRoleNames);
+                        
+                        $oq->whereNotIn('role', array_merge($restrictedRoleNames, $restrictedRoleSlugs));
+                    });
+                });
+            }
+            $employees = $employeeQuery->get();
+        }
         $balances = [];
 
         foreach ($employees as $employee) {

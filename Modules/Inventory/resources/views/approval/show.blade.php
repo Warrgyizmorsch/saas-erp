@@ -70,7 +70,7 @@
                                 </a>
 
                                 {{-- EDIT BUTTON --}}
-                                @if(in_array(auth()->user()->role_id, [1, 3]))
+                                @if(auth()->user()->isAdmin() || auth()->user()->isAccount())
                                 <a href="{{ route('request-slip.edit', $rs->id) }}" class="d-flex">
                                     <div class="avatar-text avatar-md bg-success text-white"
                                         data-bs-toggle="tooltip" title="Edit Request Slip">
@@ -80,7 +80,7 @@
                                 @endif
 
                                 {{-- ADMIN + HOD ACTIONS WHEN PENDING --}}
-                                @if(in_array(auth()->user()->role_id, [1, 4]) && $rs->status == 'Pending')
+                                @if((auth()->user()->isAdmin() || auth()->user()->isPurchase()) && $rs->status == 'Pending')
 
                                 {{-- Approve --}}
                                 <form action="{{ route('request-slip.approve', $rs->id) }}" method="POST">
@@ -105,7 +105,7 @@
                         </div>
 
                         {{-- REJECT SLIDE FORM (TOP) --}}
-                        @if(in_array(auth()->user()->role_id, [1, 4]) && $rs->status == 'Pending')
+                        @if((auth()->user()->isAdmin() || auth()->user()->isPurchase()) && $rs->status == 'Pending')
                         <div id="rejectSlide" class="collapse position-absolute top-0 start-0 w-100 p-3" style="z-index: 1050;">
                             <div class="card">
                                 <div class="card-body">

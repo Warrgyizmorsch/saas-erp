@@ -267,7 +267,7 @@
                                                             <label class="form-label fw-semibold">Select Status</label>
                                                             <select name="status" class="form-control" data-select2-selector="status" required>
                                                                 <option value="">-- Select --</option>
-                                                                @if(auth()->user()->role_id == 6)
+                                                                @if(auth()->user()->isHOD())
                                                                     <option value="Approved HOD">Approved HOD</option>
                                                                 @else
                                                                 <option value="Approved">Approved</option>

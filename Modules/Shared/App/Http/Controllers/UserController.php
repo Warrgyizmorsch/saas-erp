@@ -18,6 +18,14 @@ class UserController extends Controller
     {
         $query = User::where('tenant_id', tenant('id'))->where('is_deleted', 0);
 
+        $loggedInUser = auth()->user();
+        $loggedInRole = $loggedInUser->role ?? Role::find($loggedInUser->role_id);
+        $loggedInLevel = $loggedInRole ? $loggedInRole->authority_level : 0;
+
+        if ($loggedInUser->role_id !== 1) {
+            $query->whereHas('role', fn($q) => $q->where('authority_level', '<', $loggedInLevel));
+        }
+
         // Search across name, email, contact_no
         if ($request->filled('search')) {
             $search = $request->search;
@@ -35,7 +43,11 @@ class UserController extends Controller
 
         $users = $query->paginate(10);
 
-        $roles = Role::get();
+        if ($loggedInUser->role_id === 1) {
+            $roles = Role::get();
+        } else {
+            $roles = Role::where('authority_level', '<', $loggedInLevel)->get();
+        }
 
         $todayLog = UserWorkLog::where('user_id', auth()->id())
             ->where('date', now('Asia/Kolkata')->toDateString())
@@ -57,7 +69,15 @@ class UserController extends Controller
             }
         }
 
-        $roles = Role::get();
+        $loggedInUser = auth()->user();
+        $loggedInRole = $loggedInUser->role ?? Role::find($loggedInUser->role_id);
+        $loggedInLevel = $loggedInRole ? $loggedInRole->authority_level : 0;
+
+        if ($loggedInUser->role_id === 1) {
+            $roles = Role::get();
+        } else {
+            $roles = Role::where('authority_level', '<', $loggedInLevel)->get();
+        }
 
         return view('shared::shared.users.store', compact('roles'));
     }
@@ -83,6 +103,17 @@ class UserController extends Controller
             'city' => 'required|string|max:255',
         ]);
 
+        $loggedInUser = auth()->user();
+        $loggedInRole = $loggedInUser->role ?? Role::find($loggedInUser->role_id);
+        $loggedInLevel = $loggedInRole ? $loggedInRole->authority_level : 0;
+
+        if ($loggedInUser->role_id !== 1) {
+            $targetRole = Role::find($request->role_id);
+            if (!$targetRole || $targetRole->authority_level >= $loggedInLevel) {
+                return redirect()->back()->withErrors(['role_id' => 'You cannot assign a role with an authority level equal to or greater than your own.'])->withInput();
+            }
+        }
+
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('users', 'public');
             $validated['image'] = $path;
@@ -102,13 +133,29 @@ class UserController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        $roles = Role::get();
+        if (!auth()->user()->canManageUser($user)) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $loggedInUser = auth()->user();
+        $loggedInRole = $loggedInUser->role ?? Role::find($loggedInUser->role_id);
+        $loggedInLevel = $loggedInRole ? $loggedInRole->authority_level : 0;
+
+        if ($loggedInUser->role_id === 1) {
+            $roles = Role::get();
+        } else {
+            $roles = Role::where('authority_level', '<', $loggedInLevel)->get();
+        }
         return view('shared::shared.users.store', compact('roles', 'user'));
     }
 
     public function update(Request $request, User $user)
     {
         if ($user->tenant_id !== tenant('id')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        if (!auth()->user()->canManageUser($user)) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -123,6 +170,17 @@ class UserController extends Controller
             'city' => 'required|string|max:255',
             'password' => 'nullable|min:8|confirmed',
         ]);
+
+        $loggedInUser = auth()->user();
+        $loggedInRole = $loggedInUser->role ?? Role::find($loggedInUser->role_id);
+        $loggedInLevel = $loggedInRole ? $loggedInRole->authority_level : 0;
+
+        if ($loggedInUser->role_id !== 1) {
+            $targetRole = Role::find($request->role_id);
+            if (!$targetRole || $targetRole->authority_level >= $loggedInLevel) {
+                return redirect()->back()->withErrors(['role_id' => 'You cannot assign a role with an authority level equal to or greater than your own.'])->withInput();
+            }
+        }
 
         $data = $request->only(['name', 'email', 'country_code', 'contact_no', 'role_id', 'city']);
 
@@ -145,6 +203,10 @@ class UserController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
+        if (!auth()->user()->canManageUser($user)) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $user->update(['is_deleted' => 1]);
 
         return redirect()->route('users.index')
@@ -160,6 +222,14 @@ class UserController extends Controller
 
         // Step 2: Build user query with loginHistories (scoped by tenant)
         $query = User::where('tenant_id', tenant('id'))->with('loginHistories');
+
+        $loggedInUser = auth()->user();
+        $loggedInRole = $loggedInUser->role ?? Role::find($loggedInUser->role_id);
+        $loggedInLevel = $loggedInRole ? $loggedInRole->authority_level : 0;
+
+        if ($loggedInUser->role_id !== 1) {
+            $query->whereHas('role', fn($q) => $q->where('authority_level', '<', $loggedInLevel));
+        }
 
         // Conditionally apply role filter
         if ($request->filled('role_id')) {
@@ -198,6 +268,12 @@ class UserController extends Controller
         $userIds = $users->pluck('id');
         $sessions = DB::table('sessions')->whereIn('user_id', $userIds)->get()->keyBy('user_id');
 
+        if ($loggedInUser->role_id === 1) {
+            $userRole = Role::get();
+        } else {
+            $userRole = Role::where('authority_level', '<', $loggedInLevel)->get();
+        }
+
         $activityLogs = UserWorkLog::with('user')
             ->when($request->filled('from') && $request->filled('to'), function ($q) use ($request) {
                 $q->whereBetween('date', [$request->from, $request->to]);
@@ -210,6 +286,10 @@ class UserController extends Controller
 
     public function forceLogout(User $user)
     {
+        if (!auth()->user()->canManageUser($user)) {
+            abort(403, 'Unauthorized action.');
+        }
+
         // Update logout_at first
         LoginHistory::where('user_id', $user->id)
             ->whereNull('logout_at')
@@ -234,6 +314,10 @@ class UserController extends Controller
             }
         ])->findOrFail($userId);
 
+        if (!auth()->user()->canManageUser($user)) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $sessions = DB::table('sessions')->get()->keyBy('user_id');
 
         return view('shared::shared.users.history', compact('user', 'sessions'));
@@ -244,7 +328,20 @@ class UserController extends Controller
         $loggedInUserIds = DB::table('sessions')->pluck('user_id')->unique()->filter();
 
         $query = User::where('tenant_id', tenant('id'))->with('loginHistories');
-        $userRole = Role::get();
+
+        $loggedInUser = auth()->user();
+        $loggedInRole = $loggedInUser->role ?? Role::find($loggedInUser->role_id);
+        $loggedInLevel = $loggedInRole ? $loggedInRole->authority_level : 0;
+
+        if ($loggedInUser->role_id !== 1) {
+            $query->whereHas('role', fn($q) => $q->where('authority_level', '<', $loggedInLevel));
+        }
+
+        if ($loggedInUser->role_id === 1) {
+            $userRole = Role::get();
+        } else {
+            $userRole = Role::where('authority_level', '<', $loggedInLevel)->get();
+        }
 
         // Conditionally apply role filter
         if ($request->filled('role_id')) {
@@ -287,6 +384,10 @@ class UserController extends Controller
     public function leadHistory(Request $request, $userId)
     {
         $user = User::where('tenant_id', tenant('id'))->findOrFail($userId);
+
+        if (!auth()->user()->canManageUser($user)) {
+            abort(403, 'Unauthorized action.');
+        }
 
         $date = $request->get('date', now()->toDateString());
 
@@ -349,6 +450,11 @@ class UserController extends Controller
         ]);
 
         $user = User::where('tenant_id', tenant('id'))->findOrFail($id);
+
+        if (!auth()->user()->canManageUser($user)) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $user->is_active = $request->is_active;
         $user->save();
 

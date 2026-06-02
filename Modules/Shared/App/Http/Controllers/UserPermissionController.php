@@ -23,11 +23,24 @@ class UserPermissionController extends Controller
         $rolePermissions = ['menus' => [], 'routes' => []];
 
         if ($request->filled('search')) {
-            $users = User::where('email', 'like', '%' . $request->search . '%')->get();
+            $users = User::where('email', 'like', '%' . $request->search . '%');
+            
+            $loggedInUser = auth()->user();
+            $loggedInRole = $loggedInUser->role ?? Role::find($loggedInUser->role_id);
+            $loggedInLevel = $loggedInRole ? $loggedInRole->authority_level : 0;
+            
+            if ($loggedInUser->role_id !== 1) {
+                $users->whereHas('role', fn($q) => $q->where('authority_level', '<', $loggedInLevel));
+            }
+            $users = $users->get();
         }
 
         if ($request->has('user_id')) {
             $selectedUser = User::findOrFail($request->user_id);
+
+            if (!auth()->user()->canManageUser($selectedUser)) {
+                abort(403, 'Unauthorized action.');
+            }
 
             $allMenus = Menu::where('is_deleted', 0)
                 ->whereNull('parent_id')
@@ -80,6 +93,10 @@ class UserPermissionController extends Controller
     public function updatePermissions(Request $request, $userId)
     {
         $user = User::findOrFail($userId);
+
+        if (!auth()->user()->canManageUser($user)) {
+            abort(403, 'Unauthorized action.');
+        }
 
         // --- Role defaults ---
         $roleMenuPermissions = RolePermission::where('role_id', $user->role_id)

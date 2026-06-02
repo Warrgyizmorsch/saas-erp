@@ -13,7 +13,16 @@ class RolePermissionController extends Controller
 {
     public function index(Request $request)
     {
-        $roles = Role::get();
+        $loggedInUser = auth()->user();
+        $loggedInRole = $loggedInUser->role ?? Role::find($loggedInUser->role_id);
+        $loggedInLevel = $loggedInRole ? $loggedInRole->authority_level : 0;
+
+        if ($loggedInUser->role_id === 1) {
+            $roles = Role::get();
+        } else {
+            $roles = Role::where('authority_level', '<', $loggedInLevel)->get();
+        }
+
         $selectedRole = null;
         $allMenus = collect();
         $menuPermissions = [];
@@ -22,6 +31,10 @@ class RolePermissionController extends Controller
 
         if ($request->has('role_id')) {
             $selectedRole = Role::findOrFail($request->role_id);
+
+            if (!canManageRole($loggedInRole, $selectedRole)) {
+                abort(403, 'Unauthorized action.');
+            }
 
             // ✅ Get full recursive menu tree
             $allMenus = Menu::where('is_deleted', 0)
@@ -57,6 +70,11 @@ class RolePermissionController extends Controller
 
     public function updatePermissions(Request $request, Role $role)
     {
+        $loggedInRole = auth()->user()->role ?? Role::find(auth()->user()->role_id);
+        if (!canManageRole($loggedInRole, $role)) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $submittedMenus = $request->input('permissions', []);
         $submittedRoutes = $request->input('permissions_route', []);
 

@@ -219,7 +219,7 @@
                                                 {{-- ✅ SINGLE STATUS BUTTON (Approve/Reject inside) --}}
                                                 @if($rs->status == 'Pending')
 
-                                                    @if(auth()->user()->role_id == 1 || auth()->user()->role_id == 2 || auth()->user()->role_id == 3)
+                                                    @if(auth()->user()->isAdmin() || auth()->user()->isAccount())
                                                         <button type="button"
                                                                 class="btn btn-primary btn-sm"
                                                                 title="Update Status"

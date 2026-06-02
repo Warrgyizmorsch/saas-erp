@@ -67,6 +67,10 @@
                             <input type="text" name="name" class="form-control" placeholder="Role Name"
                                 value="{{ old('name', $editRole->name ?? '') }}" required>
                         </div>
+                        <div class="col-md-3">
+                            <input type="number" name="authority_level" class="form-control" placeholder="Authority Level (0 - 100)"
+                                min="0" max="100" value="{{ old('authority_level', $editRole->authority_level ?? '') }}">
+                        </div>
                         <div class="col-md-2 d-flex">
                             <button type="submit" class="btn btn-success w-100">
                                 {{ isset($editRole) ? 'Update' : 'Add' }}
@@ -91,6 +95,7 @@
                         <tr>
                             <th style="max-width: 20px;">Sr. No.</th>
                             <th>Role Name</th>
+                            <th>Authority Level</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -100,21 +105,37 @@
                                 <td>{{ $roles->firstItem() + $loop->index }}</td>
                                 <td>{{ $role->name }}</td>
                                 <td>
+                                    <span class="badge rounded-pill px-3 py-1fw-bold" style="background-color: hsl(190, 80%, 95%); color: hsl(190, 85%, 35%);">
+                                        {{ $role->authority_level ?? 0 }}
+                                    </span>
+                                </td>
+                                <td>
                                     <div class="action-links">
+                                        @php
+                                            $loggedInRole = auth()->user()->role ?? \Modules\Shared\App\Models\Role::find(auth()->user()->role_id);
+                                            $canManage = canManageRole($loggedInRole, $role);
+                                        @endphp
+
                                         {{-- Edit --}}
-                                        <a href="{{ route('roles.edit', $role->id) }}" class="btn-edit" title="Edit">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
+                                        @if($canManage)
+                                            <a href="{{ route('roles.edit', $role->id) }}" class="btn-edit" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        @else
+                                            <span class="text-muted fs-8 px-2 py-1 bg-light rounded" title="Insufficient authority to edit"><i class="fas fa-lock"></i> Locked</span>
+                                        @endif
 
                                         {{-- Delete --}}
-                                        <form method="POST" action="{{ route('roles.destroy', $role->id) }}" class="d-inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn-delete" title="Delete"
-                                                onclick="return confirm('Delete this role?')">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </form>
+                                        @if($canManage)
+                                            <form method="POST" action="{{ route('roles.destroy', $role->id) }}" class="d-inline">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn-delete" title="Delete"
+                                                    onclick="return confirm('Delete this role?')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>

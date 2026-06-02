@@ -1,0 +1,346 @@
+﻿diff --git "a/c:\\Users\\HP\\Documents\\GitHub\\Inventory-managment\\app\\Http\\Controllers\\StageController.php" "b/c:\\Users\\HP\\Documents\\GitHub\\saas-erp\\Modules\\Inventory\\App\\Http\\Controllers\\StageController.php"
+index e166d92..2a7e16f 100644
+--- "a/c:\\Users\\HP\\Documents\\GitHub\\Inventory-managment\\app\\Http\\Controllers\\StageController.php"
++++ "b/c:\\Users\\HP\\Documents\\GitHub\\saas-erp\\Modules\\Inventory\\App\\Http\\Controllers\\StageController.php"
+@@ -1,10 +1,10 @@
+ <?php
+ 
+-namespace App\Http\Controllers;
++namespace Modules\Inventory\App\Http\Controllers;
+ 
+-use App\Models\ProjectMainStage;
+-use App\Models\ProjectSubStage;
+-use App\Models\Stage;
++use Modules\Inventory\App\Models\ProjectMainStage;
++use Modules\Inventory\App\Models\ProjectSubStage;
++use Modules\Inventory\App\Models\Stage;
+ use Illuminate\Http\Request;
+ use Illuminate\Support\Facades\DB;
+ use Illuminate\Support\Facades\Log;
+@@ -32,7 +33,7 @@ public function index(Request $request)
+         ->orderBy('order_no')
+         ->get();
+ 
+-        return view('project.stages.index', compact('stages', 'workflows'));
++    return view('inventory::project.stages.index', compact('stages', 'workflows'));
+ }
+ 
+     // CREATE FORM
+@@ -45,7 +46,7 @@ public function create()
+             ->pluck('section');
+ 
+ 
+-        return view('project.stages.form', compact('stages', 'sections'));
++        return view('inventory::project.stages.form', compact('stages', 'sections'));
+     }
+ 
+     // STORE
+@@ -165,72 +166,31 @@ public function store(Request $request)
+             // DELETE ONLY CURRENT SECTION OLD DATA
+             // =========================================
+ 
+-            // $oldMainStages = Stage::where('section', $request->section)
+-            //     ->whereNull('parent_id')
+-            //     ->pluck('id');
++            $oldMainStages = Stage::where('section', $request->section)
++                ->whereNull('parent_id')
++                ->pluck('id');
+ 
+-            // // DELETE CHILD FIRST
+-            // Stage::whereIn('parent_id', $oldMainStages)->delete();
++            // DELETE CHILD FIRST
++            Stage::whereIn('parent_id', $oldMainStages)->delete();
+ 
+-            // // DELETE MAIN
+-            // Stage::whereIn('id', $oldMainStages)->delete();
++            // DELETE MAIN
++            Stage::whereIn('id', $oldMainStages)->delete();
+ 
+             // =========================================
+             // SAVE NEW DATA
+             // =========================================
+ 
+-
+-            // foreach ($request->stages as $stageData) {
+-
+-            //     $mainStage = Stage::create([
+-            //         'name'      => trim($stageData['name']),
+-            //         'present'   => $stageData['present'],
+-            //         'order_no'  => $stageData['order_no'],
+-            //         'parent_id' => null,
+-            //         'section'   => $request->section,
+-            //     ]);
+-
+-            //     // SUB STAGES
+-            //     if (isset($stageData['sub_stages'])) {
+-
+-            //         foreach ($stageData['sub_stages'] as $sub) {
+-
+-            //             if (
+-            //                 empty(trim($sub['name'] ?? '')) &&
+-            //                 (
+-            //                     $sub['present'] === null ||
+-            //                     $sub['present'] === ''
+-            //                 )
+-            //             ) {
+-            //                 continue;
+-            //             }
+-
+-            //             Stage::create([
+-            //                 'name'      => trim($sub['name']),
+-            //                 'present'   => $sub['present'],
+-            //                 'order_no'  => $sub['order_no'] ?? 1,
+-            //                 'parent_id' => $mainStage->id,
+-
+-            //                 // IMPORTANT
+-            //                 'section'   => $request->section,
+-            //             ]);
+-            //         }
+-            //     }
+-            // }
+-
+             foreach ($request->stages as $stageData) {
+ 
+-                $mainStage = Stage::updateOrCreate(
+-                    ['id' => $stageData['id'] ?? null],
+-                    [
++                $mainStage = Stage::create([
+                     'name'      => trim($stageData['name']),
+                     'present'   => $stageData['present'],
+                     'order_no'  => $stageData['order_no'],
+                     'parent_id' => null,
+                     'section'   => $request->section,
+-                    ]
+-                );
++                ]);
+ 
++                // SUB STAGES
+                 if (isset($stageData['sub_stages'])) {
+ 
+                     foreach ($stageData['sub_stages'] as $sub) {
+@@ -238,23 +198,22 @@ public function store(Request $request)
+                         if (
+                             empty(trim($sub['name'] ?? '')) &&
+                             (
+-                                ($sub['present'] ?? null) === null ||
+-                                ($sub['present'] ?? '') === ''
++                                $sub['present'] === null ||
++                                $sub['present'] === ''
+                             )
+                         ) {
+                             continue;
+                         }
+ 
+-                        Stage::updateOrCreate(
+-                            ['id' => $sub['id'] ?? null],
+-                            [
++                        Stage::create([
+                             'name'      => trim($sub['name']),
+                             'present'   => $sub['present'],
+                             'order_no'  => $sub['order_no'] ?? 1,
+                             'parent_id' => $mainStage->id,
++
++                            // IMPORTANT
+                             'section'   => $request->section,
+-                            ]
+-                        );
++                        ]);
+                     }
+                 }
+             }
+@@ -283,7 +242,7 @@ public function edit()
+             ->orderBy('order_no')
+             ->get();
+ 
+-        return view('project.stages.form', compact('stages'));
++        return view('inventory::project.stages.form', compact('stages'));
+     }
+ 
+     // UPDATE
+@@ -320,147 +279,71 @@ public function getBySection(Request $request)
+         return response()->json($stages);
+     }
+ 
+-    // public function updateParentStatus(Request $request)
+-    // {
+-    //     try {
+-    //         DB::beginTransaction();
+-
+-    //         $mainStage = ProjectMainStage::create([
+-    //             'main_stage_id' => $request->parent_stage_id,
+-    //             'status_id' => $request->parent_status_id,
+-    //             'project_id' => $request->project_id,
+-    //             'created_by'    => auth()->id(),
+-    //         ]);
+-
+-    //         // =========================================
+-    //         // IF MAIN STAGE COMPLETED
+-    //         // THEN AUTO COMPLETE ALL SUB STAGES
+-    //         // =========================================
+-    //         $masterSubStages = Stage::where('parent_id', $request->parent_stage_id)
+-    //             ->orderBy('order_no')
+-    //             ->get();
+-
+-    //         if ($request->parent_status_id == 6) {
+-
+-    //             $mainStageIds = ProjectMainStage::where('project_id', $request->project_id)
+-    //                 ->where('main_stage_id', $request->parent_stage_id)
+-    //                 ->pluck('id');
+-
+-    //             // MASTER SUB STAGES (source of truth)
+-    //             $masterSubStages = Stage::where('parent_id', $request->parent_stage_id)
+-    //                 ->orderBy('order_no')
+-    //                 ->get();
+-
+-    //             foreach ($masterSubStages as $subStage) {
+-
+-    //                 // last entry of this sub stage in project
+-    //                 $lastEntry = ProjectSubStage::where('project_id', $request->project_id)
+-    //                     ->whereIn('project_main_stage_id', $mainStageIds)
+-    //                     ->where('sub_stage_id', $subStage->id)
+-    //                     ->orderBy('id', 'desc')
+-    //                     ->first();
+-
+-    //                 if ($lastEntry && $lastEntry->status_id == 7) {
+-    //                     continue;
+-    //                 }
+-
+-    //                 // Γ£ö OTHERWISE CREATE NEW COMPLETED ENTRY
+-    //                 ProjectSubStage::create([
+-    //                     'project_id' => $request->project_id,
+-    //                     'project_main_stage_id' => $mainStageIds->first(),
+-    //                     'sub_stage_id' => $subStage->id,
+-    //                     'status_id' => 7,
+-    //                     'created_by' => auth()->id(),
+-    //                 ]);
+-    //             }
+-    //         }
+-    //         DB::commit();
+-
+-    //         return response()->json([
+-    //             'success' => true,
+-    //             'debug' => $mainStageIds
+-    //         ]);
+-    //     } catch (\Exception $e) {
+-
+-    //         DB::rollBack();
+-
+-    //         // log error for backend debugging
+-    //         Log::error('updateMainStatus error: ' . $e->getMessage(), [
+-    //             'line' => $e->getLine(),
+-    //             'file' => $e->getFile()
+-    //         ]);
+-
+-    //         return response()->json([
+-    //             'success' => false,
+-    //             'message' => 'Something went wrong',
+-    //             'error' => $e->getMessage(),
+-    //             'line' => $e->getLine(),
+-
+-    //         ], 500);
+-    //     }
+-    // }
+-
+     public function updateParentStatus(Request $request)
+     {
+         try {
+             DB::beginTransaction();
+ 
+-        $PARENT_DONE_ID = 6;
+-        $SUB_DONE_ID = 7;
++            $mainStage = ProjectMainStage::create([
++                'main_stage_id' => $request->parent_stage_id,
++                'status_id' => $request->parent_status_id,
++                'project_id' => $request->project_id,
++                'created_by'    => auth()->id(),
++            ]);
+ 
+             // =========================================
+             // IF MAIN STAGE COMPLETED
+-        // CHECK ALL SUB STAGES COMPLETED OR NOT
++            // THEN AUTO COMPLETE ALL SUB STAGES
+             // =========================================
+-        if ($request->parent_status_id == $PARENT_DONE_ID) {
+-
+             $masterSubStages = Stage::where('parent_id', $request->parent_stage_id)
+                 ->orderBy('order_no')
+                 ->get();
+ 
+-            if ($masterSubStages->count() > 0) {
++            if ($request->parent_status_id == 6) {
++
++                $mainStageIds = ProjectMainStage::where('project_id', $request->project_id)
++                    ->where('main_stage_id', $request->parent_stage_id)
++                    ->pluck('id');
++
++                // MASTER SUB STAGES (source of truth)
++                $masterSubStages = Stage::where('parent_id', $request->parent_stage_id)
++                    ->orderBy('order_no')
++                    ->get();
+ 
+                 foreach ($masterSubStages as $subStage) {
+ 
+-                    $lastSubEntry = ProjectSubStage::where('project_id', $request->project_id)
++                    // last entry of this sub stage in project
++                    $lastEntry = ProjectSubStage::where('project_id', $request->project_id)
++                        ->whereIn('project_main_stage_id', $mainStageIds)
+                         ->where('sub_stage_id', $subStage->id)
+                         ->orderBy('id', 'desc')
+                         ->first();
+ 
+-                    if (!$lastSubEntry || $lastSubEntry->status_id != $SUB_DONE_ID) {
+-
+-                        DB::rollBack();
+-
+-                        return response()->json([
+-                            'success' => false,
+-                            'message' => 'Please complete all sub stages before completing this main stage.'
+-                        ]);
+-                    }
+-                }
+-            }
++                    if ($lastEntry && $lastEntry->status_id == 7) {
++                        continue;
+                     }
+ 
+-        // =========================================
+-        // MAIN STAGE STATUS CREATE
+-        // =========================================
+-        $mainStage = ProjectMainStage::create([
+-            'main_stage_id' => $request->parent_stage_id,
+-            'status_id' => $request->parent_status_id,
++                    // Γ£ö OTHERWISE CREATE NEW COMPLETED ENTRY
++                    ProjectSubStage::create([
+                         'project_id' => $request->project_id,
++                        'project_main_stage_id' => $mainStageIds->first(),
++                        'sub_stage_id' => $subStage->id,
++                        'status_id' => 7,
+                         'created_by' => auth()->id(),
+                     ]);
+-
++                }
++            }
+             DB::commit();
+ 
+             return response()->json([
+                 'success' => true,
+-            'message' => 'Stage status updated successfully'
++                'debug' => $mainStageIds
+             ]);
+-
+         } catch (\Exception $e) {
+ 
+             DB::rollBack();
+ 
++            // log error for backend debugging
+             Log::error('updateMainStatus error: ' . $e->getMessage(), [
+                 'line' => $e->getLine(),
+                 'file' => $e->getFile()
+@@ -531,6 +415,7 @@ public function updateSubStatus(Request $request)
+             return response()->json([
+                 'success' => true,
+                 'message' => 'Status updated successfully',
++                'main_stage_id' => $mainStage->id
+             ]);
+         } catch (\Exception $e) {
+ 

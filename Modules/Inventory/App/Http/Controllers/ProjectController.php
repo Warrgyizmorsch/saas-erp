@@ -17,6 +17,9 @@ use Modules\Inventory\App\Models\ProjectSubStage;
 use Modules\Inventory\App\Models\RequisitionSlipRow;
 use Modules\Inventory\App\Models\Stage;
 use Modules\Inventory\App\Models\StageStatus;
+use Modules\Inventory\App\Models\ProjectDocument;
+use Modules\Inventory\App\Models\ProjectStageTimeline;
+use Illuminate\Support\Facades\Storage;
 
 class ProjectController extends Controller
 {
@@ -514,7 +517,8 @@ class ProjectController extends Controller
             'projectProducts.product.productItems.inventory',
 
             // Project inventory items
-            'projectItems.inventory'
+            'projectItems.inventory',
+            'documents'
 
         ])->findOrFail($id);
 
@@ -854,7 +858,7 @@ class ProjectController extends Controller
         // =========================
         // MAIN STAGE STATUS (LATEST)
         // =========================
-        $mainStageStatuses = ProjectMainStage::where('project_id', $project->id)
+        $mainStageStatuses = ProjectMainStage::with('status')->where('project_id', $project->id)
             ->latest()
             ->get()
             ->groupBy('main_stage_id');
@@ -867,6 +871,10 @@ class ProjectController extends Controller
             ->get()
             ->groupBy('sub_stage_id');
 
+        $timelines = ProjectStageTimeline::where('project_id', $project->id)
+            ->get()
+            ->keyBy('stage_id');
+
         // =========================
         // ATTACH STATUS TO MAIN STAGES
         // =========================
@@ -875,6 +883,13 @@ class ProjectController extends Controller
             $latestMain = $mainStageStatuses[$stage->id][0] ?? null;
 
             $stage->current_status_id = $latestMain?->status_id;
+
+            $stage->current_status_name = $latestMain?->status?->name;
+
+            $timeline = $timelines->get($stage->id);
+
+            $stage->start_date = $timeline->start_date ?? null;
+            $stage->end_date = $timeline->end_date ?? null;
         }
 
         // =========================
@@ -885,7 +900,58 @@ class ProjectController extends Controller
             $latestSub = $subStageStatuses[$sub->id][0] ?? null;
 
             $sub->current_status_id = $latestSub?->status_id;
+
+            $timeline = $timelines->get($sub->id);
+
+            $sub->start_date = $timeline->start_date ?? null;
+            $sub->end_date = $timeline->end_date ?? null;
         }
+
+        // =========================
+        // OVERALL PROJECT PROGRESS
+        // =========================
+        $overallProgress = 0;
+
+        $completedMainStages = [];
+
+        // MAIN STAGE PROGRESS
+        foreach ($parentStages as $main) {
+
+            $mainPercent = $main->present ?? 0;
+
+            if ($main->current_status_id == 6) {
+
+                $overallProgress += $mainPercent;
+
+                $completedMainStages[] = $main->id;
+            }
+        }
+
+        // SUB STAGE PROGRESS
+        foreach ($subStages as $sub) {
+
+            if ($sub->current_status_id != 7) {
+                continue;
+            }
+
+            if (in_array($sub->parent_id, $completedMainStages)) {
+                continue;
+            }
+
+            $parentStage = $parentStages->firstWhere('id', $sub->parent_id);
+
+            if (!$parentStage) {
+                continue;
+            }
+
+            $mainPercent = $parentStage->present ?? 0;
+
+            $subPercent = $sub->present ?? 0;
+
+            $overallProgress += ($mainPercent * $subPercent) / 100;
+        }
+
+        $overallProgress = round($overallProgress, 2);
 
         // STATUS MASTER
         $parentStatuses = StageStatus::where('type', 'parent')->orderBy('order_no')->get();
@@ -893,13 +959,13 @@ class ProjectController extends Controller
         $subStatuses = StageStatus::where('type', 'sub')->orderBy('order_no')->get();
 
 
-
         return view('inventory::project.project-stage', compact(
             'project',
             'parentStages',
             'subStages',
             'parentStatuses',
-            'subStatuses'
+            'subStatuses',
+            'overallProgress'
         ));
     }
 
@@ -911,5 +977,72 @@ class ProjectController extends Controller
         $project->save();
 
         return back()->with('success', 'Flow updated');
+    }
+
+    public function uploadDocuments(Request $request, Project $project)
+    {
+        $request->validate([
+            'documents' => 'required|array',
+            'documents.*' => 'file|max:10240|mimes:pdf,jpg,jpeg,png,webp,doc,docx,xls,xlsx',
+        ]);
+
+        foreach ($request->file('documents') as $file) {
+            $path = $file->store('project-documents', 'public');
+
+            ProjectDocument::create([
+                'project_id' => $project->id,
+                'file_name' => $file->getClientOriginalName(),
+                'file_path' => $path,
+                'file_type' => $file->getClientOriginalExtension(),
+                'file_size' => $file->getSize(),
+                'uploaded_by' => auth()->id(),
+            ]);
+        }
+
+        return back()->with('success', 'Documents uploaded successfully.');
+    }
+
+    public function viewDocument(ProjectDocument $document)
+    {
+        return response()->file(\Illuminate\Support\Facades\Storage::disk('public')->path($document->file_path));
+    }
+
+    public function downloadDocument(ProjectDocument $document)
+    {
+        return Storage::disk('public')->download($document->file_path, $document->file_name);
+    }
+
+    public function deleteDocument(ProjectDocument $document)
+    {
+        Storage::disk('public')->delete($document->file_path);
+        $document->delete();
+
+        return back()->with('success', 'Document deleted successfully.');
+    }
+
+    public function updateTimeline(Request $request)
+    {
+        $request->validate([
+            'project_id' => 'required|integer',
+            'stage_id'   => 'required|integer',
+            'start_date' => 'required|date',
+            'end_date'   => 'required|date|after_or_equal:start_date',
+        ]);
+
+        ProjectStageTimeline::updateOrCreate(
+            [
+                'project_id' => $request->project_id,
+                'stage_id'   => $request->stage_id,
+            ],
+            [
+                'start_date' => $request->start_date,
+                'end_date'   => $request->end_date,
+            ]
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Timeline saved successfully'
+        ]);
     }
 }

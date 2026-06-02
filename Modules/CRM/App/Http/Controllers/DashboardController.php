@@ -17,17 +17,26 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        if ($user->role_id == 2) {
-            return view('crm::crm.users.dashboard'); // basic welcome page
-        }
+        $loggedInRole = $user->role ?? \Modules\Shared\App\Models\Role::find($user->role_id);
+        $loggedInLevel = $loggedInRole ? $loggedInRole->authority_level : 0;
 
+        $allowedUserIdsQuery = \App\Models\User::where('is_deleted', 0);
+        if ($user->role_id !== 1) {
+            $allowedUserIdsQuery->where(function ($q) use ($user, $loggedInLevel) {
+                $q->where('id', $user->id)
+                  ->orWhereHas('role', function ($qr) use ($loggedInLevel) {
+                      $qr->where('authority_level', '<', $loggedInLevel);
+                  });
+            });
+        }
+        $allowedUserIds = $allowedUserIdsQuery->pluck('id');
 
         $leadQuery = Leads::query();
         $totalLeads = Leads::count();
 
-        if ($user->role_id != 1) {
-            $leadQuery->where('lead_owner', $user->id);
-            $totalLeads = Leads::where('lead_owner', auth()->id())->count();
+        if ($user->role_id !== 1) {
+            $leadQuery->whereIn('lead_owner', $allowedUserIds);
+            $totalLeads = Leads::whereIn('lead_owner', $allowedUserIds)->count();
         }
 
         // Handle date filtering
@@ -146,12 +155,8 @@ class DashboardController extends Controller
         // Role Based Filtering
         if ($currentUser->role_id == 1) {
             // Admin → see all
-        } elseif ($currentUser->role_id == 2) {
-            // Role 2(user) → show nothing
-            $recentLeadsQuery->whereRaw('1 = 0');
         } else {
-            // other role → only their leads
-            $recentLeadsQuery->where('lead_owner', $currentUser->id);
+            $recentLeadsQuery->whereIn('lead_owner', $allowedUserIds);
         }
 
         // Apply date filter if present
@@ -199,12 +204,10 @@ class DashboardController extends Controller
         if ($currentUser->role_id == 1) {
             // Admin → all sales users
             $salesUsersList = User::whereNotIn('role_id', [1, 2])->get();
-        } elseif ($currentUser->role_id == 2) {
-            // Role 2 → do not show anything
-            $salesUsersList = collect();
         } else {
-            // Normal sales user → only himself
-            $salesUsersList = User::where('id', $currentUser->id)->get();
+            $salesUsersList = User::whereIn('id', $allowedUserIds)
+                ->whereNotIn('role_id', [1, 2])
+                ->get();
         }
 
 
@@ -353,12 +356,8 @@ class DashboardController extends Controller
 
         if ($currentUser->role_id == 1) {
             // Admin → see all
-        } elseif ($currentUser->role_id == 2) {
-            // Role 2 → show nothing
-            $leadQuery->whereRaw('1 = 0');
         } else {
-            // Other roles → only their leads
-            $leadQuery->where('lead_owner', $currentUser->id);
+            $leadQuery->whereIn('lead_owner', $allowedUserIds);
         }
 
         // Apply date filter if present
@@ -428,8 +427,10 @@ class DashboardController extends Controller
                 ->orderBy('name')
                 ->get(['id', 'name']);
         } else {
-            // Normal user → only self
-            $usersForChart = User::where('id', $currentUser->id)->get(['id', 'name']);
+            $usersForChart = User::whereIn('id', $allowedUserIds)
+                ->whereNotIn('role_id', [1, 2])
+                ->orderBy('name')
+                ->get(['id', 'name']);
         }
 
         // Build data for each user
@@ -454,7 +455,11 @@ class DashboardController extends Controller
         }
 
         // ── 2. Also prepare "All Users" combined data (for admin default view)
-        $allTotals = Leads::whereBetween('created_at', [$chartStart, $chartEnd])
+        $allTotalsQuery = Leads::whereBetween('created_at', [$chartStart, $chartEnd]);
+        if ($currentUser->role_id !== 1) {
+            $allTotalsQuery->whereIn('lead_owner', $allowedUserIds);
+        }
+        $allTotals = $allTotalsQuery
             ->selectRaw("DATE_FORMAT(created_at, '%b %y') as month, COUNT(*) as total")
             ->groupBy('month')
             ->pluck('total', 'month')
@@ -489,9 +494,12 @@ class DashboardController extends Controller
 
             $normalizedSource = strtolower(trim($source));
 
-            $query = Leads::whereRaw("LOWER(TRIM(platform)) = ?", [$normalizedSource])
-                ->whereBetween('created_at', [$chartStart, $chartEnd])
-                ->selectRaw("DATE_FORMAT(created_at, '%b %y') as month, COUNT(*) as total")
+            $leadsQuery = Leads::whereRaw("LOWER(TRIM(platform)) = ?", [$normalizedSource])
+                ->whereBetween('created_at', [$chartStart, $chartEnd]);
+            if ($currentUser->role_id !== 1) {
+                $leadsQuery->whereIn('lead_owner', $allowedUserIds);
+            }
+            $query = $leadsQuery->selectRaw("DATE_FORMAT(created_at, '%b %y') as month, COUNT(*) as total")
                 ->groupBy('month')
                 ->pluck('total', 'month')
                 ->toArray();
@@ -507,11 +515,15 @@ class DashboardController extends Controller
             ];
         }
 
-        $allTotals = Leads::whereIn(
+        $allTotalsQuery = Leads::whereIn(
             DB::raw("LOWER(TRIM(platform))"),
             array_map('strtolower', $fixedSources)
         )
-            ->whereBetween('created_at', [$chartStart, $chartEnd])
+            ->whereBetween('created_at', [$chartStart, $chartEnd]);
+        if ($currentUser->role_id !== 1) {
+            $allTotalsQuery->whereIn('lead_owner', $allowedUserIds);
+        }
+        $allTotals = $allTotalsQuery
             ->selectRaw("DATE_FORMAT(created_at, '%b %y') as month, COUNT(*) as total")
             ->groupBy('month')
             ->pluck('total', 'month')

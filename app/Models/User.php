@@ -131,4 +131,81 @@ class User extends Authenticatable
 
         return 'employee';
     }
+
+    public function canManageUser($targetUser): bool
+    {
+        return canManageUser($this, $targetUser);
+    }
+
+    public function canManageRole($targetRole): bool
+    {
+        return canManageRole($this->role_id ?? $this->role?->id, $targetRole);
+    }
+
+    public function canManageEmployee($targetEmployee): bool
+    {
+        return canManageEmployee($this, $targetEmployee);
+    }
+
+    public function getRoleLevelAttribute()
+    {
+        return $this->role?->authority_level ?? 0;
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->role_id === 1;
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role_id === 1 || ($this->role?->authority_level ?? 0) >= 90;
+    }
+
+    public function isHOD(): bool
+    {
+        return ($this->role?->authority_level ?? 0) === 80;
+    }
+
+    public function isHR(): bool
+    {
+        return ($this->role?->authority_level ?? 0) === 75;
+    }
+
+    public function isSupervisor(): bool
+    {
+        return ($this->role?->authority_level ?? 0) === 70;
+    }
+
+    public function isStoreAdmin(): bool
+    {
+        return ($this->role?->authority_level ?? 0) === 60;
+    }
+
+    public function isAccount(): bool
+    {
+        return ($this->role?->authority_level ?? 0) === 55;
+    }
+
+    public function isPurchase(): bool
+    {
+        return ($this->role?->authority_level ?? 0) === 45;
+    }
+
+    public function getSubordinateUserIds()
+    {
+        $loggedInRole = $this->role ?? \Modules\Shared\App\Models\Role::find($this->role_id);
+        $loggedInLevel = $loggedInRole ? $loggedInRole->authority_level : 0;
+
+        $query = self::where('is_deleted', 0);
+        if ($this->role_id !== 1) {
+            $query->where(function ($q) use ($loggedInLevel) {
+                $q->where('id', $this->id)
+                  ->orWhereHas('role', function ($qr) use ($loggedInLevel) {
+                      $qr->where('authority_level', '<', $loggedInLevel);
+                  });
+            });
+        }
+        return $query->pluck('id')->toArray();
+    }
 }

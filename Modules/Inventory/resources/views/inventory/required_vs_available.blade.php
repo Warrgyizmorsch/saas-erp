@@ -95,6 +95,22 @@
         <div class="card stretch stretch-full border shadow-sm">
             <div class="card-body p-0">
                 <div class="table-responsive">
+                    @php
+                        $sortIcon = function ($column) use ($sortBy, $sortDirection) {
+                            if (($sortBy ?? '') !== $column) {
+                                return 'feather-chevrons-up';
+                            }
+                            return ($sortDirection ?? 'desc') === 'asc' ? 'feather-arrow-up' : 'feather-arrow-down';
+                        };
+
+                        $sortUrl = function ($column) use ($sortBy, $sortDirection) {
+                            $direction = (($sortBy ?? '') === $column && ($sortDirection ?? 'desc') === 'asc') ? 'desc' : 'asc';
+                            return request()->fullUrlWithQuery([
+                                'sort_by' => $column,
+                                'sort_direction' => $direction,
+                            ]);
+                        };
+                    @endphp
                     <table class="table table-bordered inventory-table mb-0 align-middle table-sm" style="font-size: 13px;">
                         <thead>
                             <tr>
@@ -104,9 +120,21 @@
 
                                 <th class="text-center" style="width: 40px;">#</th>
                                 <th style="width: 30%;">Inventory Name & Details</th>
-                                <th class="text-center" style="width: 130px;">Required Qty</th>
-                                <th class="text-center" style="width: 280px;">Stock Bifurcation</th>
-                                <th class="text-center" style="width: 160px;">Short / Extra</th>
+                                <th class="text-center" style="width: 130px;">
+                                    <a href="{{ $sortUrl('required') }}" class="text-dark d-inline-flex align-items-center gap-1">
+                                        Required Qty <i class="{{ $sortIcon('required') }}"></i>
+                                    </a>
+                                </th>
+                                <th class="text-center" style="width: 280px;">
+                                    <a href="{{ $sortUrl('available') }}" class="text-dark d-inline-flex align-items-center gap-1">
+                                        Stock Bifurcation <i class="{{ $sortIcon('available') }}"></i>
+                                    </a>
+                                </th>
+                                <th class="text-center" style="width: 160px;">
+                                    <a href="{{ $sortUrl('short_extra') }}" class="text-dark d-inline-flex align-items-center gap-1">
+                                        Short / Extra <i class="{{ $sortIcon('short_extra') }}"></i>
+                                    </a>
+                                </th>
                             </tr>
                         </thead>
 
@@ -115,19 +143,19 @@
                             @php
                             $required = (float) ($row['required'] ?? 0);
                             $available = (float) ($row['available'] ?? 0);
-                            $consumption = (float) ($row['consumption'] ?? 0);
-                            $diff = $required - $available - $consumption;
+                            $shortQty = (float) ($row['short_qty'] ?? 0);
+                            $extraQty = (float) ($row['extra_qty'] ?? 0);
                             @endphp
 
                             <tr>
                                 <td class="text-center">
-                                    @if($diff > 0)
+                                    @if($shortQty > 0)
                                     <input type="checkbox"
                                         class="pr-item-checkbox"
                                         data-item-id="{{ $row['inventory_id'] }}"
                                         data-item-name="{{ $row['inventory_name'] }}"
                                         data-item-model="{{ $row['inventory_model'] }}"
-                                        data-qty="{{ $diff }}">
+                                        data-qty="{{ $shortQty }}">
                                     @endif
                                 </td>
                                 <td class="text-center fw-bold">{{ $index + 1 }}</td>
@@ -142,7 +170,7 @@
                                 </td>
 
                                 <td class="text-center fw-bold text-secondary fs-13">
-                                    {{ number_format($required - $consumption, 2) }}
+                                    {{ number_format($required, 2) }}
                                 </td>
 
                                 <td class="p-0">
@@ -170,28 +198,43 @@
                                 </td>
 
                                 <td class="text-center fw-bold">
-                                    @if($diff > 0)
+                                    @if($shortQty > 0)
                                     <div class="py-1 px-2 rounded bg-soft-danger mx-2">
-                                        <span class="text-danger">Short: {{ number_format($diff, 2) }}</span>
+                                        <span class="text-danger">Short: {{ number_format($shortQty, 2) }}</span>
                                     </div>
 
-                                    @elseif($diff < 0)
+                                    @elseif($extraQty > 0)
                                         <div class="py-1 px-2 rounded bg-soft-secondary mx-2">
-                                        <span class="text-dark">Extra: {{ number_format(abs($diff), 2) }}</span>
+                                        <span class="text-dark">Extra: {{ number_format($extraQty, 2) }}</span>
+                                    </div>
+                                    @else
+                                    <span class="text-success small"><i class="feather-check-circle me-1"></i>OK</span>
+                                    @endif
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">No inventory data found.</td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                        @if(!empty($data))
+                        <tfoot>
+                            <tr class="total-row fw-bold">
+                                <td colspan="3" class="text-end">TOTAL</td>
+                                <td class="text-center">{{ number_format($totals['required'] ?? 0, 2) }}</td>
+                                <td class="text-center">
+                                    <div>Available: {{ number_format($totals['available'] ?? 0, 2) }}</div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="text-danger">Short: {{ number_format($totals['short_qty'] ?? 0, 2) }}</div>
+                                    <div class="text-dark">Extra: {{ number_format($totals['extra_qty'] ?? 0, 2) }}</div>
+                                </td>
+                            </tr>
+                        </tfoot>
+                        @endif
+                    </table>
                 </div>
-                @else
-                <span class="text-success small"><i class="feather-check-circle me-1"></i>OK</span>
-                @endif
-                </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="5" class="text-center text-muted py-4">No inventory data found.</td>
-                </tr>
-                @endforelse
-                </tbody>
-                </table>
-            </div>
         </div>
     </div>
     </div>

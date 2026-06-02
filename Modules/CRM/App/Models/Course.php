@@ -5,8 +5,11 @@ namespace Modules\CRM\App\Models;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\CurrencyRate;
 
+use App\Traits\BelongsToTenant;
 class Course extends Model
 {
+    use BelongsToTenant;
+
     protected $table = 'courses';
 
     protected $guarded = [];

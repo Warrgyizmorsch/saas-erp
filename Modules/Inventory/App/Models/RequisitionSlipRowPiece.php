@@ -5,8 +5,11 @@ namespace Modules\Inventory\App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use App\Traits\BelongsToTenant;
 class RequisitionSlipRowPiece extends Model
 {
+    use BelongsToTenant;
+
     use HasFactory;
      protected $table = 'requisition_slip_row_pieces';
     public $timestamps = false;

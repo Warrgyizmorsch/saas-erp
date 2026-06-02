@@ -5,8 +5,11 @@ namespace Modules\Inventory\App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Modules\Shared\App\Models\User;
 
+use App\Traits\BelongsToTenant;
 class ProjectDocument extends Model
 {
+    use BelongsToTenant;
+
     protected $table = 'project_documents';
 
     protected $fillable = [

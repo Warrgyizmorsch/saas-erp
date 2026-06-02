@@ -6,8 +6,11 @@ use Modules\Shared\App\Models\User;
 
 use Illuminate\Database\Eloquent\Model;
 
+use App\Traits\BelongsToTenant;
 class Employee extends Model
 {
+    use BelongsToTenant;
+
     protected $fillable = [
         'name',
         'employee_code',

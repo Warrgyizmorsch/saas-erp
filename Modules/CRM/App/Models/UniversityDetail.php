@@ -5,8 +5,11 @@ namespace Modules\CRM\App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+use App\Traits\BelongsToTenant;
 class UniversityDetail extends Model
 {
+    use BelongsToTenant;
+
     use SoftDeletes;
 
     protected $table = 'university_details';

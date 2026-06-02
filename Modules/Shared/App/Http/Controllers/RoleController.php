@@ -24,9 +24,14 @@ class RoleController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:roles,name',
+            'name' => 'required|string|max:255',
             'authority_level' => 'nullable|integer|min:0|max:100',
         ]);
+
+        // Check if role name already exists in the active tenant context
+        if (Role::where('name', $validated['name'])->exists()) {
+            return redirect()->back()->withErrors(['name' => 'The role name has already been taken.'])->withInput();
+        }
 
         $loggedInUser = auth()->user();
         $loggedInRole = $loggedInUser->role ?? Role::find($loggedInUser->role_id);
@@ -36,6 +41,24 @@ class RoleController extends Controller
 
         if ($loggedInUser->role_id !== 1 && $authorityLevel >= $loggedInLevel) {
             return redirect()->back()->withErrors(['authority_level' => 'You cannot set an authority level equal to or greater than your own role level.'])->withInput();
+        }
+
+        // Duplicate-prevention: check if role exists globally
+        $existingRole = Role::withoutGlobalScope('tenant_json')
+            ->where('name', $validated['name'])
+            ->first();
+
+        if ($existingRole) {
+            $tenantId = tenant('id');
+            if ($tenantId) {
+                $tenantIds = $existingRole->tenant_id ?? [];
+                if (!in_array($tenantId, $tenantIds)) {
+                    $tenantIds[] = $tenantId;
+                    $existingRole->tenant_id = $tenantIds;
+                    $existingRole->save();
+                }
+            }
+            return redirect()->route('roles.index')->with('success', 'Role created successfully!');
         }
 
         Role::create([
@@ -68,10 +91,20 @@ class RoleController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
+        // Restrict tenants from modifying global system roles
+        if (tenant('id') && empty($role->tenant_id)) {
+            abort(403, 'You cannot update a global system role.');
+        }
+
         $request->validate([
-            'name' => 'required|string|max:255|unique:roles,name,' . $role->id,
+            'name' => 'required|string|max:255',
             'authority_level' => 'nullable|integer|min:0|max:100',
         ]);
+
+        // Check if role name already exists in the active tenant context
+        if (Role::where('name', $request->name)->where('id', '!=', $role->id)->exists()) {
+            return redirect()->back()->withErrors(['name' => 'The role name has already been taken.'])->withInput();
+        }
 
         $loggedInUser = auth()->user();
         $loggedInLevel = $loggedInRole ? $loggedInRole->authority_level : 0;
@@ -97,7 +130,26 @@ class RoleController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        $role->delete();
+        $tenantId = tenant('id');
+        if ($tenantId) {
+            $tenantIds = $role->tenant_id ?? [];
+            if (empty($tenantIds)) {
+                // Global system role
+                abort(403, 'You cannot delete a global system role.');
+            }
+
+            if (in_array($tenantId, $tenantIds)) {
+                $tenantIds = array_diff($tenantIds, [$tenantId]);
+                if (empty($tenantIds)) {
+                    $role->delete();
+                } else {
+                    $role->tenant_id = array_values($tenantIds);
+                    $role->save();
+                }
+            }
+        } else {
+            $role->delete();
+        }
 
         return redirect()->route('roles.index')->with('success', 'Role deleted successfully!');
     }

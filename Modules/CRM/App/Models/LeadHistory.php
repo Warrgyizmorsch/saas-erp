@@ -5,8 +5,11 @@ namespace Modules\CRM\App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Modules\Shared\App\Models\User;
 
+use App\Traits\BelongsToTenant;
 class LeadHistory extends Model
 {
+    use BelongsToTenant;
+
     protected $fillable = ['lead_id', 'user_id', 'action', 'changes'];
 
     protected $casts = [

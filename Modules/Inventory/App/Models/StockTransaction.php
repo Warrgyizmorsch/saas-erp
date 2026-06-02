@@ -4,8 +4,11 @@ namespace Modules\Inventory\App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+use App\Traits\BelongsToTenant;
 class StockTransaction extends Model
 {
+    use BelongsToTenant;
+
     // Table name
     protected $table = 'stock_transactions';
 

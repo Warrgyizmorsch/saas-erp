@@ -5,8 +5,11 @@ namespace Modules\Shared\App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use App\Traits\BelongsToTenant;
 class LoginHistory extends Model
 {
+    use BelongsToTenant;
+
     use HasFactory;
     protected $table = 'login_histories';
     protected $fillable = ['user_id', 'ip_address', 'user_agent', 'updated_at', 'logout_at',];

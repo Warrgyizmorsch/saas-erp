@@ -8,8 +8,11 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use App\Traits\BelongsToTenant;
 class Project extends Model
 {
+    use BelongsToTenant;
+
     protected $table = 'inventory_projects';
 
     protected $fillable = [

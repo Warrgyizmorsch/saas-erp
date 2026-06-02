@@ -6,8 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Modules\CRM\App\Models\Leads;
 
+use App\Traits\BelongsToTenant;
 class Bucket extends Model
 {
+    use BelongsToTenant;
+
     use HasFactory;
 
     protected $table = 'buckets';

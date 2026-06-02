@@ -6,8 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Modules\Shared\App\Models\User;
 
+use App\Traits\BelongsToTenant;
 class AppliedUniversity extends Model
 {
+    use BelongsToTenant;
+
     use HasFactory;
 
     protected $table = 'applied_universities';

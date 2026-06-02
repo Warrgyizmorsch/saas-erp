@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class UserPermission extends Model
 {
+
     protected $fillable = ['user_id', 'route_id', 'menu_id'];
 
     // UserPermission belongs to User

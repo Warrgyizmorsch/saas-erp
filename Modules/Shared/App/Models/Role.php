@@ -3,10 +3,17 @@
 namespace Modules\Shared\App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\BelongsToTenantsJson;
 
 class Role extends Model
 {
-    protected $fillable = ['name', 'is_deleted', 'guard_name', 'authority_level'];
+    use BelongsToTenantsJson;
+
+    protected $fillable = ['name', 'is_deleted', 'guard_name', 'authority_level', 'tenant_id'];
+
+    protected $casts = [
+        'tenant_id' => 'array',
+    ];
 
     // Role has many Users
     public function users()

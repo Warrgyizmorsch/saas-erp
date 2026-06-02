@@ -7,8 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Modules\Shared\App\Models\User;
 use Illuminate\Support\Facades\DB;
 
+use App\Traits\BelongsToTenant;
 class CallBack extends Model
 {
+    use BelongsToTenant;
+
     use HasFactory;
 
     /**

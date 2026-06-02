@@ -5,8 +5,11 @@ namespace Modules\CRM\App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Modules\Shared\App\Models\User;
 
+use App\Traits\BelongsToTenant;
 class TodoTask extends Model
 {
+    use BelongsToTenant;
+
     protected $fillable = [
         'lead_id',
         'assigned_to',

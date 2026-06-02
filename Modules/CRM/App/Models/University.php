@@ -6,8 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 use Illuminate\Support\Str;
 
+use App\Traits\BelongsToTenant;
 class University extends Model
 {
+    use BelongsToTenant;
+
     protected $table = 'university'; // update table name
 
     protected $guarded = [];

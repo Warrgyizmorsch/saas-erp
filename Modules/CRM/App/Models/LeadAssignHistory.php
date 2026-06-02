@@ -6,8 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Modules\Shared\App\Models\User;
 
+use App\Traits\BelongsToTenant;
 class LeadAssignHistory extends Model
 {
+    use BelongsToTenant;
+
     use HasFactory;
 
     protected $table = 'lead_assign_histories';

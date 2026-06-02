@@ -5,8 +5,11 @@ namespace Modules\Inventory\App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Modules\Shared\App\Models\User;
 
+use App\Traits\BelongsToTenant;
 class Consumption extends Model
 {
+    use BelongsToTenant;
+
     protected $table = 'consumptions';
 
     protected $fillable = [

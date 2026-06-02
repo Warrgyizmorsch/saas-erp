@@ -7,8 +7,11 @@ use Modules\Shared\App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use App\Traits\BelongsToTenant;
 class TaskStatusHistory extends Model
 {
+    use BelongsToTenant;
+
     use HasFactory;
 
     protected $fillable = [

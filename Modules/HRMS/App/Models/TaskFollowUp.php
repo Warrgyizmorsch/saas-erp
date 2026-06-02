@@ -5,8 +5,11 @@ namespace Modules\HRMS\App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use App\Traits\BelongsToTenant;
 class TaskFollowUp extends Model
 {
+    use BelongsToTenant;
+
     use HasFactory;
 
     protected $fillable = [

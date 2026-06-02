@@ -4,8 +4,11 @@ namespace Modules\Inventory\App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+use App\Traits\BelongsToTenant;
 class Inventory extends Model
 {
+    use BelongsToTenant;
+
     protected $fillable = ['name', 'min_quantity', 'model','length' ,'unit','unit_id', 'grade','classification','placement', 'height', 'width', 'thikness', 'category_id', 'is_deleted','outer_diameter','inner_diameter','composition'];
 
     public $timestamps = true; // Laravel automatically manages created_at & updated_at

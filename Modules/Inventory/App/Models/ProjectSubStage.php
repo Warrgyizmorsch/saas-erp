@@ -4,8 +4,11 @@ namespace Modules\Inventory\App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+use App\Traits\BelongsToTenant;
 class ProjectSubStage extends Model
 {
+    use BelongsToTenant;
+
     protected $table = 'project_sub_stages';
 
     protected $fillable = [

@@ -5,8 +5,11 @@ namespace Modules\CRM\App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Modules\Shared\App\Models\User;
 
+use App\Traits\BelongsToTenant;
 class Leads extends Model
 {
+    use BelongsToTenant;
+
 
     protected $fillable = [
         'lead_bucket_id',

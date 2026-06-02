@@ -6,8 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Modules\Inventory\App\Models\Category;
 
+use App\Traits\BelongsToTenant;
 class Supplier extends Model
 {
+    use BelongsToTenant;
+
     use HasFactory;
     protected $fillable = [
         'category',

@@ -7,8 +7,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Modules\Shared\App\Models\User;
 
+use App\Traits\BelongsToTenant;
 class PurchaseOrder extends Model
 {
+    use BelongsToTenant;
+
     use HasFactory;
 
     protected $table = 'purchase_orders';

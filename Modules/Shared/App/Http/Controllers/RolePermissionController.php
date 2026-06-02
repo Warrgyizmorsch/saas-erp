@@ -77,15 +77,18 @@ class RolePermissionController extends Controller
 
         $submittedMenus = $request->input('permissions', []);
         $submittedRoutes = $request->input('permissions_route', []);
+        $tenantId = tenant('id');
 
         // --- Menus ---
-        foreach ($submittedMenus as $menuId => $value) {
-            $menu = Menu::find($menuId);
+        $allMenus = Menu::where('is_deleted', 0)->get();
+        foreach ($allMenus as $menu) {
+            $isAllowed = isset($submittedMenus[$menu->id]) ? 1 : 0;
             $permission = RolePermission::firstOrNew([
                 'role_id' => $role->id,
-                'menu_id' => $menuId
+                'menu_id' => $menu->id,
+                'tenant_id' => $tenantId
             ]);
-            $permission->is_allowed = 1;
+            $permission->is_allowed = $isAllowed;
 
             if (!empty($menu->route_id)) {
                 $permission->route_id = $menu->route_id;
@@ -94,37 +97,23 @@ class RolePermissionController extends Controller
             $permission->save();
         }
 
-        // Unchecked menus
-        $allMenuIds = Menu::pluck('id')->toArray();
-        $uncheckedMenus = array_diff($allMenuIds, array_keys($submittedMenus));
-        if (!empty($uncheckedMenus)) {
-            RolePermission::where('role_id', $role->id)
-                ->whereIn('menu_id', $uncheckedMenus)
-                ->update(['is_allowed' => 0]);
-        }
-
         // --- Routes (independent of menus) ---
-        foreach ($submittedRoutes as $routeId => $value) {
+        $allRoutes = AppRoute::where('is_deleted', 0)
+            ->whereNotIn('id', function ($q) {
+                $q->select('route_id')->from('menus')->whereNotNull('route_id');
+            })
+            ->get();
+
+        foreach ($allRoutes as $route) {
+            $isAllowed = isset($submittedRoutes[$route->id]) ? 1 : 0;
             $permission = RolePermission::firstOrNew([
                 'role_id' => $role->id,
-                'route_id' => $routeId,
-                'menu_id' => null
+                'route_id' => $route->id,
+                'menu_id' => null,
+                'tenant_id' => $tenantId
             ]);
-            $permission->is_allowed = 1;
+            $permission->is_allowed = $isAllowed;
             $permission->save();
-        }
-
-        // Unchecked routes
-        $allRouteIds = AppRoute::whereNotIn('id', function ($q) {
-            $q->select('route_id')->from('menus')->whereNotNull('route_id');
-        })->pluck('id')->toArray();
-
-        $uncheckedRoutes = array_diff($allRouteIds, array_keys($submittedRoutes));
-        if (!empty($uncheckedRoutes)) {
-            RolePermission::where('role_id', $role->id)
-                ->whereIn('route_id', $uncheckedRoutes)
-                ->whereNull('menu_id')
-                ->update(['is_allowed' => 0]);
         }
 
         return redirect()->route('role-permissions.index', ['role_id' => $role->id])

@@ -135,6 +135,7 @@ class UserPermissionController extends Controller
                     // ✅ include route_id if the menu has one
                     'route_id' => $menu->route_id ?? null,
                     'is_allowed' => $userChecked,
+                    'tenant_id' => tenant('id'),
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
@@ -159,6 +160,7 @@ class UserPermissionController extends Controller
                     'menu_id' => null,
                     'route_id' => $routeId,
                     'is_allowed' => $userChecked,
+                    'tenant_id' => tenant('id'),
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];

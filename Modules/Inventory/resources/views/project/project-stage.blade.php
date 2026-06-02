@@ -2,15 +2,13 @@
 @section('content')
 
     <style>
-        *,
-        *::before,
-        *::after {
+        .pg-shell *,
+        .pg-shell *::before,
+        .pg-shell *::after {
             box-sizing: border-box;
-            margin: 0;
-            padding: 0;
         }
 
-        :root {
+        .pg-shell {
             --white: #ffffff;
             --bg: #f7f8fc;
             --bg-card: #ffffff;
@@ -33,20 +31,21 @@
             --slate: #64748b;
             --slate-soft: #f8fafc;
             --slate-border: #e2e8f0;
-            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
-            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.04);
-            --shadow-indigo: 0 4px 20px rgba(79, 70, 229, 0.12);
-            --shadow-green: 0 4px 16px rgba(16, 185, 129, 0.1);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, .06), 0 1px 2px rgba(0, 0, 0, .04);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, .06), 0 2px 6px rgba(0, 0, 0, .04);
+            --shadow-indigo: 0 4px 20px rgba(79, 70, 229, .12);
+            --shadow-green: 0 4px 16px rgba(16, 185, 129, .1);
             --radius-sm: 8px;
             --radius-md: 12px;
             --radius-lg: 16px;
             --radius-xl: 20px;
         }
 
-        body {
-            font-family: 'DM Sans', sans-serif;
+        .pg-shell {
+            min-height: 100vh;
             background: var(--bg);
             color: var(--text-primary);
+            font-family: 'DM Sans', sans-serif;
         }
 
         /* ══════════════════════════════════════

@@ -675,7 +675,7 @@
 
                                 <div class="row g-3">
                                     <!-- CRM -->
-                                    <div class="col-md-4">
+                                    <div class="col-md-6">
                                         <label class="module-card w-100" for="module_crm">
                                             <div class="d-flex align-items-center gap-3">
                                                 <input type="checkbox" id="module_crm" name="modules[]" value="CRM" class="form-check-input" checked>
@@ -691,7 +691,7 @@
                                     </div>
 
                                     <!-- HRMS -->
-                                    <div class="col-md-4">
+                                    <div class="col-md-6">
                                         <label class="module-card w-100" for="module_hrms">
                                             <div class="d-flex align-items-center gap-3">
                                                 <input type="checkbox" id="module_hrms" name="modules[]" value="HRMS" class="form-check-input" checked>
@@ -707,7 +707,7 @@
                                     </div>
 
                                     <!-- Inventory -->
-                                    <div class="col-md-4">
+                                    <div class="col-md-6">
                                         <label class="module-card w-100" for="module_inv">
                                             <div class="d-flex align-items-center gap-3">
                                                 <input type="checkbox" id="module_inv" name="modules[]" value="Inventory" class="form-check-input" checked>
@@ -717,6 +717,22 @@
                                                 <div>
                                                     <h6>Inventory</h6>
                                                     <small>Stock & Warehouses</small>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+
+                                    <!-- POS -->
+                                    <div class="col-md-6">
+                                        <label class="module-card w-100" for="module_pos">
+                                            <div class="d-flex align-items-center gap-3">
+                                                <input type="checkbox" id="module_pos" name="modules[]" value="POS" class="form-check-input" checked>
+                                                <div class="module-icon-wrap">
+                                                    <i class="bi bi-receipt"></i>
+                                                </div>
+                                                <div>
+                                                    <h6>POS Suite</h6>
+                                                    <small>Billing Management</small>
                                                 </div>
                                             </div>
                                         </label>

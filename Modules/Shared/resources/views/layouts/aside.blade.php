@@ -126,6 +126,37 @@ if (!function_exists('renderMenuItem')) {
                     @endif
                 @endforeach
 
+                @if(function_exists('tenant_module_enabled') && tenant_module_enabled('POS'))
+                    {{-- POS MODULE TITLE CAPTION WITH BULLETPROOF CLICK TRIGGER --}}
+                    <li class="nxl-item nxl-caption premium-module-header" data-module="pos" onclick="toggleModuleSidebar('pos', this)">
+                        <div class="premium-module-header-content">
+                            <span class="premium-module-header-title">POS</span>
+                            <span class="premium-module-accordion-btn">
+                                <span class="premium-module-arrow-container">
+                                    <i class="feather-chevron-right premium-module-arrow"></i>
+                                </span>
+                            </span>
+                        </div>
+                    </li>
+                    {{-- POS MODULE ITEMS --}}
+                    <li class="nxl-item premium-module-child module-pos">
+                        <a href="{{ env('POS_URL', 'http://pos.localhost') }}" class="nxl-link" target="_blank">
+                            <span class="nxl-micon">
+                                <i class="feather-monitor"></i>
+                            </span>
+                            <span class="nxl-mtext">POS Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nxl-item premium-module-child module-pos">
+                        <a href="{{ env('POS_URL', 'http://pos.localhost') }}" class="nxl-link" target="_blank">
+                            <span class="nxl-micon">
+                                <i class="feather-file-text"></i>
+                            </span>
+                            <span class="nxl-mtext">Billing Management</span>
+                        </a>
+                    </li>
+                @endif
+
             </ul>
 
         </div>
@@ -145,38 +176,67 @@ if (!function_exists('renderMenuItem')) {
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
     border: 1px solid transparent;
 }
+/* ==========================================================
+   SIDEBAR THEME VARIABLES
+   Change colors only here
+========================================================== */
+:root {
+
+    --sidebar-primary: #3B82F6;
+    --sidebar-primary-hover: #2563EB;
+    --sidebar-primary-active: #1D4ED8;
+    --sidebar-active-bg: #DBEAFE;
+
+    --sidebar-hover-bg: rgba(59, 130, 246, 0.08);
+
+    --sidebar-border: rgba(59, 130, 246, 0.20);
+
+    --sidebar-timeline: rgba(191, 219, 254, 0.9);
+    --sidebar-timeline-hover: rgba(59, 130, 246, 0.35);
+    --sidebar-timeline-active: rgba(59, 130, 246, 0.60);
+
+    --sidebar-node: #BFDBFE;
+
+    --sidebar-text: #475569;
+    --sidebar-heading: #64748b;
+    --sidebar-muted: #94a3b8;
+
+    --sidebar-shadow: rgba(59, 130, 246, 0.08);
+    --sidebar-glow: rgba(59, 130, 246, 0.35);
+    --sidebar-glow-active: rgba(29, 78, 216, 0.45);
+}
 
 /* Hover Link */
 .nxl-navigation .nxl-navbar li:hover > a {
-    color: #ff7a00 !important;
+    color: var(--sidebar-primary-hover) !important;
     transform: translateX(4px);
-    background: rgba(255, 122, 0, 0.02) !important;
+    background: var(--sidebar-hover-bg) !important;
     border-radius: 10px;
 }
 
 /* Hover Icon & Arrow */
 .nxl-navigation .nxl-navbar li:hover > a .nxl-micon i,
 .nxl-navigation .nxl-navbar li:hover > a .nxl-arrow i {
-    color: #ff7a00 !important;
+    color: var(--sidebar-primary-hover) !important;
     transition: color 0.25s ease;
 }
 
 /* Active Link */
 .nxl-navigation .nxl-navbar li.active > a {
-    background: rgba(255, 122, 0, 0.06) !important;
-    color: #ff5100 !important;
+    background: var(--sidebar-active-bg) !important;
+    color: var(--sidebar-primary-active) !important;
     border-radius: 10px;
-    border: 1px solid rgba(255, 122, 0, 0.12) !important;
-    box-shadow: 0 4px 12px rgba(255, 122, 0, 0.02);
+    border: 1px solid var(--sidebar-border) !important;
+    box-shadow: 0 4px 12px var(--sidebar-shadow);
 }
 
 /* Active Icon & Arrow */
 .nxl-navigation .nxl-navbar li.active > a .nxl-micon i,
 .nxl-navigation .nxl-navbar li.active > a .nxl-arrow i {
-    color: #ff5100 !important;
+    color: var(--sidebar-primary-active) !important;
 }
 
-/* Collapsible Module Headers (Left-aligned clean caption) */
+/* Module Headers */
 .premium-module-header {
     cursor: pointer;
     user-select: none;
@@ -198,16 +258,16 @@ if (!function_exists('renderMenuItem')) {
     font-weight: 800 !important;
     letter-spacing: 1.2px;
     text-transform: uppercase;
-    color: #64748b !important;
+    color: var(--sidebar-heading) !important;
     transition: color 0.25s ease;
 }
 
 .premium-module-header:hover .premium-module-header-title {
-    color: #ff7a00 !important;
+    color: var(--sidebar-primary-hover) !important;
 }
 
 .premium-module-accordion-btn {
-    color: #94a3b8;
+    color: var(--sidebar-muted);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -215,10 +275,10 @@ if (!function_exists('renderMenuItem')) {
 }
 
 .premium-module-header:hover .premium-module-accordion-btn {
-    color: #ff7a00;
+    color: var(--sidebar-primary-hover);
 }
 
-/* Rotatable chevron container */
+/* Chevron */
 .premium-module-arrow-container {
     display: inline-flex;
     align-items: center;
@@ -230,39 +290,35 @@ if (!function_exists('renderMenuItem')) {
     font-size: 13px !important;
 }
 
-/* When expanded (default), rotate chevron to point down (90deg) */
 .premium-module-header .premium-module-arrow-container {
     transform: rotate(90deg) !important;
 }
 
-/* When collapsed, rotate chevron back to point right (0deg) */
 .premium-module-header.collapsed .premium-module-arrow-container {
     transform: rotate(0deg) !important;
 }
 
-/* Connective vertical dashed timeline line globally for all submenus */
+/* Timeline */
 .nxl-navigation .nxl-submenu {
     position: relative;
     padding-left: 20px !important;
     margin-left: 32px !important;
     margin-top: 6px !important;
     margin-bottom: 8px !important;
-    border-left: 1.5px dashed rgba(226, 232, 240, 0.8) !important;
+    border-left: 1.5px dashed var(--sidebar-timeline) !important;
     transition: border-color 0.3s ease;
     background: transparent !important;
 }
 
-/* Hovering a menu changes its submenu line color */
 .nxl-navigation .nxl-navbar li:hover > .nxl-submenu {
-    border-left-color: rgba(255, 122, 0, 0.2) !important;
+    border-left-color: var(--sidebar-timeline-hover) !important;
 }
 
-/* Active menu changes its submenu line color */
 .nxl-navigation .nxl-navbar li.active > .nxl-submenu {
-    border-left-color: rgba(255, 122, 0, 0.35) !important;
+    border-left-color: var(--sidebar-timeline-active) !important;
 }
 
-/* Submenu circular timeline bullet node styling */
+/* Timeline Nodes */
 .nxl-navigation .nxl-submenu li {
     position: relative;
     list-style: none !important;
@@ -277,63 +333,60 @@ if (!function_exists('renderMenuItem')) {
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background-color: #cbd5e1;
+    background-color: var(--sidebar-node);
     border: 1.5px solid #fff;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.25s ease;
     z-index: 5;
 }
 
-/* Hover node effect */
 .nxl-navigation .nxl-submenu li:hover::before {
-    background-color: #ff7a00 !important;
+    background-color: var(--sidebar-primary-hover) !important;
     transform: translateY(-50%) scale(1.4);
-    box-shadow: 0 0 8px rgba(255, 122, 0, 0.6);
+    box-shadow: 0 0 8px var(--sidebar-glow);
 }
 
-/* Active node effect */
 .nxl-navigation .nxl-submenu li.active::before {
-    background-color: #ff5100 !important;
+    background-color: var(--sidebar-primary-active) !important;
     transform: translateY(-50%) scale(1.4);
-    box-shadow: 0 0 8px rgba(255, 81, 0, 0.7);
+    box-shadow: 0 0 8px var(--sidebar-glow-active);
 }
 
-/* Remove default dots/squares in standard styles */
 .nxl-navigation .nxl-submenu li a::before {
     display: none !important;
 }
 
-/* Submenu Link Hover & Active Effects */
+/* Submenu Links */
 .nxl-navigation .nxl-submenu .nxl-link {
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    transition: all 0.2s ease !important;
     font-size: 13px !important;
     font-weight: 500 !important;
-    color: #4b5563 !important;
-    padding: 8px 0px !important;
+    color: var(--sidebar-text) !important;
+    padding: 8px 0 !important;
     background: transparent !important;
     border: none !important;
 }
 
 .nxl-navigation .nxl-submenu .nxl-link:hover {
     padding-left: 5px !important;
-    color: #ff7a00 !important;
+    color: var(--sidebar-primary-hover) !important;
     transform: none !important;
 }
 
 .nxl-navigation .nxl-submenu li.active > .nxl-link {
-    color: #ff5100 !important;
+    color: var(--sidebar-primary-active) !important;
     font-weight: 600 !important;
     padding-left: 4px !important;
 }
 
-/* Normal Sub-Submenu Connector timeline support */
+/* Nested Submenus */
 .nxl-navigation .nxl-submenu .nxl-submenu {
-    border-left: 1.5px dashed rgba(226, 232, 240, 0.6) !important;
+    border-left: 1.5px dashed var(--sidebar-timeline) !important;
     padding-left: 15px !important;
     margin-left: 15px !important;
 }
 
 .nxl-navigation .navbar-content .nxl-submenu .nxl-link {
-    margin-left: 0px !important;
+    margin-left: 0 !important;
 }
 </style>
 

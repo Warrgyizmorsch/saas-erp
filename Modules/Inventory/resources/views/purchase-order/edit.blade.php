@@ -374,8 +374,8 @@
                                             <td class="col-amt"><input type="number" name="items[{{ $index }}][discount_amount]" class="form-control discount_amount" value="{{ $row->discount_amount ?? 0 }}" step="0.01" readonly></td>
                                             <td class="col-taxtype">
                                                 <select name="items[{{ $index }}][tax_type]" class="form-select" data-select2-selector="status" {{ !$isDraft ? 'disabled' : '' }}>
-                                                    <option value="IGST"  {{ $row->tax_typ == 'IGST'  ? 'selected' : '' }}>IGST</option>
-                                                    <option value="Other" {{ $row->tax_typ == 'Other' ? 'selected' : '' }}>Other</option>
+                                                    <option value="IGST"  {{ $row->tax_type == 'IGST'  ? 'selected' : '' }}>IGST</option>
+                                                    <option value="Other" {{ $row->tax_type == 'Other' ? 'selected' : '' }}>Other</option>
                                                 </select>
                                             </td>
                                             <td class="col-tax">

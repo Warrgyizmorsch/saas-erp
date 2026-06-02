@@ -843,6 +843,7 @@
                 }
 
                 let currentIndex = stageIndex;
+                let id = data?.id ?? '';
 
                 let name = data?.name ?? '';
                 let present = data?.present ?? '';
@@ -875,6 +876,7 @@
             <div class="stage-card-body">
 
                 <div class="field-group">
+                    <input type="hidden" name="stages[${currentIndex}][id]" value="${id}">
 
                     <div class="field">
 
@@ -970,6 +972,7 @@
             // ===========================
             function appendSubStage(index, count, data = null) {
 
+                let id = data?.id ?? '';
                 let name = data?.name ?? '';
                 let present = data?.present ?? '';
                 let order_no = data?.order_no ?? '';
@@ -977,6 +980,7 @@
                 let html = `
 
         <div class="sub-row">
+            <input type="hidden" name="stages[${index}][sub_stages][${count}][id]" value="${id}">
 
             <div class="field">
 
@@ -1141,7 +1145,7 @@
                     oldStages.forEach(stage => {
 
                         addStage({
-
+                            id: stage.id ?? '',
                             name: stage.name ?? '',
                             present: stage.present ?? '',
                             order_no: stage.order_no ?? '',
@@ -1161,7 +1165,7 @@
                     dbStages.forEach(stage => {
 
                         addStage({
-
+                            id: stage.id,
                             name: stage.name,
                             present: stage.present,
                             order_no: stage.order_no,
@@ -1268,6 +1272,7 @@
 
                         data.forEach(stage => {
                             addStage({
+                                id: stage.id,
                                 name: stage.name,
                                 present: stage.present,
                                 order_no: stage.order_no,

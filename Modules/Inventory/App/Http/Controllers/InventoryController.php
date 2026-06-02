@@ -536,156 +536,153 @@ public function requiredVsAvailable(Request $request)
 {
     $projects = Project::with([
         'projectProducts.product.productItems',
+        'projectItems'
     ])
         ->where('status', 'in_progress')
         ->get();
 
     $runningProjectIds = $projects->pluck('id')->filter()->values();
     $runningProjectIdSet = $runningProjectIds->flip();
-
     $requirements = [];
 
     foreach ($projects as $project) {
-
         foreach ($project->projectProducts as $projectProduct) {
-
             $productQty = (int) ($projectProduct->quantity ?? 0);
             if ($productQty <= 0) continue;
 
             foreach (($projectProduct->product->productItems ?? []) as $item) {
-
                 $inventoryId = (int) $item->inventory_id;
                 if (!$inventoryId) continue;
 
-                $requiredQty = $productQty * (int) ($item->quantity ?? 0);
-
-                if (!isset($requirements[$inventoryId])) {
-                    $requirements[$inventoryId] = 0;
-                }
-
-                $requirements[$inventoryId] += $requiredQty;
+                $requirements[$inventoryId] = ($requirements[$inventoryId] ?? 0)
+                    + ($productQty * (int) ($item->quantity ?? 0));
             }
         }
+
+        foreach (($project->projectItems ?? []) as $pi) {
+            $inventoryId = (int) $pi->inventory_id;
+            if (!$inventoryId) continue;
+
+            $requirements[$inventoryId] = ($requirements[$inventoryId] ?? 0)
+                + (int) ($pi->quantity ?? 0);
+        }
     }
-
-    if (empty($requirements)) {
-        return view('inventory::inventory.required_vs_available', ['data' => []]);
-    }
-
-    $query = Inventory::whereIn('id', array_keys($requirements));
-
-    if ($request->filled('name')) {
-        $query->where('id', $request->name);
-    }
-
-    $inventories = $query->get();
-    $inventoryIds = $inventories->pluck('id')->values();
-
-    $allowedMachineIds = StockTransaction::whereIn('project_id', $runningProjectIds)
-        ->whereNotNull('machine_id')
-        ->pluck('machine_id')
-        ->unique()
-        ->values();
-
-    $allowedMachineIdSet = $allowedMachineIds->flip();
-
-    $transactions = StockTransaction::select(
-        'inventory_id',
-        'txn_type',
-        'ref_type',
-        'quantity',
-        'project_id',
-        'machine_id'
-    )
-        ->whereIn('inventory_id', $inventoryIds)
-        ->get()
-        ->groupBy('inventory_id');
 
     $data = [];
 
-    foreach ($inventories as $inventory) {
+    if (!empty($requirements)) {
+        $query = Inventory::whereIn('id', array_keys($requirements));
 
-        $rows = $transactions->get($inventory->id, collect());
-
-        $in = $rows->where('txn_type', 'In')
-            ->where('ref_type', '!=', 'Finish')
-            ->sum('quantity');
-
-        $out = $rows->where('txn_type', 'Out')
-            ->where('ref_type', '!=', 'Machining')
-            ->sum('quantity');
-
-        $finish = $rows->where('txn_type', 'In')
-            ->where('ref_type', 'Finish')
-            ->sum('quantity');
-
-        $mc = $rows->where('txn_type', 'Out')
-            ->where('ref_type', 'Machining')
-            ->sum('quantity');
-
-        $consumption = $rows
-            ->where('txn_type', 'Out')
-            ->filter(function ($r) use ($runningProjectIdSet, $allowedMachineIdSet) {
-                $hasRunningProject = !empty($r->project_id) && $runningProjectIdSet->has($r->project_id);
-                $hasAllowedMachine = !empty($r->machine_id) && $allowedMachineIdSet->has($r->machine_id);
-
-                return $hasRunningProject || $hasAllowedMachine;
-            })
-            ->sum('quantity');
-
-        $classification = $inventory->classification;
-
-        if ($classification === 'FINISH' || $classification === "" || $classification === "null") {
-            $finalFnsh   = $in - $out;
-            $finalMc     = 0;
-            $semifinish  = 0;
-        } else {
-            $finalMc     = $mc - $finish;
-            $finalFnsh   = $finish - $out;
-            $semifinish  = $in - $out - $finalMc - $finalFnsh;
+        if ($request->filled('name')) {
+            $query->where('id', $request->name);
         }
 
-        $total = $in - $out;
+        $inventories = $query->get();
+        $inventoryIds = $inventories->pluck('id')->values();
 
-        $required   = (int) ($requirements[$inventory->id] ?? 0);
-        $difference = $total - $required;
+        $allowedMachineIdSet = StockTransaction::whereIn('project_id', $runningProjectIds)
+            ->whereNotNull('machine_id')
+            ->pluck('machine_id')
+            ->unique()
+            ->values()
+            ->flip();
 
-        $data[] = [
-            'inventory_name'     => $inventory->name,
-            'inventory_id'       => $inventory->id,
-            'inventory_model'    => $inventory->model,
-            'classification'     => $inventory->classification,
+        $transactions = StockTransaction::select(
+            'inventory_id',
+            'txn_type',
+            'ref_type',
+            'quantity',
+            'project_id',
+            'machine_id'
+        )
+            ->whereIn('inventory_id', $inventoryIds)
+            ->get()
+            ->groupBy('inventory_id');
 
-            'required'           => $required,
-            'available'          => $total,
+        foreach ($inventories as $inventory) {
+            $rows = $transactions->get($inventory->id, collect());
 
-            'machine_available'  => $semifinish,
-            'finish'             => $finalFnsh,
-            'machining'          => $finalMc,
+            $in = $rows->where('txn_type', 'In')->where('ref_type', '!=', 'Finish')->sum('quantity');
+            $out = $rows->where('txn_type', 'Out')->where('ref_type', '!=', 'Machining')->sum('quantity');
+            $finish = $rows->where('txn_type', 'In')->where('ref_type', 'Finish')->sum('quantity');
+            $mc = $rows->where('txn_type', 'Out')->where('ref_type', 'Machining')->sum('quantity');
 
-            'consumption'        => (float) $consumption,
+            $consumption = $rows
+                ->where('txn_type', 'Out')
+                ->filter(function ($r) use ($runningProjectIdSet, $allowedMachineIdSet) {
+                    $hasRunningProject = !empty($r->project_id) && $runningProjectIdSet->has($r->project_id);
+                    $hasAllowedMachine = !empty($r->machine_id) && $allowedMachineIdSet->has($r->machine_id);
 
-            'difference'         => $difference,
-            'short'              => $difference >= 0,
-        ];
+                    return $hasRunningProject || $hasAllowedMachine;
+                })
+                ->sum('quantity');
+
+            $classification = $inventory->classification;
+
+            if ($classification === 'FINISH' || $classification === "" || $classification === "null") {
+                $finalFnsh = $in - $out;
+                $finalMc = 0;
+                $semifinish = 0;
+            } else {
+                $finalMc = $mc - $finish;
+                $finalFnsh = $finish - $out;
+                $semifinish = $in - $out - $finalMc - $finalFnsh;
+            }
+
+            $total = $in - $out;
+            $required = (int) ($requirements[$inventory->id] ?? 0) - (float) $consumption;
+            $diff = $required - $total;
+
+            $data[] = [
+                'inventory_name' => $inventory->name,
+                'inventory_id' => $inventory->id,
+                'inventory_model' => $inventory->model,
+                'classification' => $inventory->classification,
+                'required' => $required,
+                'available' => $total,
+                'machine_available' => $semifinish,
+                'finish' => $finalFnsh,
+                'machining' => $finalMc,
+                'consumption' => (float) $consumption,
+                'short_qty' => max($diff, 0),
+                'extra_qty' => max(-$diff, 0),
+                'short_extra' => $diff,
+                'short' => $diff <= 0,
+            ];
+        }
     }
 
-    $data = collect($data)
-        ->sortBy('short')
-        ->values()
-        ->all();
+    $sortBy = $request->input('sort_by', 'short_extra');
+    $sortDirection = strtolower($request->input('sort_direction', 'desc')) === 'asc' ? 'asc' : 'desc';
+    $allowedSorts = ['required', 'available', 'short_extra'];
+
+    if (!in_array($sortBy, $allowedSorts, true)) {
+        $sortBy = 'short_extra';
+    }
+
+    $data = collect($data);
+    $data = $sortDirection === 'asc'
+        ? $data->sortBy($sortBy)
+        : $data->sortByDesc($sortBy);
+
+    $data = $data->values()->all();
+
+    $totals = [
+        'required' => collect($data)->sum('required'),
+        'available' => collect($data)->sum('available'),
+        'short_qty' => collect($data)->sum('short_qty'),
+        'extra_qty' => collect($data)->sum('extra_qty'),
+    ];
 
     $inventoryName = null;
-
     if ($request->filled('name')) {
         $inventory = Inventory::find($request->name);
-
         if ($inventory) {
             $inventoryName = trim($inventory->name . ' ' . $inventory->model);
         }
     }
 
-    return view('inventory::inventory.required_vs_available', compact('data', 'inventoryName'));
+    return view('inventory::inventory.required_vs_available', compact('data', 'inventoryName', 'totals', 'sortBy', 'sortDirection'));
 }
 
     public function search(Request $request)

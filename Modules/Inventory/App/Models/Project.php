@@ -85,4 +85,9 @@ class Project extends Model
 
         return false;
     }
+
+    public function documents()
+    {
+        return $this->hasMany(ProjectDocument::class);
+    }
 }

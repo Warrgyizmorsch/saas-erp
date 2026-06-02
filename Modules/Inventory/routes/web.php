@@ -78,6 +78,13 @@ Route::middleware([
     Route::post('/stage/update-parent-status', [StageController::class, 'updateParentStatus']);
     Route::post('/stage/update-sub-status', [StageController::class, 'updateSubStatus']);
     Route::post('/project/{id}/flow-update', [ProjectController::class, 'updateFlow'])->name('project.updateFlow');
+    
+    // Project stage timeline & documents routes
+    Route::post('/projects/{project}/documents', [ProjectController::class, 'uploadDocuments'])->name('project.documents.upload');
+    Route::get('/project-documents/{document}/view', [ProjectController::class, 'viewDocument'])->name('project.documents.view');
+    Route::get('/project-documents/{document}/download', [ProjectController::class, 'downloadDocument'])->name('project.documents.download');
+    Route::delete('/project-documents/{document}', [ProjectController::class, 'deleteDocument'])->name('project.documents.delete');
+    Route::post('/project-stage-timeline/update', [ProjectController::class, 'updateTimeline'])->name('project.stage.timeline.update');
 
     // Available Stock and Supplier Inventory
     Route::get('/available-stock/{inventory}', [InventoryAvailableController::class, 'availableStock']);

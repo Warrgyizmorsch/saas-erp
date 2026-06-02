@@ -287,6 +287,16 @@
                         @enderror
                     </div>
 
+                    <div class="col-lg-4">
+                        <label class="form-label">inner_diameter <span class="text-danger"></span></label>
+                        <input type="text" name="inner_diameter"
+                            value="{{ $item->inner_diameter ?? ''}}"
+                            class="form-control" placeholder="Enter inner_diameter" @error('inner_diameter') is-invalid @enderror>
+                        @error('inner_diameter')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
             </div>
 
             <div class="mt-3 d-flex justify-content-end">
@@ -407,7 +417,7 @@
                             <th>classification</th>
                             <th>Placement</th>
                             <th>Composition</th>
-                            <th>outer_diameter</th>
+                            <th>diameter</th>
                             <th class="text-end">Actions</th>
                         </tr>
                     </thead>
@@ -442,7 +452,10 @@
                             <td>{{$i->classification ?? 'N/A'}}</td>
                             <td>{{$i->placement ?? 'N/A'}}</td>
                             <td>{{$i->composition ?? 'N/A'}}</td>
-                            <td>{{$i->outer_diameter ?? 'N/A'}}</td>
+                            <td>
+                                <div><strong>OD:</strong> {{ $i->outer_diameter ?? 'N/A' }}</div>
+                                <div><strong>ID:</strong> {{ $i->inner_diameter ?? 'N/A' }}</div>
+                            </td>
 
                             <!-- Status With Select2 -->
                             {{-- <td>

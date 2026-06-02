@@ -118,6 +118,7 @@ class InventoryController extends Controller
                 'width' => 'nullable|integer',
                 'thikness' => 'nullable|integer',
                 'outer_diameter' => 'nullable',
+                'inner_diameter' => 'nullable',
                 'composition' => 'nullable',
                 'grade' => 'nullable|string',
             ],
@@ -144,6 +145,7 @@ class InventoryController extends Controller
             'thikness' => $request->thikness,
             'composition' => $request->composition,
             'outer_diameter' => $request->outer_diameter,
+            'inner_diameter' => $request->inner_diameter,
             'is_deleted' => 0,
         ]);
 
@@ -224,6 +226,7 @@ class InventoryController extends Controller
                 'width' => 'nullable|integer',
                 'thikness' => 'nullable|integer',
                 'outer_diameter' => 'nullable',
+                'inner_diameter' => 'nullable',
                 'composition' => 'nullable',
                 'grade' => 'nullable|string',
             ],
@@ -251,6 +254,7 @@ class InventoryController extends Controller
             'thikness' => $request->thikness,
             'composition' => $request->composition,
             'outer_diameter' => $request->outer_diameter,
+            'inner_diameter' => $request->inner_diameter,
             'is_deleted' => 0,
         ]);
 

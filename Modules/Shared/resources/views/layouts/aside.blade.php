@@ -140,7 +140,7 @@ if (!function_exists('renderMenuItem')) {
                     </li>
                     {{-- POS MODULE ITEMS --}}
                     <li class="nxl-item premium-module-child module-pos">
-                        <a href="{{ env('POS_URL', 'http://pos.localhost') }}" class="nxl-link" target="_blank">
+                        <a href="{{ env('POS_URL', 'https://pos-erp-frontend.vercel.app/pos') }}" class="nxl-link" target="_blank">
                             <span class="nxl-micon">
                                 <i class="feather-monitor"></i>
                             </span>
@@ -148,7 +148,7 @@ if (!function_exists('renderMenuItem')) {
                         </a>
                     </li>
                     <li class="nxl-item premium-module-child module-pos">
-                        <a href="{{ env('POS_URL', 'http://pos.localhost') }}" class="nxl-link" target="_blank">
+                        <a href="{{ env('POS_URL', 'https://pos-erp-frontend.vercel.app/pos') }}" class="nxl-link" target="_blank">
                             <span class="nxl-micon">
                                 <i class="feather-file-text"></i>
                             </span>

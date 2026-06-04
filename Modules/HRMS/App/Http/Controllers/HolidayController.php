@@ -32,14 +32,22 @@ class HolidayController extends Controller
 }
 
     public function store(Request $request)
-{
-    Holiday::create([
-        'title' => strtoupper($request->title),
-        'date' => $request->date,
-    ]);
+    {
+        $holiday = Holiday::create([
+            'title' => strtoupper($request->title),
+            'date' => $request->date,
+        ]);
 
-    return back()->with('success', 'Holiday added');
-}
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Holiday added successfully',
+                'holiday' => $holiday
+            ]);
+        }
+
+        return back()->with('success', 'Holiday added');
+    }
     public function edit($id)
 {
     $holiday = Holiday::findOrFail($id);

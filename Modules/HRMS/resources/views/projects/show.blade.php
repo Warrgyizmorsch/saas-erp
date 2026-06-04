@@ -10,7 +10,7 @@
                 <h5 class="m-b-10">Projects</h5>
             </div>
             <ul class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('hrms.dashboard') }}">Home</a></li>
                 <li class="breadcrumb-item"><a href="{{ route('projects.index') }}">Projects</a></li>
                 <li class="breadcrumb-item">Project Details</li>
             </ul>
@@ -18,10 +18,6 @@
         <div class="page-header-right ms-auto">
             <div class="page-header-right-items">
                 <div class="d-flex align-items-center gap-2 page-header-right-items-wrapper">
-                    <a href="{{ route('daily-tasks.index', ['project_id' => $project->id, 'create' => 1]) }}" class="btn btn-md btn-light-brand border shadow-sm">
-                        <i class="feather-plus me-2"></i>
-                        <span>Create Task</span>
-                    </a>
                     <a href="{{ route('projects.edit', $project) }}" class="btn btn-primary">
                         <i class="feather-edit-3 me-2"></i>
                         <span>Edit Project</span>

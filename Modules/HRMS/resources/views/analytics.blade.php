@@ -10,7 +10,7 @@
     <meta name="author" content="theme_ocean">
     <!--! The above 6 meta tags *must* come first in the head; any other head content must come *after* these tags !-->
     <!--! BEGIN: Apps Title-->
-    <title>Duralux || Analytics</title>
+    <title>Warrgyizmorsch || Analytics</title>
     <!--! END:  Apps Title-->
     <!--! BEGIN: Favicon-->
     <link rel="shortcut icon" type="image/x-icon" href="assets/images/favicon.ico">
@@ -308,7 +308,7 @@
                     <div class="card-body">
                         <i class="feather-sunrise fs-4 text-dark"></i>
                         <h6 class="mt-4 text-dark fw-bolder">Downloading Center</h6>
-                        <p class="fs-11 my-3 text-dark">Duralux is a production ready CRM to get started up and running
+                        <p class="fs-11 my-3 text-dark">Warrgyizmorsch is a production ready CRM to get started up and running
                             easily.</p>
                         <a href="javascript:void(0);" class="btn btn-primary text-dark w-100">Download Now</a>
                     </div>
@@ -814,9 +814,9 @@
                                                 <img src="assets/images/banner/mockup.png" alt=""
                                                     class="img-fluid rounded-3">
                                             </div>
-                                            <h6 class="fw-bolder">Duralux - Admin Dashboard UiKit</h6>
+                                            <h6 class="fw-bolder">Warrgyizmorsch - Admin Dashboard UiKit</h6>
                                             <p class="fs-12 fw-normal text-muted text-truncate-3-line">Get started
-                                                Duralux with Duralux up and running. Duralux bootstrap template docs
+                                                Warrgyizmorsch with Warrgyizmorsch up and running. Warrgyizmorsch bootstrap template docs
                                                 helps you to get started with simple html codes.</p>
                                             <a href="javascript:void(0);" class="fs-13 fw-bold text-primary">Get Started
                                                 &rarr;</a>
@@ -1108,7 +1108,7 @@
                                                     </div>
                                                     <div class="mt-4">
                                                         <a href="mailto:theme_ocean@gmail.com"
-                                                            class="fs-13 fw-bold">View all resources on Duralux
+                                                            class="fs-13 fw-bold">View all resources on Warrgyizmorsch
                                                             &rarr;</a>
                                                     </div>
                                                 </div>
@@ -1671,7 +1671,7 @@
                                                                         class="p-3 bg-soft-dark text-dark rounded d-lg-flex align-items-center justify-content-between">
                                                                         <div class="fs-13">
                                                                             <i class="feather-star me-2"></i>
-                                                                            <span>View all services on Duralux.</span>
+                                                                            <span>View all services on Warrgyizmorsch.</span>
                                                                         </div>
                                                                         <div class="mt-2 mt-lg-0">
                                                                             <a href="javascript:void(0);"
@@ -1949,7 +1949,7 @@
                                                             </div>
                                                             <div class="mt-4">
                                                                 <a href="mailto:theme_ocean@gmail.com"
-                                                                    class="fs-13 fw-bold">View all features on Duralux
+                                                                    class="fs-13 fw-bold">View all features on Warrgyizmorsch
                                                                     &rarr;</a>
                                                             </div>
                                                         </div>
@@ -3527,7 +3527,7 @@
                                                                 <span>CRM Dashboard Redesign</span>
                                                             </a>
                                                             <p class="fs-12 text-muted mb-0">Management of project under
-                                                                "Duralux" brand</p>
+                                                                "Warrgyizmorsch" brand</p>
                                                         </div>
                                                     </div>
                                                 </td>
@@ -3565,9 +3565,9 @@
                                                             class="wd-10 ht-10 bg-gray-400 rounded-circle d-inline-block me-2 lh-base"></span>
                                                         <div class="border-3 border-start rounded ps-3">
                                                             <a href="javascript:void(0);" class="mb-2 d-block">
-                                                                <span>Duralux CRM Admin Project</span>
+                                                                <span>Warrgyizmorsch CRM Admin Project</span>
                                                             </a>
-                                                            <p class="fs-12 text-muted mb-0">Duralux CRM Dashbaord
+                                                            <p class="fs-12 text-muted mb-0">Warrgyizmorsch CRM Dashbaord
                                                                 Project</p>
                                                         </div>
                                                     </div>
@@ -3647,9 +3647,9 @@
                                                             class="wd-10 ht-10 bg-gray-400 rounded-circle d-inline-block me-2 lh-base"></span>
                                                         <div class="border-3 border-start rounded ps-3">
                                                             <a href="javascript:void(0);" class="mb-2 d-block">
-                                                                <span>Duralux CRM Dashbaord Project</span>
+                                                                <span>Warrgyizmorsch CRM Dashbaord Project</span>
                                                             </a>
-                                                            <p class="fs-12 text-muted mb-0">Duralux CRM Dashbaord
+                                                            <p class="fs-12 text-muted mb-0">Warrgyizmorsch CRM Dashbaord
                                                                 Project</p>
                                                         </div>
                                                     </div>

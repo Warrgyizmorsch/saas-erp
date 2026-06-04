@@ -193,6 +193,18 @@
 </head>
 
 <body>
+    @php
+        if (!$payroll->employee) {
+            $payroll->setRelation('employee', new \Modules\HRMS\App\Models\Employee([
+                'id' => 'N/A',
+                'name' => 'N/A',
+                'bank_name' => 'N/A',
+                'designation' => 'N/A',
+                'account_number' => 'N/A',
+                'pan_number' => 'N/A',
+            ]));
+        }
+    @endphp
     <div class="container">
         <!-- Top Branding Header -->
         <table class="header-top">

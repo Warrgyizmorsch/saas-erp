@@ -5,7 +5,7 @@ namespace Modules\HRMS\App\Http\Controllers;
 use App\Http\Controllers\Controller;
 
 use Modules\HRMS\App\Models\Employee;
-use App\Exports\EmployeesExport;
+use Modules\HRMS\App\Exports\EmployeesExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;

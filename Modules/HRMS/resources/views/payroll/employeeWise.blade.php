@@ -2,7 +2,7 @@
 
 @section('content')
     @php
-        $role = str_replace(' ', '_', strtolower(auth()->user()->role ?? 'employee'));
+        $role = str_replace(' ', '_', strtolower(auth()->user()->hrm_role ?? 'employee'));
         $isAdmin = in_array($role, ['super_admin', 'manager', 'hr_executive', 'hr_intern', 'business_operation_head']);
         $isTeamLeader = in_array($role, ['team_leader']);
     @endphp
@@ -496,8 +496,13 @@
                     return;
             }
 
-            startInput.value = start.toISOString().split('T')[0];
-            endInput.value = end.toISOString().split('T')[0];
+            startInput.value = start.getFullYear() + '-' +
+                String(start.getMonth() + 1).padStart(2, '0') + '-' +
+                String(start.getDate()).padStart(2, '0');
+
+            endInput.value = end.getFullYear() + '-' +
+                String(end.getMonth() + 1).padStart(2, '0') + '-' +
+                String(end.getDate()).padStart(2, '0');
         }
 
         function selectEmployee(id, name) {
@@ -636,10 +641,11 @@
             let count = 0;
             rows.forEach((item, index) => {
                 let match = !filterStatus;
-                if (filterStatus === 'present' && item.status === 'present') match = true;
+                const isHoliday = !!item.is_holiday;
+                if (filterStatus === 'present' && (item.status === 'present' || (isHoliday && item.status === 'absent'))) match = true;
                 if (filterStatus === 'half_day' && item.status === 'half_day') match = true;
                 if (filterStatus === 'leave' && item.status === 'leave') match = true;
-                if (filterStatus === 'absent' && item.status === 'absent') match = true;
+                if (filterStatus === 'absent' && item.status === 'absent' && !isHoliday) match = true;
                 if (filterStatus === 'late' && item.status === 'late') match = true;
                 if (filterStatus === 'overtime' && item.total_hours > 9) match = true;
                 if (filterStatus === 'wfh' && item.status === 'wfh') match = true;
@@ -669,7 +675,10 @@
 
                     const isActivityDay = activityDays[item.attendance_date] || false;
 
-                    if (isActivityDay && (isEarly || item.status === 'early_out' || item.status === 'early_leave' || (item.status === 'half_day' && !isHalfDayPunch))) {
+                    if (isHoliday && item.status === 'absent') {
+                        statusDisplay = 'Holiday';
+                        badgeClass = 'status-badge-success';
+                    } else if (isActivityDay && (isEarly || item.status === 'early_out' || item.status === 'early_leave' || (item.status === 'half_day' && !isHalfDayPunch))) {
                         statusDisplay = 'Present Activity';
                         badgeClass = 'status-badge-info';
                     } else if (isEarly) {
@@ -794,6 +803,7 @@
         function getStatusBadge(status) {
             switch (status.toLowerCase()) {
                 case 'present': return 'status-badge-success';
+                case 'holiday': return 'status-badge-success';
                 case 'absent': return 'status-badge-danger';
                 case 'half_day': return 'status-badge-warning';
                 case 'activity': return 'status-badge-info';
@@ -832,7 +842,7 @@
                 buttonsStyling: false
             }).then((result) => {
                 if (result.isConfirmed) {
-                    fetch(`/hrms/payroll/attendance/${id}`, {
+                    fetch(`{{ url('/hrms/payroll/attendance') }}/${id}`, {
                         method: 'DELETE',
                         headers: {
                             'X-CSRF-TOKEN': '{{ csrf_token() }}'
@@ -861,7 +871,7 @@
         }
 
         function editSingleAttendance(id, employeeId) {
-            window.location.href = `/hrms/payroll/attendance/employee/${employeeId}/edit?attendance_id=${id}`;
+            window.location.href = `{{ url('/hrms/payroll/attendace/employee') }}/${employeeId}/edit?attendance_id=${id}`;
         }
 
         function exportAttendance() {

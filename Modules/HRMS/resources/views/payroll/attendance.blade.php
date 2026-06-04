@@ -2,7 +2,7 @@
 
 @section('content')
     @php
-        $role = str_replace(' ', '_', strtolower(auth()->user()->role ?? 'employee'));
+        $role = str_replace(' ', '_', strtolower(auth()->user()->hrm_role ?? 'employee'));
         $isAdmin = in_array($role, ['super_admin', 'manager', 'hr_executive', 'hr_intern', 'business_operation_head']);
         $isTeamLeader = in_array($role, ['team_leader']);
     @endphp
@@ -206,7 +206,7 @@
                                     value="{{ request('end_date') }}" style="border-radius: 10px; height: 44px;">
                             </div>
                             <div class="col-md-3 d-flex justify-content-around">
-                                <button
+                                <button type="button"
                                     class="btn btn-primary w-50 fw-bold d-flex align-items-center justify-content-center gap-2 shadow-sm"
                                     onclick="applyFilters()"
                                     style="background: #3858f9; border: none; height: 44px; border-radius: 10px;">
@@ -532,6 +532,13 @@
             let start = new Date();
             let end = new Date();
 
+            const formatDate = (date) => {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+
             switch (range) {
                 case 'today':
                     break;
@@ -562,8 +569,13 @@
                     return;
             }
 
-            // startInput.value = start.toISOString().split('T')[0];
-            // endInput.value = end.toISOString().split('T')[0];
+            if (startInput) {
+                startInput.value = formatDate(start);
+            }
+
+            if (endInput) {
+                endInput.value = formatDate(end);
+            }
         }
 
         function selectQuickRange(val, label) {
@@ -720,10 +732,11 @@
             let count = 0;
             rows.forEach((item, index) => {
                 let match = !filterStatus;
-                if (filterStatus === 'present' && item.status === 'present') match = true;
+                const isHoliday = !!item.is_holiday;
+                if (filterStatus === 'present' && (item.status === 'present' || (isHoliday && item.status === 'absent'))) match = true;
                 if (filterStatus === 'half_day' && item.status === 'half_day') match = true;
                 if (filterStatus === 'leave' && item.status === 'leave') match = true;
-                if (filterStatus === 'absent' && item.status === 'absent') match = true;
+                if (filterStatus === 'absent' && item.status === 'absent' && !isHoliday) match = true;
                 if (filterStatus === 'late' && item.status === 'late') match = true;
                 if (filterStatus === 'overtime' && item.total_hours > 9.30) match = true;
                 if (filterStatus === 'wfh' && item.status === 'wfh') match = true;
@@ -751,7 +764,10 @@
                         }
                     }
 
-                    if (isActivityDay && (isEarly || item.status === 'early_out' || item.status === 'early_leave' || (item.status === 'half_day' && !isHalfDayPunch))) {
+                    if (isHoliday && item.status === 'absent') {
+                        statusDisplay = 'Holiday';
+                        badgeClass = 'status-badge-success';
+                    } else if (isActivityDay && (isEarly || item.status === 'early_out' || item.status === 'early_leave' || (item.status === 'half_day' && !isHalfDayPunch))) {
                         statusDisplay = 'Present Activity';
                         badgeClass = 'status-badge-info';
                     } else if (isEarly) {
@@ -867,6 +883,7 @@
         function getStatusBadge(status) {
             switch (status.toLowerCase()) {
                 case 'present': return 'status-badge-success';
+                case 'holiday': return 'status-badge-success';
                 case 'absent': return 'status-badge-danger';
                 case 'half_day': return 'status-badge-warning';
                 case 'activity': return 'status-badge-info';
@@ -932,7 +949,7 @@
                 buttonsStyling: false
             }).then((result) => {
                 if (result.isConfirmed) {
-                    fetch(`/hrms/payroll/attendance/${id}`, {
+                    fetch(`{{ url('/hrms/payroll/attendance') }}/${id}`, {
                         method: 'DELETE',
                         headers: {
                             'X-CSRF-TOKEN': '{{ csrf_token() }}'
@@ -953,7 +970,7 @@
         }
 
         function editSingleAttendance(id) {
-            window.location.href = `/hrms/payroll/attendance/${id}/edit`;
+            window.location.href = `{{ url('/hrms/payroll/attendance') }}/${id}/edit`;
         }
 
         function exportAttendance() {

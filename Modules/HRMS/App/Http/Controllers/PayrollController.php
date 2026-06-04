@@ -8,10 +8,11 @@ use Modules\HRMS\App\Models\Payroll;
 use Modules\HRMS\App\Models\Attendance;
 use Modules\HRMS\App\Models\LeaveApplication;
 use Modules\HRMS\App\Models\Employee;
+use Modules\HRMS\App\Models\Holiday;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
-// use App\Imports\AttendanceImport;
+// use Modules\HRMS\App\Imports\AttendanceImport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Validator;
 // use Barryvdh\DomPDF\Facade\Pdf;
@@ -32,6 +33,7 @@ class PayrollController extends Controller
         $query = Attendance::query();
 
         $query->join('employees', 'attendances.employee_id', '=', 'employees.id');
+        $query->whereDate('attendances.attendance_date', '<=', now()->toDateString());
 
         if ($isTeamLeader) {
             $department = $user->employee->department ?? null;
@@ -53,12 +55,12 @@ class PayrollController extends Controller
         // ✅ GROUPING (required for your blade)
         $select = [
             'attendances.attendance_date',
-            DB::raw("COUNT(CASE WHEN attendances.status = 'present' THEN 1 END) as present_count"),
+            DB::raw("COUNT(CASE WHEN attendances.status = 'present' OR (attendances.status = 'absent' AND holidays.id IS NOT NULL) THEN 1 END) as present_count"),
             DB::raw("COUNT(CASE WHEN attendances.status = 'overtime' THEN 1 END) as overtime_count"),
             DB::raw("COUNT(CASE WHEN attendances.status = 'half_day' THEN 1 END) as half_day_count"),
             DB::raw("COUNT(CASE WHEN attendances.status = 'wfh' THEN 1 END) as wfh_count"),
-            DB::raw("COUNT(CASE WHEN attendances.status IN ('absent','leave') THEN 1 END) as leave_count"),
-            DB::raw("COUNT(CASE WHEN attendances.status = 'absent' THEN 1 END) as absent_count"),
+            DB::raw("COUNT(CASE WHEN attendances.status = 'leave' OR (attendances.status = 'absent' AND holidays.id IS NULL) THEN 1 END) as leave_count"),
+            DB::raw("COUNT(CASE WHEN attendances.status = 'absent' AND holidays.id IS NULL THEN 1 END) as absent_count"),
             DB::raw("SUM(CASE WHEN attendances.check_out IS NOT NULL AND ((attendances.status = 'present' AND TIME(attendances.check_out) <= SUBTIME(TIME(employees.time_out), '00:30:00')) OR (attendances.status = 'half_day' AND TIME(attendances.check_out) <= SUBTIME(ADDTIME(TIME(employees.time_in), SEC_TO_TIME(TIME_TO_SEC(TIMEDIFF(employees.time_out, employees.time_in)) / 2)), '00:30:00'))) THEN 1 ELSE 0 END) as early_count")
         ];
 
@@ -75,7 +77,8 @@ class PayrollController extends Controller
             $groupBy[] = 'attendances.total_hours';
         }
 
-        $attendance = $query->select($select)
+        $attendance = $query->leftJoin('holidays', 'attendances.attendance_date', '=', 'holidays.date')
+            ->select($select)
             ->groupBy($groupBy)
             ->orderBy('attendances.attendance_date', 'desc')
             ->paginate(31);
@@ -118,6 +121,13 @@ class PayrollController extends Controller
             }
 
             $details = $query->get();
+            $holiday = Holiday::whereDate('date', $date)->first();
+            if ($holiday) {
+                $details->each(function ($attendance) use ($holiday) {
+                    $attendance->is_holiday = true;
+                    $attendance->holiday_title = $holiday->title;
+                });
+            }
 
             $earlyOuts = 0;
             $totalPresent = 0;
@@ -271,10 +281,6 @@ class PayrollController extends Controller
     public function storeAttendance(Request $request)
     {
         foreach ($request->employees as $emp) {
-            $employee = Employee::findOrFail($emp['employee_id']);
-            if (!canManageEmployee(auth()->user(), $employee)) {
-                abort(403, 'Unauthorized action.');
-            }
 
             // skip if everything empty and absent
             if (
@@ -351,13 +357,6 @@ class PayrollController extends Controller
             $employeeId = $request->employee_id;
 
             $employee = Employee::findOrFail($employeeId);
-
-            if (!canManageEmployee(auth()->user(), $employee)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Unauthorized action.'
-                ], 403);
-            }
 
             // 📅 Month Setup
             $date = Carbon::createFromFormat('Y-m', $month)->startOfMonth();
@@ -563,10 +562,6 @@ class PayrollController extends Controller
         try {
             $employee = Employee::findOrFail($request->employee_id);
 
-            if (!canManageEmployee(auth()->user(), $employee)) {
-                return back()->with('error', 'Unauthorized action.');
-            }
-
             $start = \Carbon\Carbon::parse($request->from_date)->startOfMonth();
             $end = \Carbon\Carbon::parse($request->to_date)->endOfMonth();
 
@@ -613,7 +608,7 @@ class PayrollController extends Controller
 
             // 📧 Send Email
             \Mail::to($employee->email)->send(
-                new \App\Mail\SalarySlipMail($employee, $total, $allPayrolls)
+                new \Modules\HRMS\App\Mail\SalarySlipMail($employee, $total, $allPayrolls)
             );
             // return response()->json([
             //     'success' => true,
@@ -650,15 +645,6 @@ class PayrollController extends Controller
     {
         try {
             $data = $request->all();
-            $employee = Employee::findOrFail($data['employee_id']);
-
-            if (!canManageEmployee(auth()->user(), $employee)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Unauthorized action.'
-                ], 403);
-            }
-
             $payroll = Payroll::updateOrCreate(
                 ['employee_id' => $data['employee_id'], 'month' => $data['month']],
                 $data
@@ -694,7 +680,7 @@ class PayrollController extends Controller
                 return back()->with('error', 'Uploaded file is empty.');
             }
 
-            \Maatwebsite\Excel\Facades\Excel::import(new \App\Imports\AttendanceImport, $file);
+            \Maatwebsite\Excel\Facades\Excel::import(new \Modules\HRMS\App\Imports\AttendanceImport, $file);
 
             return back()->with('success', 'Attendance imported successfully!');
 
@@ -712,7 +698,8 @@ class PayrollController extends Controller
      */
     public function index(Request $request)
     {
-        $isAdmin = in_array(auth()->user()->role_id, [1, 3]);
+        $roleSlug = strtolower(auth()->user()->hrm_role);
+        $isAdmin = in_array($roleSlug, ['super_admin', 'admin', 'manager', 'hr_executive', 'hr_intern', 'business_operation_head']);
 
         $query = Payroll::with('employee');
 
@@ -852,9 +839,19 @@ class PayrollController extends Controller
                     $data = [];
 
                     foreach ($this->payrolls as $payroll) {
+                        $employee = $payroll->employee;
+                        if (!$employee) {
+                            $employee = new \Modules\HRMS\App\Models\Employee([
+                                'id' => 'N/A',
+                                'name' => 'N/A',
+                                'time_in' => null,
+                                'time_out' => null,
+                                'department' => 'N/A',
+                            ]);
+                        }
 
-                        $shiftTime = ($payroll->employee->time_in && $payroll->employee->time_out)
-                        ? $payroll->employee->time_in . ' - ' . $payroll->employee->time_out
+                        $shiftTime = ($employee->time_in && $employee->time_out)
+                        ? $employee->time_in . ' - ' . $employee->time_out
                         : '-';
 
                         $monthDays = Carbon::parse($payroll->month)->daysInMonth;
@@ -862,13 +859,13 @@ class PayrollController extends Controller
                         $leave = $monthDays - ($payroll->payable_days ?? 0);
 
                         $data[] = [
-                            $payroll->employee->name,
-                            $payroll->employee->id,
-                            $payroll->employee->department ?? '-',
-                        $shiftTime,
-                        $monthDays,
+                            $employee->name,
+                            $employee->id,
+                            $employee->department ?? '-',
+                            $shiftTime,
+                            $monthDays,
                             $payroll->payable_days,
-                        $leave,
+                            $leave,
                             $payroll->net_payable ?? $payroll->net_salary ?? 0,
                             $payroll->other_allowance,
                         ];
@@ -920,7 +917,7 @@ class PayrollController extends Controller
             foreach ($payrolls as $payroll) {
                 fputcsv($file, [
                     $counter++,
-                    $payroll->employee->name,
+                    $payroll->employee?->name ?? 'N/A',
                     $payroll->month,
                     $payroll->payable_days,
                     $payroll->basic_salary,
@@ -956,7 +953,7 @@ class PayrollController extends Controller
         $filename = 'attendance_' . $start . '_to_' . $end . '.xlsx';
 
         return Excel::download(
-            new \App\Exports\AttendanceExport($start, $end, $employeeId),
+            new \Modules\HRMS\App\Exports\AttendanceExport($start, $end, $employeeId),
             $filename
         );
     }
@@ -1003,34 +1000,9 @@ class PayrollController extends Controller
 
     public function editByDate($attendance_date)
     {
-        $attendancesQuery = Attendance::with('employee')
-            ->whereDate('attendance_date', $attendance_date);
-
-        $loggedInUser = auth()->user();
-        $loggedInRole = $loggedInUser->role ?? Role::find($loggedInUser->role_id);
-        $loggedInLevel = $loggedInRole ? $loggedInRole->authority_level : 0;
-
-        if ($loggedInUser->role_id !== 1) {
-            $attendancesQuery->whereHas('employee', function($eq) use ($loggedInLevel) {
-                $eq->where(function($q) use ($loggedInLevel) {
-                    $q->whereHas('user', function($uq) use ($loggedInLevel) {
-                        $uq->whereHas('role', function($rq) use ($loggedInLevel) {
-                            $rq->where('authority_level', '<', $loggedInLevel);
-                        });
-                    })
-                    ->orWhere(function($oq) use ($loggedInLevel) {
-                        $oq->whereDoesntHave('user');
-                        
-                        $restrictedRoleNames = Role::where('authority_level', '>=', $loggedInLevel)->pluck('name')->toArray();
-                        $restrictedRoleSlugs = array_map(fn($n) => str_replace(' ', '_', strtolower($n)), $restrictedRoleNames);
-                        
-                        $oq->whereNotIn('role', array_merge($restrictedRoleNames, $restrictedRoleSlugs));
-                    });
-                });
-            });
-        }
-
-        $attendances = $attendancesQuery->get();
+        $attendances = Attendance::with('employee')
+            ->whereDate('attendance_date', $attendance_date)
+            ->get();
 
         if ($attendances->isEmpty()) {
             return redirect()->back()->with('error', 'No attendance records found for this date.');
@@ -1109,10 +1081,6 @@ class PayrollController extends Controller
     public function updateByDate(Request $request, $attendance_date)
     {
         foreach ($request->employees as $emp) {
-            $employee = Employee::findOrFail($emp['employee_id']);
-            if (!canManageEmployee(auth()->user(), $employee)) {
-                abort(403, 'Unauthorized action.');
-            }
 
             $attendance = Attendance::whereDate('attendance_date', $attendance_date)
                 ->where('employee_id', $emp['employee_id'])
@@ -1184,15 +1152,6 @@ class PayrollController extends Controller
     {
         try {
             $attendance = Attendance::findOrFail($id);
-            $employee = Employee::findOrFail($attendance->employee_id);
-
-            if (!canManageEmployee(auth()->user(), $employee)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Unauthorized action.'
-                ], 403);
-            }
-
             $attendance->delete();
 
             return response()->json([
@@ -1213,35 +1172,7 @@ class PayrollController extends Controller
     public function destroyAttendanceByDate($date)
     {
         try {
-            $loggedInUser = auth()->user();
-            if ($loggedInUser->role_id !== 1) {
-                $allowedEmployees = Employee::query();
-                $loggedInRole = $loggedInUser->role ?? Role::find($loggedInUser->role_id);
-                $loggedInLevel = $loggedInRole ? $loggedInRole->authority_level : 0;
-                
-                $allowedEmployees->where(function($q) use ($loggedInLevel) {
-                    $q->whereHas('user', function($uq) use ($loggedInLevel) {
-                        $uq->whereHas('role', function($rq) use ($loggedInLevel) {
-                            $rq->where('authority_level', '<', $loggedInLevel);
-                        });
-                    })
-                    ->orWhere(function($oq) use ($loggedInLevel) {
-                        $oq->whereDoesntHave('user');
-                        
-                        $restrictedRoleNames = Role::where('authority_level', '>=', $loggedInLevel)->pluck('name')->toArray();
-                        $restrictedRoleSlugs = array_map(fn($n) => str_replace(' ', '_', strtolower($n)), $restrictedRoleNames);
-                        
-                        $oq->whereNotIn('role', array_merge($restrictedRoleNames, $restrictedRoleSlugs));
-                    });
-                });
-                $allowedEmployeeIds = $allowedEmployees->pluck('id')->toArray();
-                
-                Attendance::where('attendance_date', $date)
-                    ->whereIn('employee_id', $allowedEmployeeIds)
-                    ->delete();
-            } else {
-                Attendance::where('attendance_date', $date)->delete();
-            }
+            Attendance::where('attendance_date', $date)->delete();
 
             return response()->json([
                 'success' => true,
@@ -1276,10 +1207,11 @@ class PayrollController extends Controller
         attendances.employee_id,
         employees.name as employee_name,
 
-        COUNT(CASE WHEN attendances.status = 'present' THEN 1 END) as present_count,
+        COUNT(CASE WHEN attendances.status = 'present' OR (attendances.status = 'absent' AND holidays.id IS NOT NULL) THEN 1 END) as present_count,
         COUNT(CASE WHEN attendances.total_hours > 9.50 THEN 1 END) as overtime_count,
         COUNT(CASE WHEN attendances.status = 'half_day' THEN 1 END) as half_day_count,
-        COUNT(CASE WHEN attendances.status IN ('leave','absent') THEN 1 END) as leave_count,
+        COUNT(CASE WHEN attendances.status IN ('leave') THEN 1 END) as leave_count,
+        COUNT(CASE WHEN attendances.status IN ('absent') AND holidays.id IS NULL THEN 1 END) as absent_count,
         COUNT(CASE WHEN attendances.status = 'wfh' THEN 1 END) as wfh_count,
 
         COUNT(
@@ -1313,7 +1245,8 @@ class PayrollController extends Controller
             END
         ) as early_count
     ")
-            ->join('employees', 'attendances.employee_id', '=', 'employees.id');
+            ->join('employees', 'attendances.employee_id', '=', 'employees.id')
+            ->leftJoin('holidays', 'attendances.attendance_date', '=', 'holidays.date');
 
         if ($isTeamLeader) {
             $department = $user->employee->department ?? null;
@@ -1342,6 +1275,8 @@ class PayrollController extends Controller
             ->paginate(10)
             ->appends($request->all());
 
+        
+
         return view('hrms::payroll.employeeWise', compact('attendance', 'employees'));
     }
 
@@ -1349,13 +1284,22 @@ class PayrollController extends Controller
     {
         try {
             $user = auth()->user();
-            $employee = Employee::findOrFail($request->employee_id);
-
-            if (!canManageEmployee($user, $employee)) {
-                return response()->json(['success' => false, 'message' => 'Unauthorized access.'], 403);
-            }
+            $role = str_replace(' ', '_', strtolower($user->hrm_role ?? 'employee'));
+            $isAdmin = in_array($role, ['super_admin', 'manager', 'hr_executive', 'hr_intern', 'business_operation_head']);
+            $isTeamLeader = in_array($role, ['team_leader']);
 
             $query = Attendance::with('employee')->where('employee_id', $request->employee_id);
+
+            // Security check for Team Leader
+            if ($isTeamLeader) {
+                $department = $user->employee->department ?? null;
+                $targetEmployee = Employee::find($request->employee_id);
+                if ($department && $targetEmployee && $targetEmployee->department !== $department) {
+                    return response()->json(['success' => false, 'message' => 'Unauthorized access to employee data.'], 403);
+                }
+            } elseif (!$isAdmin && $request->employee_id != $user->employee_id) {
+                return response()->json(['success' => false, 'message' => 'Unauthorized access.'], 403);
+            }
 
             if ($request->filled('start_date')) {
                 $query->whereDate('attendance_date', '>=', $request->start_date);
@@ -1366,6 +1310,16 @@ class PayrollController extends Controller
             }
 
             $records = $query->orderBy('attendance_date', 'desc')->get();
+            $holidayMap = Holiday::whereIn('date', $records->pluck('attendance_date')->unique())
+                ->pluck('title', 'date');
+
+            $records->each(function ($attendance) use ($holidayMap) {
+                $dateKey = Carbon::parse($attendance->attendance_date)->format('Y-m-d');
+                if ($holidayMap->has($dateKey)) {
+                    $attendance->is_holiday = true;
+                    $attendance->holiday_title = $holidayMap->get($dateKey);
+                }
+            });
 
             // Calculate activity days efficiently (avoid N+1)
             $activityDays = [];
@@ -1418,10 +1372,6 @@ class PayrollController extends Controller
     {
         $employee = Employee::findOrFail($employee_id);
 
-        if (!canManageEmployee(auth()->user(), $employee)) {
-            abort(403, 'Unauthorized action.');
-        }
-
         $query = Attendance::where('employee_id', $employee_id);
 
         // if single record edit from eye tab
@@ -1438,11 +1388,6 @@ class PayrollController extends Controller
 
     public function updateByName(Request $request, $employee_id)
     {
-        $employee = Employee::findOrFail($employee_id);
-        if (!canManageEmployee(auth()->user(), $employee)) {
-            abort(403, 'Unauthorized action.');
-        }
-
         foreach ($request->attendance_ids as $id) {
             $checkIn = $request->check_in[$id] ?? null;
             $checkOut = $request->check_out[$id] ?? null;
@@ -1483,35 +1428,7 @@ class PayrollController extends Controller
         try {
             $dates = $request->dates;
             if (!empty($dates)) {
-                $loggedInUser = auth()->user();
-                if ($loggedInUser->role_id !== 1) {
-                    $allowedEmployees = Employee::query();
-                    $loggedInRole = $loggedInUser->role ?? Role::find($loggedInUser->role_id);
-                    $loggedInLevel = $loggedInRole ? $loggedInRole->authority_level : 0;
-                    
-                    $allowedEmployees->where(function($q) use ($loggedInLevel) {
-                        $q->whereHas('user', function($uq) use ($loggedInLevel) {
-                            $uq->whereHas('role', function($rq) use ($loggedInLevel) {
-                                $rq->where('authority_level', '<', $loggedInLevel);
-                            });
-                        })
-                        ->orWhere(function($oq) use ($loggedInLevel) {
-                            $oq->whereDoesntHave('user');
-                            
-                            $restrictedRoleNames = Role::where('authority_level', '>=', $loggedInLevel)->pluck('name')->toArray();
-                            $restrictedRoleSlugs = array_map(fn($n) => str_replace(' ', '_', strtolower($n)), $restrictedRoleNames);
-                            
-                            $oq->whereNotIn('role', array_merge($restrictedRoleNames, $restrictedRoleSlugs));
-                        });
-                    });
-                    $allowedEmployeeIds = $allowedEmployees->pluck('id')->toArray();
-                    
-                    Attendance::whereIn('attendance_date', $dates)
-                        ->whereIn('employee_id', $allowedEmployeeIds)
-                        ->delete();
-                } else {
-                    Attendance::whereIn('attendance_date', $dates)->delete();
-                }
+                Attendance::whereIn('attendance_date', $dates)->delete();
             }
 
             return response()->json([
@@ -1532,7 +1449,7 @@ class PayrollController extends Controller
     public function downloadPdf($id)
     {
         $payroll = Payroll::with('employee')->findOrFail($id);
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('payroll.payslip_pdf', compact('payroll'))
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('hrms::payroll.payslip_pdf', compact('payroll'))
             ->setPaper('a4', 'portrait')
             ->setOptions([
                 'isHtml5ParserEnabled' => true,
@@ -1571,7 +1488,7 @@ class PayrollController extends Controller
         }
 
         // Generate a single PDF with all slips separated by page breaks
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('payroll.bulk_payslip_pdf', compact('payrolls'))
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('hrms::payroll.bulk_payslip_pdf', compact('payrolls'))
             ->setPaper('a4', 'portrait')
             ->setOptions([
                 'isHtml5ParserEnabled' => true,
@@ -1588,7 +1505,8 @@ class PayrollController extends Controller
     {
         $payroll = Payroll::findOrFail($id);
 
-        $isAdmin = in_array(auth()->user()->role_id, [1, 3]);
+        $roleSlug = strtolower(auth()->user()->hrm_role ?? '');
+        $isAdmin = in_array($roleSlug, ['super_admin', 'admin', 'manager', 'hr_executive', 'hr_intern', 'business_operation_head']);
 
         // backend protection
         if ($isAdmin) {
@@ -1608,7 +1526,8 @@ class PayrollController extends Controller
     {
         $payroll = Payroll::findOrFail($id);
 
-        $isAdmin = in_array(auth()->user()->role_id, [1, 3]);
+        $roleSlug = strtolower(auth()->user()->hrm_role ?? '');
+        $isAdmin = in_array($roleSlug, ['super_admin', 'admin', 'manager', 'hr_executive', 'hr_intern', 'business_operation_head']);
 
         if ($isAdmin) {
             $payroll->is_read = true;

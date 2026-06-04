@@ -9,7 +9,7 @@
             <h5 class="m-b-10" style="color: #3858f9; font-weight: 700;">Role Master</h5>
         </div>
         <ul class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('hrms.dashboard') }}">Home</a></li>
             <li class="breadcrumb-item active">Roles</li>
         </ul>
     </div>
@@ -166,7 +166,7 @@
     }
 
     function editRole(data) {
-        document.getElementById('editRoleForm').action = "/hrms/master/role/" + data.id;
+        document.getElementById('editRoleForm').action = "/master/role/" + data.id;
         document.getElementById('editRoleName').value = data.name;
         new bootstrap.Offcanvas(document.getElementById('editRoleModal')).show();
     }

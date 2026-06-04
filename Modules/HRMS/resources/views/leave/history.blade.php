@@ -10,7 +10,7 @@
             default => request('category'),
         };
 
-        $role = str_replace(' ', '_', strtolower(auth()->user()->role ?? 'employee'));
+        $role = str_replace(' ', '_', strtolower(auth()->user()->hrm_role ?? 'employee'));
         $isAdmin = in_array($role, ['super_admin', 'manager', 'hr_executive', 'hr_intern', 'business_operation_head']);
         $isTeamLeader = in_array($role, ['team_leader']);
     @endphp
@@ -34,7 +34,7 @@
                 </div>
                 <div class="d-flex align-items-center pe-2 gap-2">
                     <a href="{{ route('leave.export', request()->all()) }}"
-                        class="btn btn-light-brand text-muted fw-bold small d-flex align-items-center px-4 shadow-sm no-loader"
+                        class="btn btn-light-brand text-muted fw-bold small d-flex align-items-center px-4 shadow-sm"
                         style="border-radius: 10px; height: 42px; border: 1.5px solid #e2e8f0; background: #fff; text-decoration: none;">
                         <i data-feather="download" style="width: 16px; height: 16px;" class="me-2"></i> Export
                     </a>
@@ -173,7 +173,8 @@
                                     <th>Leave Type</th>
                                     <th>Category</th>
                                     <th>Duration</th>
-                                    <th>Leave Reason</th>
+                                    <th>Total Days</th>
+                                    <!-- <th>Leave Reason</th> -->
                                     <th class="text-center pe-4">Action</th>
                                 </tr>
                             </thead>
@@ -184,7 +185,7 @@
                                         <td>
                                             <a href="javascript:void(0);" class="fw-bold text-primary text-decoration-none"
                                                 onclick="openViewModal({{ $leave->id }})">
-                                                {{ $leave->employee->name }}
+                                                {{ $leave->employee->name ?? 'N/A' }}
                                             </a>
                                         </td>
                                         <td class="text-center">
@@ -245,7 +246,19 @@
                                                 <span style="font-size: 10px;">Upto {{ $leave->end_date->format('d-M-Y') }}</span>
                                             @endif
                                         </td>
-                                        <td class="small text-dark fw-semibold">{{ $leave->reason }}</td>
+                                        <!-- <td class="small text-dark fw-semibold">{{ $leave->reason }}</td> -->
+                                        <td class="small text-dark fw-semibold">
+                                            @php
+                                                $totalDays = (float) ($leave->total_days ?? 0);
+                                            @endphp
+                                            @if(str_contains(strtolower($leave->leave_category), 'gatepass'))
+                                                1 Hour
+                                            @elseif(str_contains(strtolower($leave->leave_type ?? ''), 'half'))
+                                                0.5 Day
+                                            @else
+                                                {{ rtrim(rtrim(number_format($totalDays, 2, '.', ''), '0'), '.') }} Day{{ $totalDays == 1 ? '' : 's' }}
+                                            @endif
+                                        </td>
                                         <td class="text-center pe-4">
                                             <div class="hstack gap-2 justify-content-center">
                                                 <button class="btn btn-icon btn-soft-info"
@@ -275,8 +288,15 @@
                     </div>
                 </div>
                 @if($leaves->hasPages())
-                    <div class="card-footer bg-white border-top p-3 small d-flex justify-content-end">
-                        {{ $leaves->links('pagination::bootstrap-5') }}
+                    <div class="card-footer bg-white border-top px-4 py-3 leave-history-pagination">
+                        <div class="d-flex justify-content-between align-items-center gap-4 flex-wrap">
+                            <span class="text-muted small fw-bold">
+                                Showing {{ $leaves->firstItem() }} to {{ $leaves->lastItem() }} of {{ $leaves->total() }} results
+                            </span>
+                            <div class="{{ $leaves->lastPage() <= 1 ? 'd-none' : '' }}">
+                                {{ $leaves->appends(request()->query())->links('pagination::bootstrap-5') }}
+                            </div>
+                        </div>
                     </div>
                 @endif
             </div>
@@ -482,13 +502,21 @@
         </div>
         <div class="offcanvas-body p-4 bg-light bg-opacity-10">
             <div id="actionModalContent">
-                <div class="mb-4 d-flex align-items-center">
-                    <div class="bg-soft-primary p-2 rounded-3 me-3">
-                        <i data-feather="file-text" class="text-primary"></i>
+                <div class="mb-4 d-flex align-items-center justify-content-between">
+                    <div class="d-flex">
+                        <div class="bg-soft-primary p-2 rounded-3 me-3">
+                            <i data-feather="file-text" class="text-primary"></i>
+                        </div>
+                        <div>
+                            <span class="small fw-bold text-muted text-uppercase d-block">Application ID</span>
+                            <span id="displayAppCode" class="fw-bold text-dark fs-5">-</span>
+                        </div>
                     </div>
-                    <div>
-                        <span class="small fw-bold text-muted text-uppercase d-block">Application ID</span>
-                        <span id="displayAppCode" class="fw-bold text-dark fs-5">-</span>
+                    <div class="me-3">
+                        <span class="small fw-bold text-muted text-uppercase d-block mb-2">Balance</span>
+                        <span id="displayBalanceBadge" class="badge rounded-pill px-2 py-1 bg-soft-primary text-primary fw-bold" style="font-size: 16px;">
+                            -
+                        </span>
                     </div>
                 </div>
 
@@ -818,6 +846,8 @@
                     }
                 })
                 .catch(err => {
+                    const loader = document.getElementById("globalLoader");
+                    if (loader) loader.style.display = "none";
                     console.error('Leave Application Error:', err);
                     let msg = 'Something went wrong! Please check the form and try again.';
                     if (err && err.errors) {
@@ -837,10 +867,23 @@
                 .then(data => {
                     document.getElementById('actionLeaveId').value = data.id;
                     document.getElementById('displayAppCode').textContent = `LA-${String(data.id).padStart(4, '0')}`;
+                    updateBalanceBadge(data.balance);
                     document.querySelector('#actionForm select[name="status"]').value = data.status;
                     const modal = new bootstrap.Offcanvas(document.getElementById('leaveActionModal'));
                     modal.show();
                 });
+        }
+
+        function updateBalanceBadge(balance) {
+            const badge = document.getElementById('displayBalanceBadge');
+            if (!badge) {
+                return;
+            }
+
+            const numericBalance = Number(balance ?? 0);
+            badge.textContent = Number.isInteger(numericBalance) ? numericBalance : numericBalance.toFixed(1);
+            badge.className = `badge px-2 py-1 ${numericBalance < 0 ? 'bg-soft-danger text-danger' : 'bg-soft-primary text-primary'} fw-bold`;
+            badge.style.fontSize = '20px';
         }
 
         function openViewModal(id) {
@@ -903,7 +946,7 @@
                     } else if (isWFH) {
                         document.getElementById('viewTotalDays').textContent = `${data.total_days} Days (WFH)`;
                     } else {
-                        document.getElementById('viewTotalDays').textContent = `${data.total_days} Total Days`;
+                        document.getElementById('viewTotalDays').textContent = `${data.total_days} Days`;
                     }
 
                     // Timeframe section
@@ -1028,17 +1071,29 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
                 body: JSON.stringify(data)
             })
-                .then(res => res.json())
+                .then(res => {
+                    if (!res.ok) {
+                        return res.json().then(err => { throw err; });
+                    }
+                    return res.json();
+                })
                 .then(data => {
                     if (data.success) {
                         const statusLabel = selectedStatus.charAt(0).toUpperCase() + selectedStatus.slice(1).replace('_', ' ');
                         showToast('Leave status updated to: ' + statusLabel, 'success');
                         setTimeout(() => window.location.reload(), 1500);
                     }
+                })
+                .catch(err => {
+                    const loader = document.getElementById("globalLoader");
+                    if (loader) loader.style.display = "none";
+                    console.error('Action Update Error:', err);
+                    showToast('Something went wrong updating the status.', 'error');
                 });
         });
 
@@ -1312,6 +1367,51 @@
         .category-tile:hover {
             border-color: #cbd5e1;
             background: #f8fafc;
+        }
+
+        .leave-history-pagination .pagination {
+            margin-bottom: 0;
+            gap: 0.35rem;
+            justify-content: flex-end;
+        }
+
+        .leave-history-pagination .page-link {
+            min-width: 38px;
+            height: 38px;
+            padding: 0.5rem 0.75rem;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #475569;
+            font-weight: 600;
+            box-shadow: none;
+        }
+
+        .leave-history-pagination .page-item.active .page-link {
+            background: #3858f9;
+            border-color: #3858f9;
+            color: #fff;
+        }
+
+        .leave-history-pagination .page-item.disabled .page-link {
+            color: #94a3b8;
+            background: #f8fafc;
+            border-color: #e2e8f0;
+        }
+
+        .leave-history-pagination .page-link svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .leave-history-pagination nav .d-none.flex-sm-fill.d-sm-flex.align-items-sm-center.justify-content-sm-between {
+            justify-content: flex-end !important;
+        }
+
+        .leave-history-pagination nav .d-none.flex-sm-fill.d-sm-flex.align-items-sm-center.justify-content-sm-between > div:first-child {
+            display: none !important;
         }
     </style>
 @endsection

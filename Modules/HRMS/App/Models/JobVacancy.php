@@ -3,8 +3,8 @@
 namespace Modules\HRMS\App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
 use App\Traits\BelongsToTenant;
+
 class JobVacancy extends Model
 {
     use BelongsToTenant;

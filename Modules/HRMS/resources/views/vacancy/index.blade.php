@@ -8,7 +8,7 @@
                 <h5 class="m-b-10">Job Vacancy</h5>
             </div>
             <ul class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('hrms.dashboard') }}">Home</a></li>
                 <li class="breadcrumb-item">Job Vacancy</li>
             </ul>
         </div>
@@ -34,8 +34,7 @@
                             <i class="feather-filter"></i>
                         </a>
                     </div>
-                    <a href="javascript:void(0)" class="btn btn-primary" data-bs-toggle="offcanvas" 
-                    data-bs-target="#projectOffcanvas">
+                    <a href="javascript:void(0)" class="btn btn-primary" data-bs-toggle="offcanvas" data-bs-target="#projectOffcanvas">
                         <i class="feather-plus me-2"></i>
                         <span>Add</span>
                     </a>
@@ -182,6 +181,16 @@
                 <div class="card stretch stretch-full">
                     <div class="card-body p-0">
                         <div class="table-responsive">
+                            @if(!empty($selectedRole))
+                                <div class="alert alert-info d-flex justify-content-between align-items-center role-filter-alert" role="alert">
+                                    <span>
+                                        Showing applications filtered by: <strong>{{ $selectedRole }}</strong>
+                                    </span>
+                                    <a href="{{ route('vacancy.show') }}" class="btn btn-sm btn-primary">
+                                        Show All Data
+                                    </a>
+                                </div>
+                            @endif
                             <table class="table table-hover align-middle">
                                 <thead>
                                     <tr>
@@ -306,13 +315,13 @@
         </div>
 
         <div class="offcanvas-body">
-            <form action="{{ route('job.store') }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ url('/hrms/job-vacancy/store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
-                <!-- Basic Information -->
+                
                 <div class="card border-0 shadow-sm mb-4">
                     <div class="card-body">
                         <h6 class="fw-bold mb-3 text-primary">
-                            Basic Information
+                            <!-- Basic Information -->
                         </h6>
                         <div class="row">
                             <div class="col-md-6 mb-3">
@@ -389,7 +398,7 @@
                     </div>
                 </div>
 
-                <!-- Interview -->
+                <!-- Interview Information -->
                 <div class="card border-0 shadow-sm mb-4">
                     <div class="card-body">
                         <h6 class="fw-bold mb-3 text-primary">Interview Information</h6>
@@ -431,7 +440,7 @@
                     </div>
                 </div>
 
-                <!-- Profile -->
+                <!-- Profile Information -->
                 <div class="card border-0 shadow-sm mb-4">
                     <div class="card-body">
                         <h6 class="fw-bold mb-3 text-primary">Profile Upload</h6>

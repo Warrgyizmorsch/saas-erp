@@ -10,7 +10,7 @@
                 <h5 class="m-b-10">Projects</h5>
             </div>
             <ul class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('hrms.dashboard') }}">Home</a></li>
                 <li class="breadcrumb-item">Create Project</li>
             </ul>
         </div>
@@ -145,20 +145,24 @@
                                     <div class="col-md-6 mb-4">
                                         <label class="form-label fw-bold fs-12 text-muted text-uppercase">Department <span
                                                 class="text-danger">*</span></label>
+                                        @php
+                                            $role = str_replace(' ', '_', strtolower(auth()->user()->hrm_role ?? 'employee'));
+                                            $isTeamLeader = ($role === 'team_leader');
+                                        @endphp
                                         <select class="form-select premium-select" id="projectDepartment"
-                                            data-placeholder="Select Department" {{ str_replace(' ', '_', strtolower(auth()->user()->hrm_role ?? '')) == 'team_leader' ? 'disabled' : '' }} required>
+                                            data-placeholder="Select Department" {{ $isTeamLeader ? 'disabled' : '' }} required>
                                             <option value=""></option>
                                             @foreach($departments as $dept)
                                                 <option value="{{ $dept->name }}"
-                                                    {{ str_replace(' ', '_', strtolower(auth()->user()->hrm_role ?? '')) == 'team_leader' && $dept->name == optional(auth()->user()->employee)->department ? 'selected' : '' }}>
+                                                    {{ $isTeamLeader && $dept->name == auth()->user()->employee->department ? 'selected' : '' }}>
                                                     {{ $dept->name }}
                                                 </option>
                                             @endforeach
                                         </select>
-                                        @if(str_replace(' ', '_', strtolower(auth()->user()->hrm_role ?? '')) == 'team_leader')
+                                        @if($isTeamLeader)
                                             <input type="hidden"
                                                 name="department"
-                                                value="{{ optional(auth()->user()->employee)->department }}">
+                                                value="{{ auth()->user()->employee->department }}">
                                         @endif
                                     </div>
                                     <div class="col-md-6 mb-4">
@@ -172,6 +176,53 @@
                                             <option value="On Hold">On Hold</option>
                                             <option value="Review">Review</option>
                                             <option value="Rework">Rework</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-4">
+                                        <label class="form-label fw-bold fs-12 text-muted text-uppercase">
+                                            Services <span class="text-danger">*</span>
+                                        </label>
+                                        <select class="form-select premium-select" id="services" name="services[]" multiple data-placeholder="Select or add services...">
+                                            <option value="IoT Services">IoT Services</option>
+                                            <option value="AI Development">AI Development</option>
+                                            <option value="AI Consulting">AI Consulting</option>
+                                            <option value="AI Chatbot">AI Chatbot</option>
+                                            <option value="AI Automation">AI Automation</option>
+
+                                            <option value="PHP Development">PHP Development</option>
+                                            <option value="Node Js Development">Node Js Development</option>
+                                            <option value="Angular Development">Angular Development</option>
+                                            <option value="Laravel Development">Laravel Development</option>
+                                            <option value="Full Stack Development">Full Stack Development</option>
+                                            <option value="React Js Development">React Js Development</option>
+
+                                            <option value="Android App Development">Android App Development</option>
+                                            <option value="iOS App Development">iOS App Development</option>
+                                            <option value="Flutter App Development">Flutter App Development</option>
+                                            <option value="Hybrid App Development">Hybrid App Development</option>
+
+                                            <option value="Enterprise Software Development">Enterprise Software Development</option>
+                                            <option value="ERP Development">ERP Development</option>
+                                            <option value="CRM Development">CRM Development</option>
+                                            <option value="Software Development Outsourcing">Software Development Outsourcing</option>
+
+                                            <option value="Search Engine Optimization">Search Engine Optimization</option>
+                                            <option value="Performance Marketing">Performance Marketing</option>
+                                            <option value="Social Media Marketing">Social Media Marketing</option>
+                                            <option value="Content Writing">Content Writing</option>
+                                            <option value="Email Marketing">Email Marketing</option>
+                                            <option value="Google Ads">Google Ads</option>
+                                            <option value="Meta Ads">Meta Ads</option>
+
+                                            <option value="UI/UX Design">UI/UX Design</option>
+                                            <option value="Graphic Design">Graphic Design</option>
+                                            <option value="Corporate Identity Design">Corporate Identity Design</option>
+                                            <option value="Digital & Print Design">Digital & Print Design</option>
+                                            <option value="Motion Graphics & Animation">Motion Graphics & Animation</option>
+
+                                            <option value="Shopify Development">Shopify Development</option>
+                                            <option value="Magento Development">Magento Development</option>
+                                            <option value="WooCommerce Development">WooCommerce Development</option>
                                         </select>
                                     </div>
                                 </div>
@@ -405,6 +456,43 @@
             color: #fff !important;
             margin-right: 5px !important;
         }
+
+        #services+.select2-container .select2-selection--multiple {
+            align-items: flex-start !important;
+            padding: 6px 12px !important;
+        }
+
+        #services+.select2-container .select2-selection--multiple .select2-selection__rendered {
+            display: flex !important;
+            flex-wrap: wrap !important;
+            align-items: center !important;
+            gap: 4px !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            line-height: 1.4 !important;
+        }
+
+        #services+.select2-container .select2-selection--multiple .select2-search--inline {
+            flex: 1 1 220px !important;
+            min-width: 220px !important;
+            margin: 0 !important;
+        }
+
+        #services+.select2-container .select2-selection--multiple .select2-search__field {
+            width: 100% !important;
+            min-width: 220px !important;
+            height: 28px !important;
+            margin: 0 !important;
+            color: #1a202c !important;
+            font-weight: 600 !important;
+            font-size: 13px !important;
+        }
+
+        #services+.select2-container .select2-selection--multiple .select2-search__field::placeholder {
+            color: #94a3b8 !important;
+            opacity: 1 !important;
+        }
     </style>
 @endsection
 
@@ -446,7 +534,7 @@
 
                     // Initialize Select2
                     if ($.fn.select2) {
-                        $('.premium-select').each(function () {
+                        $('.premium-select').not('#services').each(function () {
                             $(this).select2({
                                 width: '100%',
                                 placeholder: $(this).data('placeholder'),
@@ -620,13 +708,8 @@
                 $('#projectLeaders').empty();
                 $('#projectMembers').empty();
 
-                const normalizeDept = (dept) => {
-                    if (!dept) return '';
-                    return dept.toString().toLowerCase().replace(/[^a-z0-9]/g, '');
-                };
-
                 const filteredEmployees = selectedDepartment
-                    ? allEmployees.filter(emp => normalizeDept(emp.department) === normalizeDept(selectedDepartment))
+                    ? allEmployees.filter(emp => emp.department === selectedDepartment)
                     : allEmployees;
 
                 filteredEmployees.forEach(function (emp) {
@@ -652,6 +735,14 @@
 
             $('#projectDepartment').on('change', function () {
                 syncDepartmentEmployees();
+            });
+
+            $('#services').select2({
+                width: '100%',
+                tags: true,
+                placeholder: $('#services').data('placeholder'),
+                allowClear: true,
+                tokenSeparators: [',']
             });
 
             syncDepartmentEmployees();

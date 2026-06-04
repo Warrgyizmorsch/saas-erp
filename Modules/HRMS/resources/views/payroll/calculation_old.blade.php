@@ -29,7 +29,7 @@
                             <select id="employeeSelect" class="form-select border-0 bg-light py-2 px-3 shadow-none fw-bold"
                                 style="border-radius: 8px; height: 45px;">
                                 <option value="">Select Employee</option>
-                                @foreach (\App\Models\Employee::all() as $emp)
+                                @foreach (\Modules\HRMS\App\Models\Employee::all() as $emp)
                                     <option value="{{ $emp->id }}">{{ $emp->name }}</option>
                                 @endforeach
                             </select>

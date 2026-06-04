@@ -2,17 +2,14 @@
 
 namespace Modules\HRMS\App\Models;
 
-use Modules\Shared\App\Models\User;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use App\Models\User;
 use App\Traits\BelongsToTenant;
+
 class TaskStatusHistory extends Model
 {
-    use BelongsToTenant;
-
-    use HasFactory;
+    use HasFactory, BelongsToTenant;
 
     protected $fillable = [
         'task_id',

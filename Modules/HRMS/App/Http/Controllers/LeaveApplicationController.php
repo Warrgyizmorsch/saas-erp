@@ -8,7 +8,8 @@ use Modules\HRMS\App\Models\Employee;
 use Modules\HRMS\App\Models\LeaveApplication;
 use Modules\HRMS\App\Models\Attendance;
 use Modules\HRMS\App\Models\Holiday;
-use App\Exports\LeaveApplicationsExport;
+use Modules\HRMS\App\Models\LeaveAllotment;
+use Modules\HRMS\App\Exports\LeaveApplicationsExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -19,6 +20,49 @@ use App\Mail\LeaveStatusUpdatedMail;
 
 class LeaveApplicationController extends Controller
 {
+    private function getEmployeeBalanceSummary(int $employeeId): array
+    {
+        $totalAllotted = LeaveAllotment::where('employee_id', $employeeId)->sum('leave_count');
+
+        $approvedLeaves = LeaveApplication::where('employee_id', $employeeId)
+            ->where('status', 'approved')
+            ->get();
+
+        $totalTaken = 0;
+
+        foreach ($approvedLeaves as $leave) {
+            $category = strtolower($leave->leave_category ?? '');
+            $type = strtolower($leave->leave_type ?? '');
+
+            if (str_contains($category, 'gatepass') || str_contains($category, 'wfh')) {
+                continue;
+            }
+
+            if (str_contains($category, 'half') || str_contains($type, 'half')) {
+                $totalTaken += 0.5;
+                continue;
+            }
+
+            if ($leave->total_days !== null) {
+                $totalTaken += (float) $leave->total_days;
+                continue;
+            }
+
+            $startDate = Carbon::parse($leave->start_date);
+            $endDate = $leave->end_date ? Carbon::parse($leave->end_date) : $startDate->copy();
+
+            $totalTaken += $startDate->equalTo($endDate)
+                ? 1
+                : $startDate->diffInDays($endDate);
+        }
+
+        return [
+            'total_allotted' => $totalAllotted,
+            'total_taken' => $totalTaken,
+            'balance' => $totalAllotted - $totalTaken,
+        ];
+    }
+
     private function getHolidayDatesBetween(Carbon $startDate, Carbon $endDate): array
     {
         return Holiday::whereBetween('date', [
@@ -197,15 +241,8 @@ class LeaveApplicationController extends Controller
         $data['status'] = 'pending';
 
         // Ensure employee_id is set (fallback for non-admin users)
-        $employeeId = $data['employee_id'] ?? auth()->user()->employee_id;
-        if (empty($employeeId)) {
-            return response()->json(['success' => false, 'message' => 'No employee linked.'], 403);
-        }
-        $data['employee_id'] = $employeeId;
-
-        $employee = Employee::findOrFail($employeeId);
-        if (auth()->user()->employee_id != $employee->id && !canManageEmployee(auth()->user(), $employee)) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized action.'], 403);
+        if (empty($data['employee_id'])) {
+            $data['employee_id'] = auth()->user()->employee_id;
         }
 
         if ($request->leave_category === 'Gatepass Leave') {
@@ -236,9 +273,19 @@ class LeaveApplicationController extends Controller
 
         // LeaveApplication::create($data);
         $leave = LeaveApplication::create($data);
+        $employee = Employee::findOrFail($data['employee_id']);
 
-        Mail::to('mdkaif14104@gmail.com')
-            ->send((new LeaveApplicationMail($leave, $employee))->replyTo($employee->email));
+        $approverEmail = env('LEAVE_APPROVER_EMAIL');
+        if (!empty($approverEmail)) {
+            try {
+                Mail::to($approverEmail)
+                    ->send((new LeaveApplicationMail($leave, $employee))->replyTo($employee->email));
+            } catch (\Exception $e) {
+                logger()->error('Failed to send leave application email: ' . $e->getMessage());
+            }
+        } else {
+            logger()->warning('LEAVE_APPROVER_EMAIL is not set in .env. Skipping email notification.');
+        }
 
         return response()->json(['success' => true, 'message' => 'Leave application submitted successfully']);
     }
@@ -249,7 +296,7 @@ class LeaveApplicationController extends Controller
 
         if (auth()->user()->hrm_role == 'team_leader') {
             $query->whereHas('employee', function ($q) {
-                $q->where('department', auth()->user()->employee?->department);
+                $q->where('department', auth()->user()->employee->department);
             });
         }
         if ($request->filled('search')) {
@@ -284,12 +331,6 @@ class LeaveApplicationController extends Controller
         ]);
 
         $leave = LeaveApplication::findOrFail($request->leave_id);
-        $employee = Employee::findOrFail($leave->employee_id);
-
-        if (!canManageEmployee(auth()->user(), $employee)) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized action.'], 403);
-        }
-
         $oldStatus = $leave->status;
         $newStatus = $request->status;
 
@@ -348,9 +389,13 @@ class LeaveApplicationController extends Controller
 
         $employee = Employee::find($leave->employee_id);
 
-        if ($employee && $employee->email) {
-            Mail::to($employee->email)
-                ->send(new LeaveStatusUpdatedMail($leave, $employee));
+        if ($employee && !empty($employee->email)) {
+            try {
+                Mail::to($employee->email)
+                    ->send(new LeaveStatusUpdatedMail($leave, $employee));
+            } catch (\Exception $e) {
+                logger()->error('Failed to send leave status update email: ' . $e->getMessage());
+            }
         }
 
         return response()->json(['success' => true, 'message' => 'Status updated successfully']);
@@ -359,12 +404,6 @@ class LeaveApplicationController extends Controller
     public function destroy($id)
     {
         $leave = LeaveApplication::findOrFail($id);
-        $employee = Employee::findOrFail($leave->employee_id);
-
-        if (!canManageEmployee(auth()->user(), $employee)) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized action.'], 403);
-        }
-
         $leave->delete();
         return response()->json(['success' => true, 'message' => 'Leave application deleted']);
     }
@@ -372,23 +411,14 @@ class LeaveApplicationController extends Controller
     public function getDetails($id)
     {
         $leave = LeaveApplication::with('employee')->findOrFail($id);
-        $employee = $leave->employee;
-
-        if ($employee && auth()->user()->employee_id != $employee->id && !canManageEmployee(auth()->user(), $employee)) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized action.'], 403);
-        }
-
-        return response()->json($leave);
+        return response()->json(array_merge(
+            $leave->toArray(),
+            $this->getEmployeeBalanceSummary((int) $leave->employee_id)
+        ));
     }
 
     public function getEmployeeLeaves($employeeId)
     {
-        $employee = Employee::findOrFail($employeeId);
-
-        if (auth()->user()->employee_id != $employee->id && !canManageEmployee(auth()->user(), $employee)) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized action.'], 403);
-        }
-
         $leaves = LeaveApplication::where('employee_id', $employeeId)
             ->orderBy('start_date', 'desc')
             ->get();

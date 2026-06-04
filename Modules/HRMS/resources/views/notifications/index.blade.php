@@ -111,7 +111,7 @@
                         </div>
                         <h5 class="fw-bold text-dark">No Notifications Found</h5>
                         <p class="text-muted mx-auto" style="max-width: 300px;">When you have new updates and system alerts, they will appear here.</p>
-                        <a href="{{ route('dashboard') }}" class="btn btn-primary rounded-pill px-4 fw-bold mt-2 shadow-sm">Back to Dashboard</a>
+                        <a href="{{ route('hrms.dashboard') }}" class="btn btn-primary rounded-pill px-4 fw-bold mt-2 shadow-sm">Back to Dashboard</a>
                     </div>
                 @endforelse
             </div>

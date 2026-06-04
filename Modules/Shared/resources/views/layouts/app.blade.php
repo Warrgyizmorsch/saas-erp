@@ -552,6 +552,9 @@
     {{-- Customizer --}}
     @include('shared::layouts.customizer')
 
+    {{-- Modals --}}
+    @yield('modals')
+
     {{-- Vendor Scripts --}}
     <script src="{{ asset('crm-assets/assets/vendors/js/vendors.min.js') }}"></script>
     <script src="{{ asset('crm-assets/assets/vendors/js/daterangepicker.min.js') }}"></script>
@@ -714,6 +717,7 @@
             });
 
             window.HrmToast = Toast;
+            window.Toast = Toast;
 
             // Success Alert
             @if(Session::has('success'))
@@ -728,6 +732,13 @@
                 Toast.fire({
                     icon: 'error',
                     title: "{{ Session::get('error') }}"
+                });
+            @endif
+
+            @if($errors->any())
+                Toast.fire({
+                    icon: 'error',
+                    title: "{{ $errors->first() }}"
                 });
             @endif
 

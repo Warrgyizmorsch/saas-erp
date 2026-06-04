@@ -4,7 +4,7 @@ namespace Modules\HRMS\App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 
-use App\Http\Requests\ProfileUpdateRequest;
+use Modules\HRMS\App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -94,6 +94,7 @@ class ProfileController extends Controller
     public function leaveBalance(Request $request): View
     {
         $user = $request->user();
+        // echo ($user->employee_id);
         $employee = Employee::find($user->employee_id);
         
         $balances = [];
@@ -105,10 +106,10 @@ class ProfileController extends Controller
             $total_used = LeaveApplication::where('employee_id', $employee->id)
                 ->where('status', 'approved')
                 ->where('leave_category', 'NOT LIKE', '%WFH%') // Exclude WFH from used leaves
-                ->whereYear('start_date', date('Y'))
-                ->whereMonth('start_date', date('m'))
+                // ->whereYear('start_date', date('Y'))
+                // ->whereMonth('start_date', date('m'))
                 ->sum('total_days');
-
+            // echo $total_used;exit;
             $balances[] = [
                 'type' => date('F') . ' Leave Cycle (' . date('Y') . ')',
                 'allotted' => $total_allotted,
@@ -158,15 +159,11 @@ class ProfileController extends Controller
 
         $currentUser = $request->user();
         $targetUser = $currentUser;
+        $userRole = strtolower($currentUser->hrm_role ?? '');
 
-        if ($request->filled('target_user_id')) {
-            $resolvedUser = \App\Models\User::find($request->target_user_id);
-            if ($resolvedUser && $currentUser->id !== $resolvedUser->id) {
-                if (!$currentUser->canManageUser($resolvedUser)) {
-                    return back()->withErrors(['target_user_id' => 'You do not have permission to change this user\'s password.']);
-                }
-                $targetUser = $resolvedUser;
-            }
+        // If admin/super-admin is changing another user's password
+        if ($request->filled('target_user_id') && str_contains($userRole, 'admin')) {
+            $targetUser = \App\Models\User::find($request->target_user_id);
         }
 
         $newPassword = $validated['password'];

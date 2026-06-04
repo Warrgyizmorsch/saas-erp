@@ -735,6 +735,8 @@
                     }
                 })
                 .catch(err => {
+                    const loader = document.getElementById("globalLoader");
+                    if (loader) loader.style.display = "none";
                     console.error(err);
                     showToast(err.message || 'Something went wrong while applying leave.', 'error');
                 });

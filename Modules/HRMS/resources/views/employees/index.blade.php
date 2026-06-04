@@ -163,7 +163,7 @@
                         <i class="feather-refresh-cw"></i>
                     </a>
 
-                    @if(in_array(strtolower(auth()->user()->role), ['admin', 'super_admin', 'super admin']))
+                    @if(in_array(strtolower(auth()->user()->hrm_role), ['admin', 'super_admin', 'super admin']))
                         <a href="{{ route('employees.export') }}" class="avatar-text avatar-md bg-soft-success text-success"
                             title="Export" style="width: 44px; height: 44px; border-radius: 12px;">
                             <i class="feather-download"></i>
@@ -355,7 +355,7 @@
                                                 </a>
                                                 <ul class="dropdown-menu shadow-lg border-0 p-2" style="border-radius:12px;">
                                                     <li><a class="dropdown-item d-flex align-items-center gap-2" href="javascript:void(0)" onclick="viewEmployee({{ $emp->id }})"><i class="feather-eye"></i> View Details</a></li>
-                                                    @if(in_array(strtolower(auth()->user()->role), ['admin', 'super_admin', 'super admin']))
+                                                    @if(in_array(strtolower(auth()->user()->hrm_role), ['admin', 'super_admin', 'super admin']))
                                                         <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ route('employees.edit', $emp->id) }}"><i class="feather-edit-3"></i> Edit Profile</a></li>
                                                         <li><a class="dropdown-item d-flex align-items-center gap-2 text-danger" href="javascript:void(0)" onclick="deleteEmployee({{ $emp->id }})"><i class="feather-trash-2"></i> Delete</a></li>
                                                     @endif
@@ -424,7 +424,7 @@
                                     <button class="btn btn-soft-info btn-sm" onclick="openAttendanceModal({{ $emp->id }}, '{{ $emp->name }}')">
                                         <i class="bi bi-calendar3-event"></i> Records
                                     </button>
-                                    @if(in_array(strtolower(auth()->user()->role), ['admin', 'super_admin', 'super admin']))
+                                    @if(in_array(strtolower(auth()->user()->hrm_role), ['admin', 'super_admin', 'super admin']))
                                         <a href="{{ route('employees.edit', $emp->id) }}" class="btn btn-soft-success btn-sm">
                                             <i class="feather-edit-3"></i> Profile
                                         </a>
@@ -485,12 +485,12 @@
                 </div>
                 <div class="d-flex gap-2 align-items-center">
                     <button type="button" class="btn btn-sm d-flex align-items-center justify-content-center" id="editEmployeeBtn" onclick="editEmployee()"
-                        style="background: #22c55e; color: #ffffff; border: none; font-weight: 800; width: 40px; height: 40px; border-radius: 10px; box-shadow: 0 4px 10px rgba(34, 197, 94, 0.3);">
+                        style="background: #22c55e; color: #ffffff; border: none; font-weight: 800; border-radius: 10px; box-shadow: 0 4px 10px rgba(34, 197, 94, 0.3);">
                         <i class="bi bi-pencil-square"></i>
                         <span class="d-none d-md-inline ms-2">Edit</span>
                     </button>
                     <button type="button" class="btn btn-sm d-flex align-items-center justify-content-center" id="deleteEmployeeBtn" onclick="deleteEmployee()"
-                        style="background: #ef4444; color: #ffffff; border: none; font-weight: 800; width: 40px; height: 40px; border-radius: 10px; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);">
+                        style="background: #ef4444; color: #ffffff; border: none; font-weight: 800; border-radius: 10px; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);">
                         <i class="bi bi-trash"></i>
                         <span class="d-none d-md-inline ms-2">Delete</span>
                     </button>
@@ -1524,7 +1524,7 @@
                     alert('No employee selected');
                     return;
                 }
-                window.location.href = `/employees/${id}/edit`;
+                window.location.href = `{{ url('/hrms/employees') }}/${id}/edit`;
             }
 
             // Delete Employee
@@ -1554,7 +1554,7 @@
                     if (result.isConfirmed) {
                         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-                        fetch(`/employees/${id}`, {
+                        fetch(`{{ url('/hrms/employees') }}/${id}`, {
                             method: 'DELETE',
                             headers: {
                                 'X-CSRF-TOKEN': csrfToken,

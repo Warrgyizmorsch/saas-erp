@@ -4,13 +4,11 @@ namespace Modules\HRMS\App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
 use App\Traits\BelongsToTenant;
+
 class LeaveApplication extends Model
 {
-    use BelongsToTenant;
-
-    use HasFactory;
+    use HasFactory, BelongsToTenant;
 
     protected $fillable = [
         'employee_id',

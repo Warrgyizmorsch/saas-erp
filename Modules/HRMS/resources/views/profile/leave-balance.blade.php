@@ -267,7 +267,7 @@
             </div>
         </div>
 
-        @if(in_array(strtolower(auth()->user()->role), ['admin', 'super admin']))
+        @if(in_array(strtolower(auth()->user()->hrm_role), ['admin', 'super admin']))
         <div class="p-4 p-md-5 bg-light bg-opacity-30 d-flex justify-content-center border-top">
             <a href="{{ route('leave.balance.export') }}" class="btn export-btn d-flex align-items-center gap-3 w-100 w-md-auto justify-content-center">
                 <i class="feather-file-text fs-5"></i>

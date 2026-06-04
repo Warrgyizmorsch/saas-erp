@@ -4,7 +4,7 @@
     <!-- Feather Icons CDN for redundancy -->
     <script src="https://unpkg.com/feather-icons"></script>
     @php
-        $role = str_replace(' ', '_', strtolower(auth()->user()->role ?? 'employee'));
+        $role = str_replace(' ', '_', strtolower(auth()->user()->hrm_role ?? 'employee'));
         $isAdmin = in_array($role, ['super_admin', 'manager', 'hr_executive', 'hr_intern', 'business_operation_head']);
         $isTeamLeader = in_array($role, ['team_leader']);
     @endphp
@@ -60,7 +60,8 @@
                                             <div class="wghrm-items-list">
                                                 @foreach(range(1, 12) as $m)
                                                     <div class="wghrm-item {{ $selectedMonth == sprintf('%02d', $m) ? 'selected' : '' }}" 
-                                                         onclick="selectMonth('{{ sprintf('%02d', $m) }}', '{{ date('F', mktime(0, 0, 0, $m, 1)) }} {{ date('Y') }}')">
+                                                         data-value="{{ sprintf('%02d', $m) }}"
+                                                         data-text="{{ date('F', mktime(0, 0, 0, $m, 1)) }} {{ date('Y') }}">
                                                         <span class="wghrm-item-text">{{ date('F', mktime(0, 0, 0, $m, 1)) }} {{ date('Y') }}</span>
                                                         <i data-feather="check" class="wghrm-item-check" style="width: 14px; height: 14px;"></i>
                                                     </div>
@@ -230,7 +231,7 @@
                                         @foreach($history as $h)
                                             <tr class="border-bottom history-row">
                                                 <td class="ps-4 py-3">
-                                                    <span class="text-dark fw-semibold">{{ $h->employee->name }}</span>
+                                                    <span class="text-dark fw-semibold">{{ $h->employee->name ?? 'N/A' }}</span>
                                                 </td>
                                                 <td class="text-center py-3">
                                                     <span class="badge bg-soft-primary text-primary px-3 rounded-pill fw-bold"
@@ -255,7 +256,7 @@
                                     <div class="wghrm-mobile-card history-row mb-3">
                                         <div class="wghrm-mobile-card-header">
                                             <div>
-                                                <div class="wghrm-mobile-value text-primary" style="font-size: 15px;">{{ $h->employee->name }}</div>
+                                                <div class="wghrm-mobile-value text-primary" style="font-size: 15px;">{{ $h->employee->name ?? 'N/A' }}</div>
                                                 <div class="wghrm-mobile-label">ALLOTMENT</div>
                                             </div>
                                             <span class="badge bg-soft-primary text-primary rounded-pill fw-bold" style="font-size: 11px;">
@@ -438,11 +439,6 @@
             }
         });
 
-        function selectMonth(val, text) {
-            document.getElementById('monthSelect').value = val;
-            updateView();
-        }
-
         function updateEntries(val) {
             document.getElementById('entriesPerPage').value = val;
             document.querySelector('#entriesDropdown .wghrm-trigger-text').innerText = val;
@@ -451,7 +447,7 @@
 
         function updateView() {
             const month = document.getElementById('monthSelect').value;
-            window.location.href = "{{ route('leave.allotment') }}?month=" + month;
+            window.location.href = "{{ route('leave.allotment') }}?month=" + encodeURIComponent(month);
         }
 
         function deleteHistory(id) {
@@ -522,7 +518,8 @@
 
         function saveAllotments() {
             const month = document.getElementById('monthSelect').value;
-            const inputs = document.querySelectorAll('.allotment-input');
+            const inputs = Array.from(document.querySelectorAll('.desktop-only .allotment-input, .mobile-only .allotment-input'))
+                .filter(input => input.offsetParent !== null);
             const allotments = {};
 
             inputs.forEach(input => {

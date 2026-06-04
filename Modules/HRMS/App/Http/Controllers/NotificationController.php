@@ -16,7 +16,8 @@ class NotificationController extends Controller
         // $role = strtoupper(auth()->user()->hrm_role);
         $notifications = [];
 
-        $isAdmin = in_array(auth()->user()->role_id, [1, 3]);
+        $roleSlug = strtolower(auth()->user()->hrm_role); // e.g. "manager"
+        $isAdmin = in_array($roleSlug, ['super_admin', 'admin', 'manager', 'hr_executive', 'hr_intern', 'business_operation_head']);
 
         // if ($role == 'ADMIN' || $role == 'SUPER ADMIN') {
         if ($isAdmin) {

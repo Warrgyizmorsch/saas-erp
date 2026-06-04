@@ -10,7 +10,7 @@
                 <h5 class="m-b-10">Projects</h5>
             </div>
             <ul class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('hrms.dashboard') }}">Home</a></li>
                 <li class="breadcrumb-item">Projects</li>
             </ul>
         </div>
@@ -213,12 +213,14 @@
                                                 </div>
                                             </div>
                                         </th>
-                                        <th>Project Name</th>
+                                        <th>Project Details</th>
+                                        <!-- <th>Project Name</th>
                                         <th>Technology</th>
                                         <th>Department</th>
-                                        <th>Start Date</th>
+                                        <th>Start Date</th> -->
                                         <!-- <th>End Date</th> -->
                                         <th>Lead</th>
+                                        <th>Members</th>
                                         <th>Status</th>
                                         <th class="text-end pe-4" style="width: 200px;">ACTIONS</th>
                                     </tr>
@@ -244,19 +246,19 @@
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td class="project-name-td" style="max-width: 300px;">
+                                            <!-- <td class="project-name-td" style="max-width: 300px;">
                                                 <div class="hstack gap-4">
                                                     <div class="avatar-image border-0 position-relative">
-                                                        <!-- Premium SVG Circular Progress - 1:1 Design Parity -->
+                                                        
                                                         <div class="progress-ring-wrapper"
                                                             style="position: relative; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
                                                             @php $progressVal = $project->progress; @endphp
                                                             <svg width="60" height="60" viewBox="0 0 100 100"
                                                                 style="position: absolute; transform: rotate(-90deg);">
-                                                                <!-- Background Track -->
+                                                            
                                                                 <circle cx="50" cy="50" r="42" fill="none" stroke="#f1f5f9"
                                                                     stroke-width="10"></circle>
-                                                                <!-- Progress Bar -->
+                                                            
                                                                 <circle cx="50" cy="50" r="42" fill="none" stroke="#1d4ed8"
                                                                     stroke-width="10" stroke-dasharray="263.89"
                                                                     stroke-dashoffset="{{ 263.89 * (1 - $progressVal / 100) }}"
@@ -292,7 +294,48 @@
                                                     </div>
                                                 </a>
                                             </td>
-                                            <td>{{ $project->start_date ? $project->start_date->format('Y-m-d') : '-' }}</td>
+                                            <td>{{ $project->start_date ? $project->start_date->format('Y-m-d') : '-' }}</td> -->
+                                            <td>
+                                                <div class="hstack gap-4 align-items-start">
+                                                    <div class="avatar-image border-0 position-relativeflex-shrink-0">
+                                                        <div class="progress-ring-wrapper"
+                                                            style="position: relative; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
+                                                            @php $progressVal = $project->progress; @endphp
+                                                            <svg width="60" height="60" viewBox="0 0 100 100"
+                                                                style="position: absolute; transform: rotate(-90deg);">
+                                                                <circle cx="50" cy="50" r="42" fill="none" stroke="#f1f5f9" stroke-width="10"></circle>
+                                                                <circle cx="50" cy="50" r="42" fill="none" stroke="#1d4ed8"
+                                                                    stroke-width="10" stroke-dasharray="263.89"
+                                                                    stroke-dashoffset="{{ 263.89 * (1 - $progressVal / 100) }}"
+                                                                    stroke-linecap="round"
+                                                                    style="transition: stroke-dashoffset 0.8s ease-in-out;">
+                                                                </circle>
+                                                            </svg>
+                                                            <div class="avatar-text bg-white text-primary rounded-circle shadow-sm"
+                                                                style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; z-index: 1; border: 1px solid rgba(0,0,0,0.05);">
+                                                                <i class="feather-briefcase fs-18"></i>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="project-info-wrapper w-100">
+                                                        <a href="{{ route('projects.show', $project) }}" class="fw-bold text-dark fs-14 text-muted text-truncate-1-line mb-1 d-block">{{ $project->name }}</a>
+                                                        
+                                                        <div class="hstack gap-2 flex-wrap mb-1">
+                                                            <span class="badge bg-soft-secondary text-secondary fs-11">{{ $project->technology }}</span>
+                                                            <span class="badge bg-soft-primary text-primary fs-11 fw-semibold">{{ $project->department }}</span>
+                                                        </div>
+
+                                                        <div class="fs-12 text-muted text-truncate-1-line mb-1" style="max-width: 280px;">
+                                                            {!! strip_tags($project->description) !!}
+                                                        </div>
+
+                                                        <div class="fs-11 text-muted">
+                                                            <i class="feather-calendar fs-11 me-1"></i>Start: {{ $project->start_date ? $project->start_date->format('Y-m-d') : '-' }}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
                                             <!-- <td>
                                                 @if($project->end_date)
                                                     {{ $project->end_date->format('Y-m-d') }}
@@ -334,7 +377,7 @@
                                                         <i class="feather-chevron-down fs-10 ms-1"></i>
                                                     </button>
                                                     <ul class="dropdown-menu shadow-lg border-0"
-                                                        style="border-radius: 12px; max-height: 350px; overflow-y: auto; min-width: 200px;">
+                                                        style="border-radius: 12px; max-height: 350px; overflow-y: auto; min-width: 200px; padding-top: 0">
                                                         <li class="sticky-top bg-white" style="z-index: 10;">
                                                             <div class="p-3 border-bottom mb-2">
                                                                 <div class="input-group bg-light border"
@@ -358,6 +401,54 @@
                                                             <li><a class="dropdown-item fw-bold lead-item py-2 mb-1 rounded mx-2 {{ in_array($emp->id, $leaders) ? 'active' : '' }}"
                                                                     href="javascript:void(0);"
                                                                     onclick="updateProjectLead('{{ $project->slug }}', {{ $emp->id }})">{{ $emp->name }}</a>
+                                                            </li>
+                                                        @endforeach
+                                                    </ul>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="dropdown" style="min-width: 180px;" data-bs-auto-close="outside">
+                                                    @php
+                                                        $members = is_array($project->members) ? $project->members : [];
+                                                        $memberNames = [];
+                                                        foreach ($employees as $emp) {
+                                                            if (in_array($emp->id, $members)) {
+                                                                $memberNames[] = $emp->name;
+                                                            }
+                                                        }
+                                                        $currentMembers = count($memberNames) > 0 ? implode(', ', $memberNames) : 'Select Members...';
+                                                    @endphp
+                                                    <button class="lead-select-btn dropdown-toggle shadow-none" type="button"
+                                                        data-bs-toggle="dropdown" aria-expanded="false"
+                                                        data-bs-boundary="viewport">
+                                                        <span class="text-truncate">{{ $currentMembers }}</span>
+                                                        <i class="feather-chevron-down fs-10 ms-1"></i>
+                                                    </button>
+                                                    <ul class="dropdown-menu shadow-lg border-0"
+                                                        style="border-radius: 12px; max-height: 350px; overflow-y: auto; min-width: 240px; padding-top:0">
+                                                        <li class="sticky-top bg-white" style="z-index: 10;">
+                                                            <div class="p-3 border-bottom mb-2">
+                                                                <div class="input-group bg-light border"
+                                                                    style="border-radius: 8px; overflow: hidden;">
+                                                                    <span
+                                                                        class="input-group-text bg-transparent border-0 pe-1"><i
+                                                                            class="feather-search fs-12 text-muted"></i></span>
+                                                                    <input type="text"
+                                                                        class="form-control border-0 bg-transparent shadow-none fw-bold lead-search"
+                                                                        oninput="window.filterLeadList(this)"
+                                                                        placeholder="Search team member..."
+                                                                        style="font-size: 13px; height: 38px;">
+                                                                </div>
+                                                            </div>
+                                                        </li>
+                                                        <li><a class="dropdown-item fw-bold lead-item py-2 mb-1 rounded mx-2"
+                                                                href="javascript:void(0);"
+                                                                onclick='updateProjectMembers("{{ $project->slug }}", [])'>No
+                                                                Members</a></li>
+                                                        @foreach($employees as $emp)
+                                                            <li><a class="dropdown-item fw-bold lead-item py-2 mb-1 rounded mx-2 {{ in_array($emp->id, $members) ? 'active' : '' }}"
+                                                                    href="javascript:void(0);"
+                                                                    onclick='toggleProjectMember("{{ $project->slug }}", @json($members), {{ $emp->id }})'>{{ $emp->name }}</a>
                                                             </li>
                                                         @endforeach
                                                     </ul>
@@ -750,8 +841,6 @@
                 minimumResultsForSearch: 0,
                 placeholder: "Select an option",
                 allowClear: true
-            }).on('change.select2', function () {
-                applyFilters();
             });
 
             // Quick View Click Handler (Safest way)
@@ -963,22 +1052,51 @@
         };
 
         window.updateProjectStatus = function (id, status) {
-            updateProjectField(id, { status: status }, 'Status Updated');
-            setTimeout(() => location.reload(), 500);
+            updateProjectField(id, { status: status }, 'Status Updated', function() {
+                setTimeout(() => location.reload(), 500);
+            });
         };
 
         window.updateProjectLead = function (id, leadId) {
-            updateProjectField(id, { leaders: leadId ? [leadId] : [] }, 'Lead Updated');
-            setTimeout(() => location.reload(), 500);
+            updateProjectField(id, { leaders: leadId ? [leadId] : [] }, 'Lead Updated', function() {
+                setTimeout(() => location.reload(), 500);
+            });
         };
 
-        function updateProjectField(id, data, successTitle) {
+        window.updateProjectMembers = function (id, memberIds) {
+            updateProjectField(id, { members: memberIds }, 'Members Updated', function() {
+                setTimeout(() => location.reload(), 500);
+            });
+        };
+
+        window.toggleProjectMember = function (id, currentMembers, memberId) {
+            currentMembers = Array.isArray(currentMembers) ? currentMembers.map(Number) : [];
+            memberId = Number(memberId);
+
+            var updatedMembers = currentMembers.includes(memberId)
+                ? currentMembers.filter(function (id) { return id !== memberId; })
+                : currentMembers.concat(memberId);
+
+            updateProjectMembers(id, updatedMembers);
+        };
+
+        function updateProjectField(id, data, successTitle, callback) {
             var url = '{{ route("projects.update-field", ["project" => ":id"]) }}'.replace(':id', id);
             $.ajax({
                 url: url, type: 'PATCH',
                 headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
                 data: data,
-                success: function () { if (typeof Toast !== 'undefined') Toast.fire({ icon: 'success', title: successTitle }); }
+                success: function () {
+                    if (typeof Toast !== 'undefined') {
+                        Toast.fire({ icon: 'success', title: successTitle });
+                    }
+                    if (callback) callback();
+                },
+                error: function (xhr) {
+                    if (typeof Toast !== 'undefined') {
+                        Toast.fire({ icon: 'error', title: 'Failed to update field' });
+                    }
+                }
             });
         }
     </script>

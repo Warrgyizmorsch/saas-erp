@@ -2,7 +2,7 @@
 
 @section('content')
 @php
-    $role = str_replace(' ', '_', strtolower(auth()->user()->role ?? 'employee'));
+    $role = str_replace(' ', '_', strtolower(auth()->user()->hrm_role ?? 'employee'));
     $isAdmin = in_array($role, ['super_admin', 'manager', 'hr_executive', 'hr_intern', 'business_operation_head']);
     $isTeamLeader = in_array($role, ['team_leader']);
 @endphp
@@ -14,7 +14,7 @@
             <h5 class="m-b-10" style="color: #3858f9; font-weight: 700;">Holiday Management</h5>
         </div>
         <ul class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('hrms.dashboard') }}">Home</a></li>
             <li class="breadcrumb-item active">Holiday List</li>
         </ul>
     </div>
@@ -171,11 +171,18 @@
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
             },
             body: JSON.stringify({ title, date })
         })
-        .then(res => res.json())
+        .then(res => {
+            if (!res.ok) {
+                return res.json().then(err => { throw err; });
+            }
+            return res.json();
+        })
         .then(data => {
             if (data.success || data.id) { // Accepting either success flag or created object
                 Toast.fire({
@@ -188,9 +195,16 @@
                     icon: 'error',
                     title: data.message || 'Error adding holiday'
                 });
+                const loader = document.getElementById("globalLoader");
+                if (loader) loader.style.display = "none";
             }
         })
-        .catch(() => Toast.fire({ icon: 'error', title: 'Something went wrong!' }));
+        .catch((err) => {
+            console.error('Add Holiday Error:', err);
+            Toast.fire({ icon: 'error', title: 'Something went wrong!' });
+            const loader = document.getElementById("globalLoader");
+            if (loader) loader.style.display = "none";
+        });
     });
 
     function confirmDelete(id) {
@@ -217,7 +231,7 @@
     }
 
     function deleteHoliday(id) {
-        fetch('/holidays/' + id, {
+        fetch('/hrms/holidays/' + id, {
             method: 'DELETE',
             headers: {
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
@@ -235,9 +249,16 @@
                     icon: 'error',
                     title: 'Error deleting holiday'
                 });
+                const loader = document.getElementById("globalLoader");
+                if (loader) loader.style.display = "none";
             }
         })
-        .catch(() => Toast.fire({ icon: 'error', title: 'Something went wrong!' }));
+        .catch((err) => {
+            console.error('Delete Holiday Error:', err);
+            Toast.fire({ icon: 'error', title: 'Something went wrong!' });
+            const loader = document.getElementById("globalLoader");
+            if (loader) loader.style.display = "none";
+        });
     }
 </script>
 

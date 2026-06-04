@@ -8,7 +8,7 @@
                 <h5 class="m-b-10">Add Employee</h5>
             </div>
             <ul class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('hrms.dashboard') }}">Home</a></li>
                 <li class="breadcrumb-item"><a href="{{ route('employees.index') }}">Employees</a></li>
                 <li class="breadcrumb-item">Add New</li>
             </ul>

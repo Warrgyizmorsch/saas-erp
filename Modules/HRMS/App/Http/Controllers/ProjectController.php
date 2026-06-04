@@ -31,7 +31,7 @@ class ProjectController extends Controller
 
         $query = Project::with(['tasks.employee']);
         if ($isTeamLeader) {
-            $department = $user->employee?->department ?? null;
+            $department = $user->employee->department ?? null;
             if ($department) {
                 $query->where('department', $department);
             } else {
@@ -43,7 +43,7 @@ class ProjectController extends Controller
         if ($isAdmin) {
             $employees = \Modules\HRMS\App\Models\Employee::all();
         } elseif ($isTeamLeader) {
-            $department = $user->employee?->department ?? null;
+            $department = $user->employee->department ?? null;
             if ($department) {
                 $employees = \Modules\HRMS\App\Models\Employee::where('department', $department)->get();
             } else {
@@ -76,7 +76,7 @@ class ProjectController extends Controller
         if ($isAdmin) {
             $employees = \Modules\HRMS\App\Models\Employee::all();
         } elseif ($isTeamLeader) {
-            $department = $user->employee?->department ?? null;
+            $department = $user->employee->department ?? null;
             if ($department) {
                 $employees = \Modules\HRMS\App\Models\Employee::where('department', $department)->get();
             } else {
@@ -112,9 +112,17 @@ class ProjectController extends Controller
             'manage' => 'required',
         ]);
 
+        $slug = Str::slug($request->name);
+        $originalSlug = $slug;
+        $count = 1;
+        while (Project::where('slug', $slug)->exists()) {
+            $slug = $originalSlug . '-' . $count;
+            $count++;
+        }
+
         $project = Project::create([
             'name' => $request->name,
-            'slug' => Str::slug($request->name),
+            'slug' => $slug,
             'start_date' => $request->start_date,
             'end_date' => $request->end_date,
             'status' => $request->status,
@@ -214,9 +222,17 @@ class ProjectController extends Controller
             'manage' => 'required',
         ]);
 
+        $slug = Str::slug($request->name);
+        $originalSlug = $slug;
+        $count = 1;
+        while (Project::where('slug', $slug)->where('id', '!=', $project->id)->exists()) {
+            $slug = $originalSlug . '-' . $count;
+            $count++;
+        }
+
         $project->update([
             'name' => $request->name,
-            'slug' => Str::slug($request->name),
+            'slug' => $slug,
             'start_date' => $request->start_date,
             'end_date' => $request->end_date,
             'status' => $request->status,
@@ -235,16 +251,25 @@ class ProjectController extends Controller
     public function updateField(Request $request, Project $project)
     {
         $fields = ['status', 'members', 'leaders'];
-        $role = strtoupper(auth()->user()->hrm_role ?? 'USER');
+        $user = auth()->user();
+        $role = str_replace(' ', '_', strtolower($user->hrm_role ?? 'employee'));
+        $isAdmin = in_array($role, [
+            'super_admin',
+            'manager',
+            'hr_executive',
+            'hr_intern',
+            'business_operation_head'
+        ]);
+
         $isLead = false;
         if (is_array($project->leaders)) {
-            $isLead = in_array(auth()->user()->employee_id, $project->leaders);
+            $isLead = in_array($user->employee_id, $project->leaders);
         }
 
         foreach ($fields as $field) {
             if ($request->has($field)) {
                 // Only Admin or Lead can change status
-                if ($field === 'status' && $role !== 'ADMIN' && $role !== 'SUPER ADMIN' && !$isLead) {
+                if ($field === 'status' && !$isAdmin && !$isLead) {
                     continue;
                 }
                 $project->$field = $request->$field;

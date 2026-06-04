@@ -15,7 +15,7 @@
                 <h5 class="m-b-10" style="color: #3858f9; font-weight: 700;">Task History</h5>
             </div>
             <ul class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('hrms.dashboard') }}">Home</a></li>
                 <li class="breadcrumb-item active">Daily Tasks</li>
             </ul>
         </div>
@@ -391,14 +391,6 @@
                                                     
                                                     <div class="d-flex flex-column">
 
-                                                        {{-- Project --}}
-                                                        <div class="mb-1">
-                                                            <small class="text-muted">Project :</small>
-                                                            <span class="fw-bold text-dark">
-                                                                {{ Str::limit($task->project->name ?? '-', 25) }}
-                                                            </span>
-                                                        </div>
-
                                                         {{-- Task --}}
                                                         <div class="mb-1">
                                                             <small class="text-muted">Task :</small>
@@ -541,138 +533,119 @@
                                                         <i class="feather-file-text"></i>
                                                     </a>
                                                     <template id="task_desc_{{ $task->id }}">
-                                                        <div class="p-2">
-                                                            {{-- Project & Task Details --}}
-                                                            <div class="mb-4">
-
-                                                                {{-- Project --}}
-                                                                <div class="mb-4">
-                                                                    <h6 class="fw-bold text-primary mb-3 d-flex align-items-center gap-2">
-                                                                        <i class="feather-briefcase"></i> Project
-                                                                    </h6>
-
-                                                                    <div class="p-3 bg-white rounded border"
-                                                                        style="font-size:14px; min-height:60px;">
-                                                                        <span class="fw-semibold text-dark">
-                                                                            {{ $task->project->name ?? '-' }}
-                                                                        </span>
-                                                                    </div>
-                                                                </div>
-
-                                                                {{-- Task Title --}}
-                                                                <div class="mb-4">
-                                                                    <h6 class="fw-bold text-success mb-3 d-flex align-items-center gap-2">
-                                                                        <i class="feather-check-square"></i> Task Title
-                                                                    </h6>
-
-                                                                    <div class="p-3 bg-white rounded border"
-                                                                        style="font-size:14px; min-height:60px;">
-                                                                        <span class="fw-semibold text-dark">
-                                                                            {{ $task->task_title }}
-                                                                        </span>
-                                                                    </div>
-                                                                </div>
-
-                                                            </div>
-                                                            
-                                                            <div class="mb-4">
-                                                                <div class="d-flex justify-content-between">
-                                                                    <h6
-                                                                        class="fw-bold text-primary mb-3 d-flex align-items-center gap-2">
-                                                                        <i class="feather-info"></i> Original Task Description
-                                                                    </h6>
-                                                                    @if($task->creator && $task->creator->name !== (auth()->user()->name ?? ''))
-                                                                        <div class="mb-3 text-muted small fw-bold">
-                                                                            Assigned by - {{ $task->creator->name }}
-                                                                        </div>
-                                                                    @endif
-                                                                </div>
-                                                                <div class="p-3 bg-white rounded border"
-                                                                    style="font-size: 14px; min-height: 100px;">
-                                                                    {!! $task->description ?? '<span class="text-muted">No description provided.</span>' !!}
-                                                                </div>
-                                                                @if($task->photo)
-                                                                    <div class="mt-3">
-                                                                        <a href="javascript:void(0);"
-                                                                            onclick="viewAttachmentPopup('{{ asset('storage/' . $task->photo) }}')"
-                                                                            class="btn btn-sm btn-soft-primary fw-bold px-3" style="border-radius: 8px;">
-                                                                            <i class="feather-paperclip me-1"></i> View Original Attachment
-                                                                        </a>
-                                                                    </div>
-                                                                @endif
+                                                        <div class="mb-4">
+                                                            <h6 class="fw-bold text-primary mb-3 d-flex align-items-center gap-2" style="font-size: 20px;">
+                                                                <i class="feather-info"></i> Original Task Title
+                                                            </h6>
+                                                            <div class="p-3 bg-white rounded border mb-3"
+                                                                style="font-size:14px; min-height:60px; border-color:#e2e8f0 !important;">
+                                                                <span class="fw-semibold text-dark">
+                                                                    {{ $task->task_title ?: 'No task title provided.' }}
+                                                                </span>
                                                             </div>
 
-                                                            <hr class="my-4">
-
-                                                            <div class="mb-3">
-                                                                <h6
-                                                                    class="fw-bold text-primary mb-3 d-flex align-items-center gap-2">
-                                                                    <i class="feather-clock"></i> Work Progress History
-                                                                </h6>
-                                                                @if($task->followUps->count() > 0)
-                                                                    <div class="timeline-container px-2">
-                                                                        @foreach($task->followUps->sortByDesc('created_at') as $fu)
-                                                                            <div class="mb-4 ps-4 position-relative"
-                                                                                style="border-left: 2px dashed #cbd5e1;">
-                                                                                <div class="position-absolute"
-                                                                                    style="left: -9px; top: 0; width: 16px; height: 16px; background: #3858f9; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 2px #3858f920;">
-                                                                                </div>
-                                                                                <div class="card border-0 shadow-sm"
-                                                                                    style="border-radius: 12px; background: #f8fafc;">
-                                                                                    <div class="card-body p-3">
-                                                                                        <div
-                                                                                            class="d-flex justify-content-between align-items-center mb-2">
-                                                                                            <span
-                                                                                                class="fw-bold text-dark small">{{ $fu->reference_name ?? 'Employee' }}</span>
-                                                                                            <span
-                                                                                                class="badge bg-soft-primary text-primary small">{{ $fu->created_at->format('d M, Y') }}</span>
-                                                                                        </div>
-                                                                                        <div class="text-muted small mb-2">
-                                                                                            {!! $fu->work_description !!}
-                                                                                        </div>
-                                                                                        <div
-                                                                                            class="d-flex align-items-center gap-2 mt-2">
-                                                                                            <span
-                                                                                                class="badge bg-soft-dark text-dark fw-bold"
-                                                                                                style="font-size: 10px;">
-                                                                                                <i class="feather-clock me-1"></i>
-                                                                                                @php
-                                                                                                    $totalHours = (float) $fu->time_taken;
-                                                                                                    $h = floor($totalHours);
-                                                                                                    $m = round(($totalHours - $h) * 60);
-                                                                                                    $display = [];
-                                                                                                    if ($h > 0) $display[] = $h . 'h';
-                                                                                                    if ($m > 0) $display[] = $m . 'm';
-                                                                                                    echo count($display) > 0 ? implode(' ', $display) : '0m';
-                                                                                                @endphp
-                                                                                            </span>
-                                                                                            @if($fu->photo)
-                                                                                                <a href="javascript:void(0);"
-                                                                                                    onclick="viewAttachmentPopup('{{ asset('storage/' . $fu->photo) }}')"
-                                                                                                    class="badge bg-soft-info text-info text-decoration-none">
-                                                                                                    <i class="feather-image"></i> View Image
-                                                                                                </a>
-                                                                                            @endif
-                                                                                        </div>
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                        @endforeach
-                                                                    </div>
-                                                                @else
-                                                                    <div class="alert alert-soft-secondary py-3 text-center"
-                                                                        style="border-radius: 12px;">
-                                                                        <i class="feather-info me-2"></i> No history available for
-                                                                        this task.
-                                                                    </div>
-                                                                @endif
+                                                            <h6 class="fw-bold text-primary mb-3 d-flex align-items-center gap-2" style="font-size: 20px;">
+                                                                <i class="feather-info"></i> Original Task Description
+                                                            </h6>
+                                                            <div class="p-3 bg-white rounded border"
+                                                                style="font-size:14px; min-height:110px; border-color:#e2e8f0 !important;">
+                                                                <div class="text-muted" style="font-size: 15px; line-height: 1.8;">
+                                                                    {!! $task->description ?: 'No description provided.' !!}
+                                                                </div>
                                                             </div>
                                                         </div>
+
+                                                        {{-- Work Progress History --}}
+                                                        @php
+                                                        $groupedFollowups = $task->followUps
+                                                        ->sortByDesc('created_at')
+                                                        ->groupBy(function($item){
+                                                            return ($item->reference_name ?? 'Employee') . '_' .
+                                                            $item->created_at->format('d-m-Y');
+                                                        });
+
+                                                        $allTaskHours=$task->followUps->sum('time_taken');
+
+                                                        $th=floor($allTaskHours);
+                                                        $tm=round(($allTaskHours-$th)*60);
+
+                                                        $totalDisplay=[];
+
+                                                        if($th>0) $totalDisplay[]=$th.'h';
+                                                        if($tm>0) $totalDisplay[]=$tm.'m';
+                                                        @endphp
+
+
+                                                        <div class="d-flex justify-content-between align-items-center mb-3">
+
+                                                            <h6 class="fw-bold text-primary d-flex align-items-center gap-2 m-0">
+                                                                <i class="feather-clock"></i>
+                                                                Work Progress History
+                                                            </h6>
+
+                                                            <span class="badge text-dark fw-bold"
+                                                            style="
+                                                            background:#e2e8f0;
+                                                            padding:8px 14px;
+                                                            border-radius:8px;
+                                                            font-size:12px;">
+
+                                                                <i class="feather-clock me-1"></i>
+
+                                                                {{implode(' ',$totalDisplay)}}
+
+                                                            </span>
+
+                                                        </div>
+
+                                                        @foreach($groupedFollowups as $group)
+
+                                                            @php
+                                                            $first=$group->first();
+
+                                                            $totalHours=$group->sum('time_taken');
+
+                                                            $h=floor($totalHours);
+
+                                                            $m=round(($totalHours-$h)*60);
+
+                                                            $display=[];
+
+                                                            if($h>0) $display[]=$h.'h';
+                                                            if($m>0) $display[]=$m.'m';
+
+                                                            @endphp
+
+                                                            <div class="mb-4 ps-4 position-relative" style="border-left:2px dashed #cbd5e1;">
+                                                                <div class="position-absolute" style="left:-9px; top:0; width:16px; height:16px; background:#3858f9; border-radius:50%; border:3px solid white;"></div>
+                                                                <div class="card border-0 shadow-sm" style="border-radius:12px;background:#f8fafc">
+                                                                    <div class="card-body p-4">
+                                                                        <div class="d-flex justify-content-between align-items-start">
+                                                                            <div>
+                                                                                <div class="fw-bold text-dark" style="font-size:16px">
+                                                                                    {{ $first->reference_name }}
+                                                                                </div>
+                                                                            </div>
+                                                                            <span style=" background:#eef2ff; color:#3858f9; padding:8px 12px; border-radius:8px; font-size:12px; font-weight:600; min-width:90px; text-align:center">
+                                                                                {{ $first->created_at->format('d M, Y') }}
+                                                                            </span>
+                                                                        </div>
+                                                                        <div class="ps-3 mt-3"style="border-left:3px solid #3858f9;">
+                                                                            @foreach($group as $fu)
+                                                                                <div class="mb-4">
+                                                                                    <div class="text-muted" style=" font-size:14px; line-height:1.8; color:#64748b">{!! $fu->work_description !!}</div>
+                                                                                </div>
+                                                                            @endforeach
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        @endforeach
                                                     </template>
 
                                                     <a href="javascript:void(0);"
                                                         class="avatar-text avatar-md bg-soft-primary text-primary rounded"
-                                                        title="Edit" onclick="editTask({{ json_encode($task) }})">
+                                                        title="Edit" onclick="editTask({{ json_encode(array_merge($task->toArray(), ['start_date_formatted' => optional($task->start_date)->format('Y-m-d'), 'end_date_formatted' => optional($task->end_date)->format('Y-m-d')])) }})">
                                                         <i class="feather-edit-3"></i>
                                                     </a>
                                                     <form action="{{ route('daily-tasks.destroy', $task->id) }}" method="POST"
@@ -689,7 +662,7 @@
                                                         class="avatar-text avatar-md bg-soft-info text-info rounded"
                                                         title="Add Work Progress" data-bs-toggle="modal"
                                                         data-bs-target="#followUpModal"
-                                                        onclick="openFollowUpModal({{ $task->id }}, '{{ addslashes($task->project->name ?? 'N/A') }}', 'add', '{{ addslashes($task->task_title) }}', {{ $task->employee_id ?? 'null' }}, '{{ addslashes($task->employee->name ?? auth()->user()->name ?? 'Employee') }}')">
+                                                        onclick="openFollowUpModal({{ $task->id }}, '{{ addslashes($task->project->name ?? 'N/A') }}', 'add', '{{ addslashes($task->task_title) }}', {{ $task->employee_id ?? 'null' }}, '{{ addslashes($task->employee->name ?? auth()->user()->name ?? 'Employee') }}', {{ $task->project_id ?? 'null' }})">
                                                         <i class="feather-plus-circle"></i>
                                                     </a>
 
@@ -792,7 +765,9 @@
             </div>
         </div>
     </div>  
+@endsection
 
+@section('modals')
     <!-- SIDE PANEL: CREATE/EDIT TASK -->
     <div class="offcanvas offcanvas-end border-0" tabindex="-1" id="taskOffcanvas" aria-labelledby="taskOffcanvasLabel"
         style="width: 50% !important;">
@@ -807,11 +782,11 @@
                 <input type="hidden" name="id" id="taskId">
 
                 <div class="row g-4">
-                    <div class="col-md-4">
+                    <div class="col-md-4 d-none">
                         <label class="form-label fw-bold fs-12 text-muted text-uppercase mb-2">Project <span
                                 class="text-danger">*</span></label>
                         <select name="project_id" id="taskProjectId" class="form-select premium-select"
-                            data-placeholder="Select Project..." required>
+                            data-placeholder="Select Project...">
                             <option value="">Select Project...</option>
                             @foreach($projects as $project)
                                 <option value="{{ $project->id }}">{{ $project->name }}</option>
@@ -849,7 +824,7 @@
                     <div class="col-md-4">
                         <label class="form-label fw-bold fs-12 text-muted text-uppercase mb-2">Status</label>
                         <select name="status" id="taskStatus" class="form-select premium-select"
-                            data-placeholder="Select Status..." required>Pending
+                            data-placeholder="Select Status..." required>
                             <option value="Pending" selected>Pending</option>
                             <option value="In Process">In Process</option>
                             <option value="Completed">Completed</option>
@@ -952,7 +927,7 @@
                                         </div> -->
 
                                         <!-- QUICK TASK ADDER -->
-                                        <div class="row g-2 mb-3 p-2 rounded"
+                                        <!-- <div class="row g-2 mb-3 p-2 rounded"
                                             style="background: #f1f5f9; border: 1px dashed #cbd5e1;">
                                             <div class="col-4">
                                                 <label
@@ -983,39 +958,25 @@
                                                     ADD TASK
                                                 </button>
                                             </div>
+                                        </div> -->
+
+                                        <div class="d-flex justify-content-end align-items-center mb-3">
+                                            <button type="button"
+                                                onclick="addTaskClone()"
+                                                class="btn btn-primary fw-bold px-3"
+                                                style="height:40px;border-radius:10px;">
+                                                <i class="bi bi-plus-lg me-1"></i> Add Row
+                                            </button>
                                         </div>
 
-                                        <div class="mb-3">
+                                        <div id="taskAddContainer"></div>
+
+                                        <div class="mb-3 d-none">
                                             <label class="form-label fw-bold fs-12 text-muted text-uppercase mb-2">Work
                                                 Description <span class="text-danger">*</span></label>
-                                            <textarea name="work_description" id="workDesc"
+                                            <textarea name="legacy_work_description" id="workDesc"
                                                 class="form-control premium-input" rows="3"
-                                                placeholder="Enter detailed work progress description..."
-                                                required></textarea>
-                                        </div>
-
-                                        <div class="mb-4">
-                                            <label class="form-label fw-bold fs-12 text-muted text-uppercase mb-2">Upload
-                                                Attachment (Image/PDF/Doc)</label>
-                                            <input type="file" name="photo" id="photoInput"
-                                                class="form-control premium-input" onchange="previewImage(this)"
-                                                accept=".jpeg,.jpg,.png,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip,.rar">
-                                            <!-- REAL-TIME PREVIEW AREA -->
-                                            <div id="previewContainer" class="mt-3 d-none"
-                                                style="position: relative; width: 100%; height: auto; min-height: 50px; border-radius: 12px; overflow: hidden; border: 2px dashed #e2e8f0; padding: 10px; background: #f8fafc; text-align: center;">
-                                                <img id="photoPreview" src="#" alt="Preview"
-                                                    style="width: 100%; max-height: 180px; object-fit: contain !important; border-radius: 8px; display: none;">
-                                                <div id="documentPreview" class="fw-bold text-primary"
-                                                    style="display: none; padding: 20px;">
-                                                    <i class="feather-file-text me-2" style="font-size: 24px;"></i> Document
-                                                    Selected
-                                                </div>
-                                                <button type="button" class="btn btn-sm btn-danger rounded-circle"
-                                                    onclick="removePreview()"
-                                                    style="position: absolute; top: 10px; right: 10px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; z-index: 10;">
-                                                    <i class="feather-x"></i>
-                                                </button>
-                                            </div>
+                                                placeholder="Enter detailed work progress description..."></textarea>
                                         </div>
                                         <button type="submit" id="submitReplyBtn"
                                             class="btn btn-primary w-100 fw-bold shadow-sm"
@@ -1596,51 +1557,51 @@
                     isSysAdmin
                 };
 
-                $('#taskProjectId').on('change', function() {
-                    const projectId = $(this).val();
-                    const $empSelect = $('#taskEmployeeId');
+                // $('#taskProjectId').on('change', function() {
+                //     const projectId = $(this).val();
+                //     const $empSelect = $('#taskEmployeeId');
                     
-                    if (!projectId) {
-                        $empSelect.empty().append('<option value="">Select Employee...</option>').trigger('change');
-                        return;
-                    }
+                //     if (!projectId) {
+                //         $empSelect.empty().append('<option value="">Select Employee...</option>').trigger('change');
+                //         return;
+                //     }
 
-                    const allowedIds = projectEmployees[projectId] || [];
-                    const leaders = projectLeadersMap[projectId] || [];
-                    const isLeaderOfProject = leaders.includes(currentEmpId.toString()) || leaders.includes(currentEmpId);
+                //     const allowedIds = projectEmployees[projectId] || [];
+                //     const leaders = projectLeadersMap[projectId] || [];
+                //     const isLeaderOfProject = leaders.includes(currentEmpId.toString()) || leaders.includes(currentEmpId);
                     
-                    const currentSelectedVal = $empSelect.val();
-                    $empSelect.empty().append('<option value="">Select Employee...</option>');
+                //     const currentSelectedVal = $empSelect.val();
+                //     $empSelect.empty().append('<option value="">Select Employee...</option>');
                     
-                    let count = 0;
-                    Object.entries(allEmployeesMap).forEach(([id, emp]) => {
-                        const isMember = allowedIds.includes(parseInt(id)) || allowedIds.includes(id.toString());
+                //     let count = 0;
+                //     Object.entries(allEmployeesMap).forEach(([id, emp]) => {
+                //         const isMember = allowedIds.includes(parseInt(id)) || allowedIds.includes(id.toString());
                         
-                        if (isSysAdmin || isLeaderOfProject) {
-                            if (isMember) {
-                                $empSelect.append(`<option value="${id}">${emp.name}</option>`);
-                                count++;
-                            }
-                        } else {
-                            if (isMember && id == currentEmpId) {
-                                $empSelect.append(`<option value="${id}">${emp.name}</option>`);
-                                count++;
-                            }
-                        }
-                    });
+                //         if (isSysAdmin || isLeaderOfProject) {
+                //             if (isMember) {
+                //                 $empSelect.append(`<option value="${id}">${emp.name}</option>`);
+                //                 count++;
+                //             }
+                //         } else {
+                //             if (isMember && id == currentEmpId) {
+                //                 $empSelect.append(`<option value="${id}">${emp.name}</option>`);
+                //                 count++;
+                //             }
+                //         }
+                //     });
 
-                    const hasPreviousSelection = currentSelectedVal && $empSelect.find(`option[value="${currentSelectedVal}"]`).length;
+                //     const hasPreviousSelection = currentSelectedVal && $empSelect.find(`option[value="${currentSelectedVal}"]`).length;
 
-                    if (hasPreviousSelection) {
-                        $empSelect.val(currentSelectedVal);
-                    } else if (count === 1) {
-                        $empSelect.find('option').last().prop('selected', true);
-                    }
+                //     if (hasPreviousSelection) {
+                //         $empSelect.val(currentSelectedVal);
+                //     } else if (count === 1) {
+                //         $empSelect.find('option').last().prop('selected', true);
+                //     }
 
-                    if (window.jQuery && $.fn.select2) {
-                        $empSelect.trigger('change');
-                    }
-                });
+                //     if (window.jQuery && $.fn.select2) {
+                //         $empSelect.trigger('change');
+                //     }
+                // });
 
                 // Initialize Select2 with Premium Styling
                 if (window.jQuery && $.fn.select2) {
@@ -1715,22 +1676,42 @@
                 }
             });
 
-            function previewImage(input) {
-                const preview = document.getElementById('photoPreview');
-                const docPreview = document.getElementById('documentPreview');
-                const container = document.getElementById('previewContainer');
+            function previewFollowUpAttachment(input, existingUrl = '') {
+                const row = input.closest('.followup-row');
+                if (!row) return;
 
-                if (input.files && input.files[0]) {
-                    const file = input.files[0];
+                const preview = row.querySelector('.followup-photo-preview');
+                const docPreview = row.querySelector('.followup-doc-preview');
+                const container = row.querySelector('.followup-preview-container');
+                const existingField = row.querySelector('.followup-existing-photo');
+
+                if (!preview || !docPreview || !container) return;
+
+                if (existingField) {
+                    existingField.value = '';
+                }
+
+                const file = input.files && input.files[0] ? input.files[0] : null;
+
+                if (!file && !existingUrl) {
+                    container.classList.add('d-none');
+                    preview.style.display = 'none';
+                    docPreview.style.display = 'none';
+                    preview.removeAttribute('src');
+                    docPreview.innerHTML = '';
+                    return;
+                }
+
+                container.classList.remove('d-none');
+
+                if (file) {
                     const isImage = file.type.startsWith('image/');
-
-                    container.classList.remove('d-none');
 
                     if (isImage) {
                         preview.style.display = 'block';
                         docPreview.style.display = 'none';
                         const reader = new FileReader();
-                        reader.onload = function (e) { preview.src = e.target.result; }
+                        reader.onload = function (e) { preview.src = e.target.result; };
                         reader.readAsDataURL(file);
                     } else {
                         preview.style.display = 'none';
@@ -1740,12 +1721,52 @@
                                                         <span class="text-dark small">${file.name}</span>
                                                     </div>`;
                     }
+
+                    return;
+                }
+
+                const isImage = existingUrl.match(/\.(jpeg|jpg|gif|png|webp)$/i) != null;
+                if (isImage) {
+                    preview.style.display = 'block';
+                    docPreview.style.display = 'none';
+                    preview.src = existingUrl;
+                } else {
+                    preview.style.display = 'none';
+                    docPreview.style.display = 'block';
+                    docPreview.innerHTML = `<div class="d-flex flex-column align-items-center justify-content-center p-3">
+                                                    <i class="feather-file-text mb-2" style="font-size: 32px; color: #3858f9;"></i>
+                                                    <span class="text-dark small">Existing Attachment</span>
+                                                </div>`;
+                }
+            }
+
+            function clearFollowUpAttachment(button) {
+                const row = button.closest('.followup-row');
+                if (!row) return;
+
+                const input = row.querySelector('.followup-photo-input');
+                const existingField = row.querySelector('.followup-existing-photo');
+                const container = row.querySelector('.followup-preview-container');
+                const preview = row.querySelector('.followup-photo-preview');
+                const docPreview = row.querySelector('.followup-doc-preview');
+
+                if (input) input.value = '';
+                if (existingField) existingField.value = '';
+                if (container) container.classList.add('d-none');
+                if (preview) {
+                    preview.style.display = 'none';
+                    preview.removeAttribute('src');
+                }
+                if (docPreview) {
+                    docPreview.style.display = 'none';
+                    docPreview.innerHTML = '';
                 }
             }
 
             function removePreview() {
-                document.getElementById('photoInput').value = '';
-                document.getElementById('previewContainer').classList.add('d-none');
+                document.querySelectorAll('#taskAddContainer .followup-row .followup-remove-attachment').forEach(button => {
+                    clearFollowUpAttachment(button);
+                });
             }
 
             function bulkDelete() {
@@ -1756,7 +1777,7 @@
                     showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Yes, delete them!'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        fetch('{{ route("daily-tasks.bulk-delete") }}', {
+                        fetch('{{ url("/daily-tasks/bulk-delete") }}', {
                             method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
                             body: JSON.stringify({ ids: checked })
                         }).then(res => res.json()).then(data => { if (data.success) { Toast.fire({ icon: 'success', title: data.success }).then(() => location.reload()); } });
@@ -1772,13 +1793,11 @@
                 // Set basic fields
                 document.getElementById('taskId').value = task.id || '';
                 document.getElementById('taskTitle').value = task.task_title || '';
-                document.getElementById('taskStartDate').value = task.start_date ? task.start_date.substring(0, 10) : '';
-                document.getElementById('taskEndDate').value = task.end_date ? task.end_date.substring(0, 10) : '';
+                document.getElementById('taskStartDate').value = task.start_date_formatted || (task.start_date ? task.start_date.substring(0, 10) : '');
+                document.getElementById('taskEndDate').value = task.end_date_formatted || (task.end_date ? task.end_date.substring(0, 10) : '');
                 document.getElementById('taskPriority').value = task.priority || 'Medium';
 
-                window.onload = function () {
-                    document.getElementById('taskStatus').value = task.status || 'Pending';
-                };
+                document.getElementById('taskStatus').value = task.status || 'Pending';
 
                 // Handle existing attachment
                 const filePreview = document.getElementById('mainTaskFilePreview');
@@ -1809,6 +1828,8 @@
                     if (empSelect) empSelect.value = task.employee_id || '';
                     const prioritySelect = document.getElementById('taskPriority');
                     if (prioritySelect) prioritySelect.value = task.priority || 'Medium';
+                    const statusSelect = document.getElementById('taskStatus');
+                    if (statusSelect) statusSelect.value = task.status || 'Pending';
                 }
 
                 // Summernote description
@@ -1827,7 +1848,7 @@
                 // Form action and method
                 document.getElementById('methodField').innerHTML = '<input type="hidden" name="_method" value="PUT">';
                 const formObj = document.getElementById('taskForm');
-                if (formObj) formObj.action = `/hrms/daily-tasks/${task.id}`;
+                if (formObj) formObj.action = `/daily-tasks/${task.id}`;
 
                 // Show Offcanvas
                 const offElement = document.getElementById('taskOffcanvas');
@@ -1838,36 +1859,22 @@
             }
 
             function resetTaskForm() {
-                const form = document.getElementById('taskForm');
-                if (form) {
-                    form.reset();
-                    form.action = `{{ route('daily-tasks.store') }}`;
-                }
-                const label = document.getElementById('taskOffcanvasLabel');
-                if (label) label.innerText = 'Create Task';
-                const submitBtn = document.getElementById('submitTaskBtn');
-                if (submitBtn) submitBtn.innerText = 'SUBMIT TASK';
-                const taskId = document.getElementById('taskId');
-                if (taskId) taskId.value = '';
-                const methodField = document.getElementById('methodField');
-                if (methodField) methodField.innerHTML = '';
-                const mainPhoto = document.getElementById('mainTaskPhoto');
-                if (mainPhoto) mainPhoto.value = '';
-                const filePreview = document.getElementById('mainTaskFilePreview');
-                if (filePreview) filePreview.classList.add('d-none');
+                document.getElementById('taskForm').reset();
+                document.getElementById('taskForm').action = `{{ url('/hrms/daily-tasks') }}`;
+                document.getElementById('taskOffcanvasLabel').innerText = 'Create Task';
+                document.getElementById('submitTaskBtn').innerText = 'SUBMIT TASK';
+                document.getElementById('taskId').value = '';
+                document.getElementById('methodField').innerHTML = '';
+                document.getElementById('mainTaskPhoto').value = '';
+                document.getElementById('mainTaskFilePreview').classList.add('d-none');
 
-                if (form) {
-                    form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
-                    form.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
-                }
+                document.getElementById('taskForm').querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+                document.getElementById('taskForm').querySelectorAll('.invalid-feedback').forEach(el => el.remove());
                 try {
-                    const taskDesc = document.getElementById('taskDesc');
-                    if (taskDesc) {
-                        if ($('#taskDesc').length && typeof $.fn.summernote === 'function') {
-                            $('#taskDesc').summernote('code', '');
-                        } else {
-                            taskDesc.value = '';
-                        }
+                    if ($('#taskDesc').length && typeof $.fn.summernote === 'function') {
+                        $('#taskDesc').summernote('code', '');
+                    } else {
+                        document.getElementById('taskDesc').value = '';
                     }
                     if (window.jQuery && $.fn.select2) {
                         $('.form-select').val('').trigger('change');
@@ -1882,20 +1889,100 @@
                 } catch (e) { }
             }
 
-            function openFollowUpModal(taskId, taskProjectName, mode = 'history', taskTitle = '', assignedEmpId = null, assignedEmpName = '') {
+            function buildFollowUpRow(selectedProjectId = '', existingPhotoUrl = '') {
+                return `
+                <div class="followup-row mb-3 p-3 rounded-4"
+                    style="background:#ffffff;border:1px solid #e2e8f0;box-shadow:0 10px 30px rgba(15,23,42,0.05);">
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label fw-bold text-muted text-uppercase mb-1" style="font-size:11px;">Project</label>
+                            <select name="project_id[]" class="form-select premium-select followup-project-select" required style="height:35px; border-radius:8px; font-size:12px;">
+                                <option value="">Select Project...</option>
+                                @foreach($projects as $project)
+                                <option value="{{ $project->id }}" ${selectedProjectId == '{{ $project->id }}' ? 'selected' : ''}>
+                                    {{ $project->name }}
+                                </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-1">
+                            <label class="form-label fw-bold text-muted mb-1" style="font-size:11px;">H</label>
+                            <input type="number" name="hours[]" class="form-control text-center fw-bold followup-hours" placeholder="0" min="0" style="height:35px;border-radius:8px;">
+                        </div>
+                        <div class="col-md-1">
+                            <label class="form-label fw-bold text-muted mb-1" style="font-size:11px;">M</label>
+                            <input type="number" name="minutes[]" class="form-control text-center fw-bold followup-minutes" placeholder="0" min="0" max="59" style="height:35px;border-radius:8px;">
+                        </div>
+                        <div class="col-md-1">
+                            <label class="form-label fw-bold text-muted mb-1" style="font-size:11px;">Action</label>
+                            <button type="button" onclick="removeTaskClone(this)" class="btn btn-outline-danger w-100 followup-remove-btn" style="height:45px;border-radius:8px;">
+                                <i class="feather-trash-2 me-1"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="row g-3 mt-1">
+                        <div class="col-12">
+                            <label class="form-label fw-bold text-muted text-uppercase mb-1" style="font-size:11px;">Work Description <span class="text-danger">*</span></label>
+                            <textarea name="work_description[]" rows="3" class="form-control premium-input" placeholder="Enter Description..." style="border-radius:8px;" required></textarea>
+                        </div>
+                    </div>
+                    <div class="row g-3 mt-1">
+                        <div class="col-12">
+                            <label class="form-label fw-bold text-muted text-uppercase mb-1" style="font-size:11px;">Upload Attachment</label>
+                            <input type="hidden" class="followup-existing-photo" value="${existingPhotoUrl}">
+                            <input type="file" name="photo[]" class="form-control premium-input followup-photo-input" onchange="previewFollowUpAttachment(this)" accept=".jpeg,.jpg,.png,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip,.rar">
+                            <div class="followup-preview-container mt-3 d-none"
+                                style="position: relative; width: 100%; min-height: 50px; border-radius: 12px; overflow: hidden; border: 2px dashed #e2e8f0; padding: 10px; background: #f8fafc; text-align: center;">
+                                <img class="followup-photo-preview" alt="Preview"
+                                    style="width: 100%; max-height: 180px; object-fit: contain !important; border-radius: 8px; display: none;">
+                                <div class="followup-doc-preview fw-bold text-primary"
+                                    style="display: none; padding: 20px;"></div>
+                                <button type="button" class="btn btn-sm btn-danger rounded-circle followup-remove-attachment"
+                                    onclick="clearFollowUpAttachment(this)"
+                                    style="position: absolute; top: 10px; right: 10px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; z-index: 10;">
+                                    <i class="feather-x"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            }
+
+            function resetFollowUpRows(selectedProjectId = '') {
+                const container = document.getElementById('taskAddContainer');
+                if (!container) return;
+                container.innerHTML = buildFollowUpRow(selectedProjectId || '');
+                syncFollowUpRowActions();
+            }
+
+            function syncFollowUpRowActions() {
+                const rows = Array.from(document.querySelectorAll('#taskAddContainer .followup-row'));
+
+                rows.forEach((row, index) => {
+                    const title = row.querySelector('.followup-row-title');
+                    const removeBtn = row.querySelector('.followup-remove-btn');
+
+                    if (title) {
+                        title.innerText = `Work Item ${index + 1}`;
+                    }
+
+                    if (removeBtn) {
+                        const singleRow = rows.length === 1;
+                        removeBtn.disabled = singleRow;
+                        removeBtn.classList.toggle('disabled', singleRow);
+                    }
+                });
+            }
+
+            function openFollowUpModal(taskId, taskProjectName, mode = 'history', taskTitle = '', assignedEmpId = null, assignedEmpName = '', selectedProjectId = null) {
                 document.getElementById('followUpTaskId').value = taskId;
 
-                // Display both Project and Task Title in header
-                let headerTitle = taskProjectName;
-                if (taskTitle) {
-                    headerTitle += ` | Task: ${taskTitle}`;
-                }
-                // document.getElementById('followUpTaskTitle').innerText = headerTitle;
+                let headerTitle = taskTitle || 'Work Progress';
                 const titleElement = document.getElementById('followUpTaskTitle');
                 titleElement.innerText = headerTitle;
-                // Full text visible on hover
                 titleElement.setAttribute('title', headerTitle);
                 document.getElementById('followUpForm').reset();
+                resetFollowUpRows(selectedProjectId);
                 document.getElementById('followUpId').value = '';
                 document.getElementById('totalFollowUpHours').value = 0;
                 document.getElementById('submitReplyBtn').innerText = 'SUBMIT PROGRESS';
@@ -1910,8 +1997,10 @@
 
                 if (mode === 'add') {
                     formCol.classList.remove('d-none');
-                    historyCol.classList.remove('col-lg-12');
-                    historyCol.classList.add('col-lg-7');
+                    if (historyCol) {
+                        historyCol.classList.remove('col-lg-12');
+                        historyCol.classList.add('col-lg-7');
+                    }
                     modalDialog.classList.add('modal-xl');
                     document.getElementById('followUpModalLabel').innerText = 'Add Work Progress';
 
@@ -1927,8 +2016,10 @@
                     }
                 } else {
                     formCol.classList.add('d-none');
-                    historyCol.classList.remove('col-lg-7');
-                    historyCol.classList.add('col-lg-12');
+                    if (historyCol) {
+                        historyCol.classList.remove('col-lg-7');
+                        historyCol.classList.add('col-lg-12');
+                    }
                     modalDialog.classList.remove('modal-xl');
                     document.getElementById('followUpModalLabel').innerText = 'Work History';
                 }
@@ -1941,6 +2032,21 @@
                         globalFollowUps = data;
                         renderModalTable();
                     });
+            }
+
+            function addTaskClone() {
+                $('#taskAddContainer').append(buildFollowUpRow());
+                syncFollowUpRowActions();
+            }
+
+            function removeTaskClone(button) {
+                const rows = document.querySelectorAll('#taskAddContainer .followup-row');
+                if (rows.length <= 1) {
+                    return;
+                }
+
+                button.closest('.followup-row')?.remove();
+                syncFollowUpRowActions();
             }
 
             function addQuickTaskToDesc() {
@@ -2002,34 +2108,56 @@
                 Toast.fire({ icon: 'success', title: `Task added. Total: ${newTotal.toFixed(2)} hrs` });
             }
 
-            function recalculateTotalTime() {
-                if (!$('#workDesc').length) return 0;
-                const content = $('#workDesc').summernote('code');
-                const tempDiv = $('<div>').html(content);
-                let totalTime = 0;
+            // function recalculateTotalTime() {
+            //     if (!$('#workDesc').length) return 0;
+            //     const content = $('#workDesc').summernote('code');
+            //     const tempDiv = $('<div>').html(content);
+            //     let totalTime = 0;
                 
-                tempDiv.find('.sub-task-item').each(function() {
-                    let time = 0;
-                    let bTag = $(this).find('b');
-                    // Prefer parsing from text in <b> tag (respects manual edits)
-                    if (bTag.length && bTag.text().trim() !== "") {
-                        time = parseTimeFromText(bTag.text());
-                    }
+            //     tempDiv.find('.sub-task-item').each(function() {
+            //         let time = 0;
+            //         let bTag = $(this).find('b');
+            //         // Prefer parsing from text in <b> tag (respects manual edits)
+            //         if (bTag.length && bTag.text().trim() !== "") {
+            //             time = parseTimeFromText(bTag.text());
+            //         }
                     
-                    // Fallback to data-time only if text is not empty
-                    if (time === 0) {
-                        if ($(this).text().trim().length > 5) {
-                            time = parseFloat($(this).attr('data-time')) || 0;
-                        }
-                    }
-                    totalTime += time;
-                });
+            //         // Fallback to data-time only if text is not empty
+            //         if (time === 0) {
+            //             if ($(this).text().trim().length > 5) {
+            //                 time = parseFloat($(this).attr('data-time')) || 0;
+            //             }
+            //         }
+            //         totalTime += time;
+            //     });
                 
+            //     const hiddenHoursField = document.getElementById('totalFollowUpHours');
+            //     if (hiddenHoursField) {
+            //         hiddenHoursField.value = totalTime.toFixed(2);
+            //     }
+            //     return totalTime;
+            // }
+
+            function recalculateTotalTime() {
+                let totalHours = 0;
+
+                // Target every dynamic row inside the container wrapper
+                document.querySelectorAll('#taskAddContainer .followup-row').forEach(row => {
+                    const hoursInput = row.querySelector('.followup-hours');
+                    const minsInput = row.querySelector('.followup-minutes');
+
+                    const hoursValue = parseFloat(hoursInput ? hoursInput.value : 0) || 0;
+                    const minsValue = parseFloat(minsInput ? minsInput.value : 0) || 0;
+
+                    // Convert minutes into decimal hours fraction (e.g. 30 mins = 0.5 hours)
+                    totalHours += hoursValue + (minsValue / 60);
+                });
                 const hiddenHoursField = document.getElementById('totalFollowUpHours');
                 if (hiddenHoursField) {
-                    hiddenHoursField.value = totalTime.toFixed(2);
+                    hiddenHoursField.value = totalHours.toFixed(2); // Saves as standard decimal format string (e.g., "2.50")
                 }
-                return totalTime;
+
+                return totalHours;
             }
 
             function parseTimeFromText(text) {
@@ -2044,7 +2172,15 @@
 
             function renderModalTable() {
                 const body = document.getElementById('followUpHistoryBody');
-                const searchTerm = document.getElementById('modalSearch').value.toLowerCase().trim();
+                const searchInput = document.getElementById('modalSearch');
+                const entriesInfo = document.getElementById('modalEntriesInfo');
+                const paginationButtons = document.getElementById('modalPaginationButtons');
+
+                if (!body || !searchInput || !entriesInfo || !paginationButtons) {
+                    return;
+                }
+
+                const searchTerm = searchInput.value.toLowerCase().trim();
 
                 let filtered = globalFollowUps.filter(fu => {
                     const description = (fu.work_description || '').toLowerCase();
@@ -2204,9 +2340,9 @@
                     `;
                 }
 
-                document.getElementById('modalEntriesInfo').innerText = `Showing ${totalItems === 0 ? 0 : startIdx + 1} to ${Math.min(startIdx + modalPageSize, totalItems)} of ${totalItems} entries`;
+                entriesInfo.innerText = `Showing ${totalItems === 0 ? 0 : startIdx + 1} to ${Math.min(startIdx + modalPageSize, totalItems)} of ${totalItems} entries`;
 
-                const pgnBtn = document.getElementById('modalPaginationButtons');
+                const pgnBtn = paginationButtons;
                 let pgnHtml = `<button type="button" class="btn btn-sm ${modalCurrentPage === 1 ? 'btn-light text-muted' : 'btn-outline-primary'}" ${modalCurrentPage === 1 ? 'disabled' : ''} onclick="changeModalPage(${modalCurrentPage - 1})"><i class="feather-chevron-left"></i></button>`;
                 for (let i = 1; i <= totalPages; i++) {
                     pgnHtml += `<button type="button" class="btn btn-sm ${i === modalCurrentPage ? 'btn-primary' : 'btn-light text-dark'}" onclick="changeModalPage(${i})">${i}</button>`;
@@ -2220,7 +2356,13 @@
                 modalCurrentPage = Math.min(Math.max(page, 1), totalPages);
                 renderModalTable();
             }
-            function changeModalEntries() { modalPageSize = parseInt(document.getElementById('modalEntriesLimit').value); modalCurrentPage = 1; renderModalTable(); }
+            function changeModalEntries() {
+                const limitSelect = document.getElementById('modalEntriesLimit');
+                if (!limitSelect) return;
+                modalPageSize = parseInt(limitSelect.value);
+                modalCurrentPage = 1;
+                renderModalTable();
+            }
             function filterModalHistory() { modalCurrentPage = 1; renderModalTable(); }
 
             function editFollowUp(id) {
@@ -2228,37 +2370,36 @@
                 if (!fu) return;
 
                 document.getElementById('followUpId').value = fu.id;
+                resetFollowUpRows(fu.project_id || '');
                 
                 // Prefill time inputs
                 const totalHours = parseFloat(fu.time_taken) || 0;
                 const h = Math.floor(totalHours);
                 const m = Math.round((totalHours - h) * 60);
-                document.getElementById('quickTaskHours').value = h > 0 ? h : '';
-                document.getElementById('quickTaskMins').value = m > 0 ? m : '';
-                document.getElementById('totalFollowUpHours').value = totalHours;
+                const firstRow = document.querySelector('#taskAddContainer .followup-row');
+                if (firstRow) {
+                    const hoursInput = firstRow.querySelector('.followup-hours');
+                    const minutesInput = firstRow.querySelector('.followup-minutes');
+                    const descriptionInput = firstRow.querySelector('[name="work_description[]"]');
 
-                $('#workDesc').summernote('code', fu.work_description);
+                    if (hoursInput) hoursInput.value = h > 0 ? h : '';
+                    if (minutesInput) minutesInput.value = m > 0 ? m : '';
+                    if (descriptionInput) {
+                        descriptionInput.value = $('<div>').html(fu.work_description || '').text().trim();
+                    }
+                }
+                document.getElementById('totalFollowUpHours').value = totalHours;
                 recalculateTotalTime();
                 
                 // Show existing file preview if any
                 if (fu.photo) {
-                    const preview = document.getElementById('photoPreview');
-                    const docPreview = document.getElementById('documentPreview');
-                    const container = document.getElementById('previewContainer');
-                    const isImage = fu.photo.match(/\.(jpeg|jpg|gif|png|webp)$/i) != null;
-                    
-                    container.classList.remove('d-none');
-                    if (isImage) {
-                        preview.style.display = 'block';
-                        docPreview.style.display = 'none';
-                        preview.src = `/storage/${fu.photo}`;
-                    } else {
-                        preview.style.display = 'none';
-                        docPreview.style.display = 'block';
-                        docPreview.innerHTML = `<div class="d-flex flex-column align-items-center justify-content-center p-3">
-                                                        <i class="feather-file-text mb-2" style="font-size: 32px; color: #3858f9;"></i>
-                                                        <span class="text-dark small">Existing Attachment</span>
-                                                    </div>`;
+                    const fileInput = firstRow?.querySelector('.followup-photo-input');
+                    const existingField = firstRow?.querySelector('.followup-existing-photo');
+                    if (existingField) {
+                        existingField.value = `/storage/${fu.photo}`;
+                    }
+                    if (fileInput) {
+                        previewFollowUpAttachment(fileInput, `/storage/${fu.photo}`);
                     }
                 } else {
                     removePreview();
@@ -2268,14 +2409,17 @@
                 
                 // Ensure form is visible
                 document.getElementById('followUpFormColumn').classList.remove('d-none');
-                document.getElementById('followUpHistoryColumn').classList.remove('col-lg-12');
-                document.getElementById('followUpHistoryColumn').classList.add('col-lg-7');
+                const historyCol = document.getElementById('followUpHistoryColumn');
+                if (historyCol) {
+                    historyCol.classList.remove('col-lg-12');
+                    historyCol.classList.add('col-lg-7');
+                }
                 document.querySelector('#followUpModal .modal-dialog').classList.add('modal-xl');
             }
 
             function getFilteredTaskRows() {
                 const filter = (document.getElementById('taskSearch')?.value || '').toLowerCase().trim();
-                const rows = Array.from(document.querySelectorAll('.task-row'));
+                const rows = Array.from(document.querySelectorAll('#tasksTable tbody .task-row'));
 
                 return rows.filter(row => row.innerText.toLowerCase().includes(filter));
             }
@@ -2333,7 +2477,7 @@
             }
 
             function paginateTable() {
-                const rows = Array.from(document.querySelectorAll('.task-row'));
+                const rows = Array.from(document.querySelectorAll('#tasksTable tbody .task-row'));
                 const filteredRows = getFilteredTaskRows();
                 const totalItems = filteredRows.length;
                 const limit = parseInt(document.getElementById('entriesLimit')?.value, 10) || 20;
@@ -2378,8 +2522,42 @@
             document.getElementById('followUpForm').addEventListener('submit', function (e) {
                 e.preventDefault();
 
-                // Re-calculate total time from editor content markers
-                const totalTime = recalculateTotalTime();
+                const rows = Array.from(document.querySelectorAll('#taskAddContainer .followup-row'));
+                const activeRows = rows.filter(row => {
+                    const project = row.querySelector('[name="project_id[]"]')?.value;
+                    const description = row.querySelector('[name="work_description[]"]')?.value.trim();
+                    const hours = row.querySelector('[name="hours[]"]')?.value ?? '';
+                    const minutes = row.querySelector('[name="minutes[]"]')?.value ?? '';
+                    const photo = row.querySelector('[name="photo[]"]')?.files?.length ?? 0;
+                    const existingPhoto = row.querySelector('.followup-existing-photo')?.value ?? '';
+
+                    return project || description || hours !== '' || minutes !== '' || photo > 0 || existingPhoto;
+                });
+
+                const hasValidRow = activeRows.some(row => {
+                    const project = row.querySelector('[name="project_id[]"]')?.value;
+                    const description = row.querySelector('[name="work_description[]"]')?.value.trim();
+                    return project && description;
+                });
+
+                if (!hasValidRow) {
+                    Toast.fire({ icon: 'error', title: 'Please select a project and enter work description before submitting.' });
+                    return;
+                }
+
+                const missingTimeRow = activeRows.find(row => {
+                    const hours = row.querySelector('[name="hours[]"]')?.value ?? '';
+                    const minutes = row.querySelector('[name="minutes[]"]')?.value ?? '';
+                    return hours === '' && minutes === '';
+                });
+
+                if (missingTimeRow) {
+                    Toast.fire({ icon: 'error', title: 'Enter time' });
+                    missingTimeRow.querySelector('[name="hours[]"]')?.focus();
+                    return;
+                }
+
+                recalculateTotalTime();
 
                 const btn = document.getElementById('submitReplyBtn');
                 const origText = btn.innerText;
@@ -2392,69 +2570,167 @@
                     formData.append('_method', 'PUT');
                 }
 
-                fetch(url, { method: 'POST', body: formData, headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' } })
-                    .then(res => res.json()).then(data => {
-                        btn.innerText = origText; btn.disabled = false;
-                        if (data.success) {
-                            this.reset();
+                fetch(url, { 
+                    method: 'POST', 
+                    body: formData, 
+                    headers: { 
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}', 
+                        'Accept': 'application/json' 
+                    } 
+                })
+                .then(res => {
+                    // Intercept HTTP status codes (200 OK or 422 Validation Error are valid JSON payloads)
+                    if (res.ok || res.status === 422) {
+                        return res.json();
+                    }
+                    // Force non-JSON crashes (e.g. 500 Internal Server Error) straight to the catch handler
+                    throw new Error('Server Exception');
+                })
+                .then(data => {
+                    $('#globalLoader').fadeOut();
+                    btn.innerText = origText; 
+                    btn.disabled = false;
+
+                    if (data.success) {
+                        this.reset();
+                        resetFollowUpRows();
+                        if ($('#workDesc').length) {
                             $('#workDesc').summernote('code', '');
-                            removePreview();
-                            Toast.fire({ icon: 'success', title: data.success }).then(() => location.reload());
-                            if (myFollowUpModal) myFollowUpModal.hide();
-                        } else if (data.errors) {
-                            for (const [key, value] of Object.entries(data.errors)) {
-                                const input = this.querySelector(`[name="${key}"]`);
-                                if (input) {
-                                    input.classList.add('is-invalid');
-                                    const errorDiv = document.createElement('div');
-                                    errorDiv.className = 'invalid-feedback d-block fw-bold small text-danger mb-1';
-                                    errorDiv.innerText = value[0];
-                                    input.parentNode.insertBefore(errorDiv, input);
-                                }
-                            }
-                        } else if (data.message) {
-                            Toast.fire({ icon: 'error', title: data.message });
                         }
-                    }).catch(err => { btn.innerText = origText; btn.disabled = false; Toast.fire({ icon: 'error', title: 'Upload failed. Max size 10MB.' }); });
+                        removePreview();
+                        Toast.fire({ icon: 'success', title: data.success }).then(() => location.reload());
+                        if (typeof myFollowUpModal !== 'undefined' && myFollowUpModal) {
+                            myFollowUpModal.hide();
+                        }
+                    } else if (data.errors) {
+                        const firstError = Object.values(data.errors)[0];
+                        if (Array.isArray(firstError) && firstError[0]) {
+                            Toast.fire({ icon: 'error', title: firstError[0] });
+                        }
+
+                        // Clear old stale errors before rendering new ones
+                        this.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+                        this.querySelectorAll('.invalid-feedback-custom').forEach(el => el.remove());
+
+                        for (const [key, value] of Object.entries(data.errors)) {
+                            const input = this.querySelector(`[name="${key}"]`);
+                            if (input) {
+                                input.classList.add('is-invalid');
+                                const errorDiv = document.createElement('div');
+                                // Added a distinct target class 'invalid-feedback-custom' to clear safely on next submit
+                                errorDiv.className = 'invalid-feedback-custom d-block fw-bold small text-danger mb-1';
+                                errorDiv.innerText = value[0];
+                                input.parentNode.insertBefore(errorDiv, input);
+                            } else if (value[0]) {
+                                Toast.fire({ icon: 'error', title: value[0] });
+                            }
+                        }
+                    } else if (data.message) {
+                        Toast.fire({ icon: 'error', title: data.message });
+                    }
+                })
+                .catch(err => { 
+                    $('#globalLoader').fadeOut();
+                    btn.innerText = origText; 
+                    btn.disabled = false; 
+                    Toast.fire({ icon: 'error', title: 'Submission failed. Please check your network connection or file size limit.' }); 
+                });
             });
 
             document.getElementById('submitTaskBtn').addEventListener('click', function () {
+                const btn = this;
+                const origText = btn.innerText;
                 const form = document.getElementById('taskForm');
 
                 // Clear previous errors
                 form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
                 form.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
+                form.querySelectorAll('.select2-selection').forEach(el => el.style.borderColor = '');
 
                 const url = document.getElementById('methodField').innerHTML !== '' ? `/hrms/daily-tasks/${document.getElementById('taskId').value}` : '/hrms/daily-tasks';
                 const formData = new FormData(form);
                 
-                // Add summernote content manually if needed, though FormData usually catches textarea
-                const descVal = $('#taskDesc').summernote('code');
+                // Add summernote content manually and safely
+                let descVal = '';
+                try {
+                    if ($('#taskDesc').length && typeof $.fn.summernote === 'function') {
+                        descVal = $('#taskDesc').summernote('code');
+                    } else {
+                        descVal = document.getElementById('taskDesc').value;
+                    }
+                } catch (e) {
+                    console.error(e);
+                    const taskDescEl = document.getElementById('taskDesc');
+                    if (taskDescEl) descVal = taskDescEl.value;
+                }
                 formData.set('description', descVal);
+
+                btn.innerText = 'SUBMITTING...';
+                btn.disabled = true;
 
                 fetch(url, { 
                     method: 'POST', 
                     headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' }, 
                     body: formData 
                 })
-                    .then(res => res.json()).then(result => {
-                        if (result.success) {
-                            Toast.fire({ icon: 'success', title: result.success }).then(() => location.reload());
-                        } else if (result.errors) {
-                            for (const [key, value] of Object.entries(result.errors)) {
+                .then(async res => {
+                    const contentType = res.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        const data = await res.json();
+                        return { status: res.status, ok: res.ok, data };
+                    } else {
+                        const text = await res.text();
+                        return { status: res.status, ok: res.ok, errorText: text };
+                    }
+                })
+                .then(result => {
+                    btn.innerText = origText;
+                    btn.disabled = false;
+
+                    if (!result.ok) {
+                        if (result.data && result.data.errors) {
+                            const firstError = Object.values(result.data.errors)[0][0];
+                            Toast.fire({ icon: 'error', title: firstError });
+
+                            for (const [key, value] of Object.entries(result.data.errors)) {
                                 const input = form.querySelector(`[name="${key}"]`);
                                 if (input) {
                                     input.classList.add('is-invalid');
+
+                                    if ($(input).hasClass('select2-hidden-accessible')) {
+                                        $(input).next('.select2-container').find('.select2-selection').css('border-color', '#ef4444');
+                                    }
+
                                     const errorDiv = document.createElement('div');
                                     errorDiv.className = 'invalid-feedback d-block fw-bold small text-danger mb-1';
                                     errorDiv.innerText = value[0];
-                                    input.parentNode.insertBefore(errorDiv, input);
+
+                                    if ($(input).hasClass('select2-hidden-accessible')) {
+                                        $(input).next('.select2-container').after(errorDiv);
+                                    } else {
+                                        input.parentNode.insertBefore(errorDiv, input);
+                                    }
                                 }
                             }
-                        } else if (result.message) {
-                            Toast.fire({ icon: 'error', title: result.message });
+                        } else {
+                            Toast.fire({
+                                icon: 'error',
+                                title: result.data && result.data.message ? result.data.message : 'Server error: ' + result.status
+                            });
                         }
-                    });
+                        return;
+                    }
+
+                    if (result.data && result.data.success) {
+                        Toast.fire({ icon: 'success', title: result.data.success }).then(() => location.reload());
+                    }
+                })
+                .catch(err => {
+                    console.error('Fetch error:', err);
+                    btn.innerText = origText;
+                    btn.disabled = false;
+                    Toast.fire({ icon: 'error', title: 'Network or submission error.' });
+                });
             });
 
             // Task Timer Logic
@@ -2697,7 +2973,7 @@
 
 
             function loadProjectMembers(){
-                fetch(`/project-members/${currentProjectId}`)
+                fetch(`/hrms/project-members/${currentProjectId}`)
                 .then(res=>res.json())
                 .then(data=>{
                     let options=`<option value="">Select Employee</option>`;
@@ -2856,30 +3132,4 @@
                 });
             </script>
         @endif
-
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                const urlParams = new URLSearchParams(window.location.search);
-                if (urlParams.get('create') === '1') {
-                    setTimeout(() => {
-                        resetTaskForm();
-                        const projId = urlParams.get('project_id');
-                        if (projId) {
-                            const selectEl = document.getElementById('taskProjectId');
-                            if (selectEl) {
-                                selectEl.value = projId;
-                                if (window.jQuery && $.fn.select2) {
-                                    $(selectEl).trigger('change');
-                                }
-                            }
-                        }
-                        const offElement = document.getElementById('taskOffcanvas');
-                        if (offElement) {
-                            const bOff = bootstrap.Offcanvas.getInstance(offElement) || new bootstrap.Offcanvas(offElement);
-                            bOff.show();
-                        }
-                    }, 300);
-                }
-            });
-        </script>
     @endpush

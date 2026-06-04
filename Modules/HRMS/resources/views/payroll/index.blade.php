@@ -202,7 +202,7 @@
                                 <tr class="hover-row border-bottom">
                                     <td class="ps-4 py-4 fw-bold text-muted">{{ $index + 1 }}</td>
                                     <td>
-                                        <div class="fw-bold text-dark fs-6">{{ $payroll->employee->name }}</div>
+                                        <div class="fw-bold text-dark fs-6">{{ $payroll->employee->name ?? 'N/A' }}</div>
                                     </td>
                                     <td class="text-center">
                                         <span class="text-muted small fw-bold">{{ $payroll->month }}</span>
@@ -260,12 +260,13 @@
                                                 <i class="feather-trash-2"></i>
                                             </a>
                                             @php
-                                                $isAdmin = in_array(auth()->user()->role_id, [1, 3]);
+                                                $roleSlug = auth()->user()->hrm_role;
+                                                $isAdmin = in_array($roleSlug, ['super_admin', 'admin', 'manager', 'hr_executive', 'hr_intern', 'business_operation_head']);
                                             @endphp
                                             <a href="javascript:void(0);"
                                                 class="avatar-text avatar-md bg-soft-secondary text-secondary comment-btn {{ (!$payroll->is_read && $isAdmin) ? 'blink' : '' }}"
                                                 data-id="{{ $payroll->id }}" data-remark="{{ $payroll->remarks ?? '' }}"
-                                                data-role="{{ auth()->user()->role }}" title="Comment">
+                                                data-role="{{ auth()->user()->hrm_role }}" title="Comment">
                                                 <i class="feather-message-square"></i>
                                             </a>
                                         </div>
@@ -310,7 +311,7 @@
                 </div>
                 @if($payrolls->hasPages())
                     <div class="card-footer bg-white border-0 py-3">
-                        {{ $payrolls->appends(request()->query())->links('pagination::bootstrap-5') }}
+                        {{ $payrolls->appends(request()->query())->links() }}
                     </div>
                 @endif
             </div>
@@ -414,7 +415,7 @@
         }
 
         function markAsRead(id) {
-            fetch(`/payroll/${id}/mark-read`, {
+            fetch(`/hrms/payroll/${id}/mark-read`, {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
@@ -432,7 +433,7 @@
             let formData = new FormData();
             formData.append('remarks', remarks);
 
-            fetch(`/payroll/${id}/remarks`, {
+            fetch(`/hrms/payroll/${id}/remarks`, {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
@@ -530,7 +531,7 @@
 
             modal.show();
 
-            fetch(`/payroll/${id}`)
+            fetch(`/hrms/payroll/${id}`)
                 .then(res => res.text())
                 .then(html => {
                     document.getElementById('payrollModalBody').innerHTML = html;
@@ -562,7 +563,7 @@
                 buttonsStyling: false
             }).then((result) => {
                 if (result.isConfirmed) {
-                    fetch(`/payroll/${id}`, {
+                    fetch(`/hrms/payroll/${id}`, {
                         method: 'DELETE',
                         headers: {
                             'X-CSRF-TOKEN': '{{ csrf_token() }}'
@@ -583,7 +584,7 @@
         }
 
         function updateStatus(id, newStatus) {
-            fetch(`/payroll/${id}/status`, {
+            fetch(`/hrms/payroll/${id}/status`, {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',

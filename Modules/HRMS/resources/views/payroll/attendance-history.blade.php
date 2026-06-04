@@ -7,7 +7,7 @@
                 <h5 class="m-b-10" style="color: #3858f9; font-weight: 700;">Attendance History</h5>
             </div>
             <ul class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('hrms.dashboard') }}">Home</a></li>
                 <li class="breadcrumb-item active">Attendance History</li>
             </ul>
         </div>

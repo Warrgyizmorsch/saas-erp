@@ -15,6 +15,8 @@ use Modules\HRMS\App\Http\Controllers\ProjectController;
 use Modules\HRMS\App\Http\Controllers\DailyTaskController;
 use Modules\HRMS\App\Http\Controllers\MasterController;
 use Modules\HRMS\App\Http\Controllers\NotificationController;
+use Modules\HRMS\App\Http\Controllers\ReviewController;
+use Modules\HRMS\App\Http\Controllers\BroadcastController;
 
 Route::middleware([
     'web',
@@ -162,10 +164,28 @@ Route::middleware([
     // Notifications
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
 
+    // Employee Review
+    Route::get('/employee-review', [ReviewController::class, 'index'])->name('employee.review');
+    Route::post('/employee-review/store', [ReviewController::class, 'store']);
+    Route::get('/review-details/{id}', [ReviewController::class, 'details'])->name('employee.review.details');
+
+    // Broadcasts
+    Route::get('/broadcast', [BroadcastController::class, 'index'])->name('broadcasts.index');
+    Route::post('/broadcasts', [BroadcastController::class, 'store'])->name('broadcasts.store');
+    Route::get('/broadcasts/{id}/edit', [BroadcastController::class, 'edit'])->name('broadcasts.edit');
+    Route::put('/broadcasts/{id}', [BroadcastController::class, 'update'])->name('broadcasts.update');
+    Route::get('/broadcasts/{id}/recipients', [BroadcastController::class, 'getRecipients']);
+    Route::post('/broadcasts/{id}/read', [BroadcastController::class, 'markAsRead'])->name('broadcasts.read');
+
     // Vacancy
     Route::get('/job-vacancy', [VacancyController::class, 'show'])->name('vacancy.show');
     Route::post('/job-vacancy/store', [VacancyController::class, 'store'])->name('job.store');
     Route::post('/job-applications/update-status/{id}', [VacancyController::class, 'updateStatus'])->name('job.update-status');
+
+    // Job Requirements
+    Route::get('/job-requirement', [VacancyController::class, 'showRequirements'])->name('requirement.show');
+    Route::post('/job-requirement/store', [VacancyController::class, 'storeRequirement'])->name('requirement.store');
+    Route::post('/job-requirement/update-status', [VacancyController::class, 'updateStatusofRequirement'])->name('requirements.update-status');
 
     // Profile
     Route::get('/profile/details', [ProfileController::class, 'show'])->name('profile.show');

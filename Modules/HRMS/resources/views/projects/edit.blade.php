@@ -10,7 +10,7 @@
                 <h5 class="m-b-10">Projects</h5>
             </div>
             <ul class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('hrms.dashboard') }}">Home</a></li>
                 <li class="breadcrumb-item">Edit Project</li>
             </ul>
         </div>
@@ -458,15 +458,9 @@
                 const currentMemberIds = ($('#projectMembers').val() || []).map(String);
                 const leaderIdsToKeep = currentLeaderIds.length ? currentLeaderIds : initialLeaderIds;
                 const memberIdsToKeep = currentMemberIds.length ? currentMemberIds : initialMemberIds;
-
-                const normalizeDept = (dept) => {
-                    if (!dept) return '';
-                    return dept.toString().toLowerCase().replace(/[^a-z0-9]/g, '');
-                };
-
-                const filteredEmployees = allEmployees.filter(emp => 
-                    normalizeDept(emp.department) === normalizeDept(selectedDepartment)
-                );
+                const filteredEmployees = selectedDepartment
+                    ? allEmployees.filter(emp => emp.department === selectedDepartment)
+                    : allEmployees;
 
                 $('#projectLeaders').empty();
                 $('#projectMembers').empty();
@@ -559,15 +553,9 @@
                 const allEmployees = @json($employees);
                 const currentLeaderIds = ($('#projectLeaders').val() || []).map(String);
                 const currentMemberIds = ($('#projectMembers').val() || []).map(String);
-
-                const normalizeDept = (dept) => {
-                    if (!dept) return '';
-                    return dept.toString().toLowerCase().replace(/[^a-z0-9]/g, '');
-                };
-
-                const filteredEmployees = allEmployees.filter(emp => 
-                    normalizeDept(emp.department) === normalizeDept(selectedDepartment)
-                );
+                const filteredEmployees = selectedDepartment
+                    ? allEmployees.filter(emp => emp.department === selectedDepartment)
+                    : allEmployees;
 
                 $('#projectLeaders').empty();
                 $('#projectMembers').empty();

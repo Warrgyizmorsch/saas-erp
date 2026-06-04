@@ -268,7 +268,7 @@
         const noCalc = document.getElementById('noCalculation');
         noCalc.innerHTML = `<div class="py-5 text-center"><div class="spinner-border text-primary"></div></div>`;
 
-        fetch('{{ url("/payroll/calculate") }}', {
+        fetch('{{ route("payroll.calculate") }}', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
             body: JSON.stringify({ month, employee_id: employeeId })
@@ -328,7 +328,7 @@
         if (!currentPayrollData) return;
         btn.disabled = true;
         
-        fetch('{{ url("/payroll/store") }}', {
+        fetch('{{ route("payroll.store") }}', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
             body: JSON.stringify({

@@ -9,6 +9,7 @@ use Modules\HRMS\App\Models\Attendance;
 use Modules\HRMS\App\Models\Payroll;
 use Modules\HRMS\App\Models\Holiday;
 use Modules\HRMS\App\Models\LeaveApplication;
+use Modules\HRMS\App\Models\Broadcast;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -90,8 +91,9 @@ class DashboardController extends Controller
     {
         // $role = strtoupper(auth()->user()->hrm_role ?? 'USER');
         //  $isAdmin = in_array($role, ['MANAGER', 'SUPER_ADMIN', 'HR_EXECUTIVE', 'HR_INTERN']);
-        $isAdmin = in_array(auth()->user()->role_id, [1, 3]);
-        $isTeamLeader = false;
+        $roleSlug = auth()->user()->hrm_role;
+        $isAdmin = in_array($roleSlug, ['super_admin', 'admin', 'manager', 'hr_executive', 'hr_intern', 'business_operation_head']);
+        $isTeamLeader = ($roleSlug === 'team_leader');
         $employee = Employee::where('id', auth()->user()->employee_id)->first();
         $celebration = $this->getTodayCelebration($employee);
         $employeeId = auth()->user()->employee_id;
@@ -388,6 +390,25 @@ class DashboardController extends Controller
         //     return $item;
         // });
 
+        $userDepartment = $employee->department ?? auth()->user()->employee?->department ?? null;
+        $normalizedUserDepartment = $userDepartment
+            ? strtolower(str_replace('_', ' ', trim($userDepartment)))
+            : null;
+
+        $announcements = Broadcast::with('readByUsers')
+            ->where(function ($query) use ($normalizedUserDepartment) {
+                $query->where('department', 'All');
+
+                if ($normalizedUserDepartment) {
+                    $query->orWhereRaw(
+                        "LOWER(REPLACE(TRIM(department), '_', ' ')) = ?",
+                        [$normalizedUserDepartment]
+                    );
+                }
+            })
+            ->orderBy('created_at', 'desc')
+            ->get();
+
         if (!$isAdmin) {
             return view('hrms::userDashboard', compact(
                 'totalEmployees',
@@ -428,7 +449,8 @@ class DashboardController extends Controller
                 'todayLeaveEmployees',
                 'todayLateEmployees',
                 'employee',
-                'celebration'
+                'celebration',
+                'announcements'
             ));
         }
 
@@ -471,7 +493,8 @@ class DashboardController extends Controller
             'todayLeaveEmployees',
             'todayLateEmployees',
             'employee',
-            'celebration'
+            'celebration',
+            'announcements'
         ));
     }
 
@@ -485,8 +508,10 @@ class DashboardController extends Controller
         //     })
         //     ->where('leave_applications.status', 'approved');
 
-        $isAdmin = in_array(auth()->user()->role_id, [1, 3]);
-        $isTeamLeader = false;
+        $roleSlug = auth()->user()->hrm_role;
+
+        $isAdmin = in_array($roleSlug, ['super_admin', 'admin', 'manager', 'hr_executive', 'hr_intern', 'business_operation_head']);
+        $isTeamLeader = ($roleSlug === 'team_leader');
         $employeeId = auth()->user()->employee_id;
 
         // Logged-in employee department
@@ -676,8 +701,10 @@ class DashboardController extends Controller
 
         [$startDate, $endDate] = $this->getLateDateRange($range);
 
-        $isAdmin = in_array(auth()->user()->role_id, [1, 3]);
-        $isTeamLeader = false;
+        $roleSlug = auth()->user()->hrm_role;
+
+        $isAdmin = in_array($roleSlug, ['super_admin', 'admin', 'manager', 'hr_executive', 'hr_intern', 'business_operation_head']);
+        $isTeamLeader = ($roleSlug === 'team_leader');
         $employeeId = auth()->user()->employee_id;
 
         // Logged-in employee department
@@ -855,7 +882,7 @@ class DashboardController extends Controller
 
     private function getTodayCelebration($employee)
     {
-        if (!$employee) {
+        if (!$employee || !$employee->date_of_birth || !$employee->date_of_joining) {
             return [
                 'isBirthdayToday' => false,
                 'isAnniversaryToday' => false,

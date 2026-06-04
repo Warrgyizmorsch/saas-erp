@@ -8,7 +8,7 @@
                 <h5 class="m-b-10">Edit Employee</h5>
             </div>
             <ul class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('hrms.dashboard') }}">Home</a></li>
                 <li class="breadcrumb-item"><a href="{{ route('employees.index') }}">Employees</a></li>
                 <li class="breadcrumb-item">Edit</li>
             </ul>
@@ -192,6 +192,78 @@
                         border-radius: 10px;
                         font-weight: 600;
                     }
+
+                    /* Custom Dropdown Styles */
+                    .wghrm-custom-select-btn {
+                        background: #fff;
+                        border: none;
+                        color: #1e293b;
+                        font-size: 14px;
+                        padding: 12px 15px;
+                        height: 48px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        width: 100%;
+                        text-align: left;
+                        border-radius: 0 10px 10px 0 !important;
+                    }
+
+                    .wghrm-custom-select-btn:focus {
+                        outline: none;
+                    }
+
+                    .dropdown {
+                        position: relative;
+                    }
+
+                    .employee-premium-form .wghrm-dropdown-group {
+                        overflow: visible;
+                    }
+
+                    .employee-premium-form .wghrm-dropdown-group .dropdown {
+                        flex: 1 1 auto;
+                    }
+
+                    .wghrm-custom-dropdown-menu {
+                        background: #fff;
+                        border: 1px solid #e2e8f0;
+                        border-radius: 10px;
+                        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+                        padding: 0 !important;
+                        position: absolute;
+                        top: calc(100% + 6px);
+                        left: 0;
+                        right: auto;
+                        z-index: 9999;
+                        display: none;
+                        min-width: 100%;
+                    }
+
+                    .wghrm-custom-dropdown-menu.show {
+                        display: block !important;
+                    }
+
+                    .wghrm-custom-dropdown-item {
+                        padding: 12px 15px;
+                        color: #1e293b;
+                        font-size: 14px;
+                        border-bottom: 1px solid #f1f5f9;
+                        transition: all 0.2s ease;
+                        display: block !important;
+                        cursor: pointer;
+                        text-decoration: none !important;
+                    }
+
+                    .wghrm-custom-dropdown-item:last-child {
+                        border-bottom: none;
+                    }
+
+                    .wghrm-custom-dropdown-item:hover,
+                    .wghrm-custom-dropdown-item.active {
+                        background-color: #eff6ff !important;
+                        color: #3858f9 !important;
+                    }
                 </style>
 
                 <div class="tab-content p-4" id="employeeTabContent" style="background: #fff; border-radius: 0 0 10px 10px;">
@@ -236,6 +308,52 @@
                                     </select>
                                 </div>
                             </div>
+
+                            <div class="col-md-4">
+                                <label>Working Mode</label>
+
+                                <div class="input-group mb-3 wghrm-dropdown-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-laptop"></i>
+                                    </span>
+
+                                    <div class="dropdown flex-grow-1" style="position: relative;">
+                                        <button class="wghrm-custom-select-btn dropdown-toggle"
+                                            type="button"
+                                            id="working_modeDropdownBtn"
+                                            data-bs-toggle="dropdown"
+                                            data-bs-auto-close="outside"
+                                            style="border-radius: 0 10px 10px 0 !important; width: 100%;">
+
+                                            <span id="working_modeDropdownText">
+                                                {{ old('working_mode', $employee->working_mode) }}
+                                            </span>
+
+                                        </button>
+
+                                        <div class="dropdown-menu wghrm-custom-dropdown-menu w-100">
+                                            <a class="dropdown-item wghrm-custom-dropdown-item"
+                                                href="javascript:void(0)"
+                                                onclick="wghrmSelectValue(this,'working_mode','Office','Office')">
+                                                Office
+                                            </a>
+
+                                            <a class="dropdown-item wghrm-custom-dropdown-item"
+                                                href="javascript:void(0)"
+                                                onclick="wghrmSelectValue(this,'working_mode','Work from home','Work from home')">
+                                                Work from home
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                    <input
+                                        type="hidden"
+                                        name="working_mode"
+                                        id="working_modeInput"
+                                        value="{{ old('working_mode', $employee->working_mode) }}">
+                                </div>
+                            </div>
+
                             <div class="col-md-4">
                                 <label>Mobile Number <span class="text-danger">*</span></label>
                                 <div class="input-group mb-3">
@@ -695,5 +813,75 @@
 
         // Initialize total on load
         window.addEventListener('load', calculateTotalSalary);
+
+        // Custom Dropdown Functionality
+        function wghrmSelectValue(element, field, value, text) {
+            document.getElementById(field + 'Input').value = value;
+            document.getElementById(field + 'DropdownText').innerText = text;
+
+            const menu = element.closest('.wghrm-custom-dropdown-menu');
+            const items = menu.querySelectorAll('.wghrm-custom-dropdown-item');
+
+            items.forEach(item => item.classList.remove('active'));
+            element.classList.add('active');
+
+            document.getElementById(field + 'Input').dispatchEvent(new Event('change'));
+
+            // Close the dropdown
+            menu.classList.remove('show');
+        }
+
+        // Initialize dropdown on page load (for edit form with existing values)
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set active state for dropdowns on edit page
+            const dropdownMenus = document.querySelectorAll('.wghrm-custom-dropdown-menu');
+            dropdownMenus.forEach(menu => {
+                const items = menu.querySelectorAll('.wghrm-custom-dropdown-item');
+                const dropdown = menu.closest('.dropdown');
+                const inputField = dropdown.querySelector('input[type="hidden"]');
+                
+                if (inputField && inputField.value) {
+                    items.forEach(item => {
+                        if (item.getAttribute('onclick').includes(inputField.value)) {
+                            item.classList.add('active');
+                        } else {
+                            item.classList.remove('active');
+                        }
+                    });
+                }
+            });
+
+            // Add click handlers for dropdown toggle
+            const dropdownButtons = document.querySelectorAll('.wghrm-custom-select-btn');
+            dropdownButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const dropdown = this.closest('.dropdown');
+                    const menu = dropdown.querySelector('.wghrm-custom-dropdown-menu');
+                    const isOpen = menu.classList.contains('show');
+                    
+                    // Close all other dropdowns
+                    document.querySelectorAll('.wghrm-custom-dropdown-menu').forEach(m => {
+                        m.classList.remove('show');
+                    });
+                    
+                    // Toggle current dropdown
+                    if (!isOpen) {
+                        menu.classList.add('show');
+                    }
+                });
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.dropdown')) {
+                    document.querySelectorAll('.wghrm-custom-dropdown-menu').forEach(menu => {
+                        menu.classList.remove('show');
+                    });
+                }
+            });
+        });
     </script>
 @endsection

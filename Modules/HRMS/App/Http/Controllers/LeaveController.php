@@ -7,7 +7,7 @@ use App\Http\Controllers\Controller;
 use Modules\HRMS\App\Models\Employee;
 use Modules\HRMS\App\Models\LeaveAllotment;
 use Modules\HRMS\App\Models\Attendance;
-use App\Exports\LeaveBalancesExport;
+use Modules\HRMS\App\Exports\LeaveBalancesExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -27,44 +27,29 @@ class LeaveController extends Controller
         $month = $selectedMonth;
 
         $user = auth()->user();
-        $isAdmin = in_array($user->role_id, [1, 3]);
-        $isTeamLeader = false;
+        $role = str_replace(' ', '_', strtolower($user->hrm_role ?? 'employee'));
+        $isAdmin = in_array($role, [
+            'super_admin',
+            'manager',
+            'hr_executive',
+            'hr_intern',
+            'business_operation_head'
+        ]);
+
+        $isTeamLeader = in_array($role, [
+            'team_leader'
+        ]);
 
         if ($isAdmin) {
-            $employeeQuery = Employee::orderBy('name', 'asc');
-            
-            if ($user->role_id !== 1) {
-                $loggedInRole = $user->role ?? Role::find($user->role_id);
-                $loggedInLevel = $loggedInRole ? $loggedInRole->authority_level : 0;
-                
-                $employeeQuery->where(function($q) use ($loggedInLevel) {
-                    $q->whereHas('user', function($uq) use ($loggedInLevel) {
-                        $uq->whereHas('role', function($rq) use ($loggedInLevel) {
-                            $rq->where('authority_level', '<', $loggedInLevel);
-                        });
-                    })
-                    ->orWhere(function($oq) use ($loggedInLevel) {
-                        $oq->whereDoesntHave('user');
-                        
-                        $restrictedRoleNames = Role::where('authority_level', '>=', $loggedInLevel)->pluck('name')->toArray();
-                        $restrictedRoleSlugs = array_map(fn($n) => str_replace(' ', '_', strtolower($n)), $restrictedRoleNames);
-                        
-                        $oq->whereNotIn('role', array_merge($restrictedRoleNames, $restrictedRoleSlugs));
-                    });
-                });
-            }
-            
-            $employees = $employeeQuery->get();
-            $employeeIds = $employees->pluck('id')->toArray();
-
+            $employees = Employee::orderBy('name', 'asc')->get();
             $allotments = LeaveAllotment::where('month', $month)
                 ->where('year', $year)
-                ->whereIn('employee_id', $employeeIds)
                 ->get()
                 ->keyBy('employee_id');
 
             $history = LeaveAllotment::with('employee')
-                ->whereIn('employee_id', $employeeIds)
+                ->where('month', $month)
+                ->where('year', $year)
                 ->orderBy('year', 'desc')
                 ->orderBy('month', 'desc')
                 ->orderBy('created_at', 'desc')
@@ -82,6 +67,8 @@ class LeaveController extends Controller
                     ->keyBy('employee_id');
 
                 $history = LeaveAllotment::with('employee')
+                    ->where('month', $month)
+                    ->where('year', $year)
                     ->whereIn('employee_id', $employeeIds)
                     ->orderBy('year', 'desc')
                     ->orderBy('month', 'desc')
@@ -102,6 +89,8 @@ class LeaveController extends Controller
                 ->keyBy('employee_id');
 
             $history = LeaveAllotment::with('employee')
+                ->where('month', $month)
+                ->where('year', $year)
                 ->where('employee_id', $employee_id)
                 ->orderBy('year', 'desc')
                 ->orderBy('month', 'desc')
@@ -122,7 +111,8 @@ class LeaveController extends Controller
 
         // echo "<pre>";print_r($request);exit;
 
-        $isAdmin = in_array(auth()->user()->role_id, [1, 3]);
+        $roleSlug = strtolower(auth()->user()->hrm_role); // e.g. "manager"
+        $isAdmin = in_array($roleSlug, ['super_admin', 'admin', 'manager', 'hr_executive', 'hr_intern', 'business_operation_head']);
         if (!$isAdmin) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
@@ -132,42 +122,13 @@ class LeaveController extends Controller
         $allotments = $request->input('allotments', []);
         $employeeIds = array_keys($allotments);
 
-        $allowedEmployees = Employee::whereIn('id', $employeeIds);
-        $loggedInUser = auth()->user();
-        if ($loggedInUser->role_id !== 1) {
-            $loggedInRole = $loggedInUser->role ?? Role::find($loggedInUser->role_id);
-            $loggedInLevel = $loggedInRole ? $loggedInRole->authority_level : 0;
-            
-            $allowedEmployees->where(function($q) use ($loggedInLevel) {
-                $q->whereHas('user', function($uq) use ($loggedInLevel) {
-                    $uq->whereHas('role', function($rq) use ($loggedInLevel) {
-                        $rq->where('authority_level', '<', $loggedInLevel);
-                    });
-                })
-                ->orWhere(function($oq) use ($loggedInLevel) {
-                    $oq->whereDoesntHave('user');
-                    
-                    $restrictedRoleNames = Role::where('authority_level', '>=', $loggedInLevel)->pluck('name')->toArray();
-                    $restrictedRoleSlugs = array_map(fn($n) => str_replace(' ', '_', strtolower($n)), $restrictedRoleNames);
-                    
-                    $oq->whereNotIn('role', array_merge($restrictedRoleNames, $restrictedRoleSlugs));
-                });
-            });
-        }
-        $allowedEmployeeIds = $allowedEmployees->pluck('id')->toArray();
-
-        // Remove allotments for employees who were removed from the list in UI (scoped to authorized employees only)
+        // Remove allotments for employees who were removed from the list in UI
         LeaveAllotment::where('month', $month)
             ->where('year', $year)
-            ->whereIn('employee_id', $allowedEmployeeIds)
             ->whereNotIn('employee_id', $employeeIds)
             ->delete();
 
         foreach ($allotments as $employeeId => $count) {
-            if (!in_array($employeeId, $allowedEmployeeIds)) {
-                continue;
-            }
-
             LeaveAllotment::updateOrCreate(
                 [
                     'employee_id' => $employeeId,
@@ -204,32 +165,7 @@ class LeaveController extends Controller
 
     private function calculateBalances($employees = null)
     {
-        if ($employees === null) {
-            $employeeQuery = Employee::orderBy('name', 'asc');
-            
-            $loggedInUser = auth()->user();
-            if ($loggedInUser && $loggedInUser->role_id !== 1) {
-                $loggedInRole = $loggedInUser->role ?? Role::find($loggedInUser->role_id);
-                $loggedInLevel = $loggedInRole ? $loggedInRole->authority_level : 0;
-                
-                $employeeQuery->where(function($q) use ($loggedInLevel) {
-                    $q->whereHas('user', function($uq) use ($loggedInLevel) {
-                        $uq->whereHas('role', function($rq) use ($loggedInLevel) {
-                            $rq->where('authority_level', '<', $loggedInLevel);
-                        });
-                    })
-                    ->orWhere(function($oq) use ($loggedInLevel) {
-                        $oq->whereDoesntHave('user');
-                        
-                        $restrictedRoleNames = Role::where('authority_level', '>=', $loggedInLevel)->pluck('name')->toArray();
-                        $restrictedRoleSlugs = array_map(fn($n) => str_replace(' ', '_', strtolower($n)), $restrictedRoleNames);
-                        
-                        $oq->whereNotIn('role', array_merge($restrictedRoleNames, $restrictedRoleSlugs));
-                    });
-                });
-            }
-            $employees = $employeeQuery->get();
-        }
+        $employees = $employees ?? Employee::orderBy('name', 'asc')->get();
         $balances = [];
 
         foreach ($employees as $employee) {
@@ -242,16 +178,20 @@ class LeaveController extends Controller
 
             $totalTaken = 0;
             foreach ($approvedLeaves as $leave) {
-                $cat = strtolower($leave->leave_category);
+                $cat = strtolower($leave->leave_category ?? '');
+                $type = strtolower($leave->leave_type ?? '');
 
-                // Gatepass does NOT count in balance
-                if (str_contains($cat, 'gatepass')) {
+                if (str_contains($cat, 'gatepass') || str_contains($cat, 'wfh')) {
                     continue;
                 }
 
-                // Half Day = 0.5
-                if (str_contains($cat, 'half')) {
+                if (str_contains($cat, 'half') || str_contains($type, 'half')) {
                     $totalTaken += 0.5;
+                    continue;
+                }
+
+                if ($leave->total_days !== null) {
+                    $totalTaken += (float) $leave->total_days;
                     continue;
                 }
 

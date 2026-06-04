@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 
 use Modules\HRMS\App\Models\Department;
 use Modules\HRMS\App\Models\Designation;
-use Modules\Shared\App\Models\Role;
+use Modules\HRMS\Modules\Shared\App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -80,7 +80,7 @@ class MasterController extends Controller
         $request->validate(['name' => 'required|string|max:255']);
         Role::create([
             'name' => $request->name,
-            'guard_name' => 'web',
+            'slug' => Str::slug($request->name, '_'),
         ]);
         return redirect()->route('master.roles')->with('success', 'Role added successfully!');
     }
@@ -91,7 +91,8 @@ class MasterController extends Controller
         $role = Role::findOrFail($id);
         $role->update([
             'name' => $request->name,
-            'guard_name' => 'web',
+            'slug' => Str::slug($request->name, '_'),
+            'is_active' => $request->has('is_active') ? 1 : 0,
         ]);
         return redirect()->route('master.roles')->with('success', 'Role updated successfully!');
     }

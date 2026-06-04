@@ -4,7 +4,7 @@
         <div>
             <div class="text-uppercase text-muted small fw-bold mb-1" style="font-size: 11px; letter-spacing: 1px;">Employee Name</div>
             <h5 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
-                <i class="bi bi-person-circle text-primary"></i> {{ $payroll->employee->name }}
+                <i class="bi bi-person-circle text-primary"></i> {{ $payroll->employee->name ?? 'N/A' }}
             </h5>
         </div>
         <div class="text-end">

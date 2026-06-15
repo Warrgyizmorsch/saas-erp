@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 
 use Modules\HRMS\App\Models\Department;
 use Modules\HRMS\App\Models\Designation;
-use Modules\HRMS\Modules\Shared\App\Models\Role;
+use Modules\Shared\App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 

@@ -118,6 +118,7 @@ class AuthorityLevelTest extends TestCase
                     $table->unsignedBigInteger('user_id');
                     $table->string('date');
                     $table->integer('active_seconds')->default(0);
+                    $table->string('tenant_id')->nullable()->index();
                     $table->timestamps();
                 });
             }
@@ -148,6 +149,7 @@ class AuthorityLevelTest extends TestCase
                     $table->dateTime('next_followup_date')->nullable();
                     $table->integer('is_done')->default(0);
                     $table->string('call_recording')->nullable();
+                    $table->string('tenant_id')->nullable()->index();
                     $table->timestamps();
                 });
             }
@@ -158,6 +160,7 @@ class AuthorityLevelTest extends TestCase
                     $table->string('name')->nullable();
                     $table->unsignedBigInteger('parent_id')->nullable();
                     $table->integer('is_deleted')->default(0);
+                    $table->string('tenant_id')->nullable()->index();
                     $table->timestamps();
                 });
             }

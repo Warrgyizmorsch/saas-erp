@@ -63,6 +63,9 @@ class Employee extends Model
     }
     public function user()
     {
-        if (\Schema::hasColumn('users', 'employee_id')) { return $this->hasOne(\Modules\Shared\App\Models\User::class, 'employee_id'); } return $this->hasOne(\Modules\Shared\App\Models\User::class, 'email', 'email');
+        if (isset($this->attributes['user_id']) && !empty($this->attributes['user_id'])) {
+            return $this->belongsTo(\Modules\Shared\App\Models\User::class, 'user_id');
+        }
+        return $this->belongsTo(\Modules\Shared\App\Models\User::class, 'email', 'email');
     }
 }

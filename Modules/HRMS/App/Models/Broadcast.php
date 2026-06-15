@@ -5,10 +5,11 @@ namespace Modules\HRMS\App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
+use App\Traits\BelongsToTenant;
 
 class Broadcast extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToTenant;
 
     protected $table = 'broadcasts';
 

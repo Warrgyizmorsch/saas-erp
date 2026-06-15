@@ -90,7 +90,7 @@ class User extends Authenticatable
     // HRMS Employee relationship
     public function employee()
     {
-        if (\Schema::hasColumn('users', 'employee_id')) {
+        if (isset($this->attributes['employee_id']) && !empty($this->attributes['employee_id'])) {
             return $this->belongsTo(\Modules\HRMS\App\Models\Employee::class, 'employee_id');
         }
         return $this->belongsTo(\Modules\HRMS\App\Models\Employee::class, 'email', 'email');

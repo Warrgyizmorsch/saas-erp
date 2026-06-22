@@ -77,13 +77,13 @@
 
                 <div class="dropdown-menu dropdown-menu-end">
                     <!-- ✅ EXPORT -->
-                    <a href="{{ route('leads.export', request()->query()) }}" class="dropdown-item">
+                    <a href="{{ route('leads.export', request()->query()) }}" class="dropdown-item" download>
                         <i class="feather-download me-2"></i> Export Excel
                     </a>
 
                     <div class="dropdown-divider"></div>
 
-                    <a href="{{ route('lead.sample') }}" class="dropdown-item">Download Sample</a>
+                    <a href="{{ route('lead.sample') }}"  class="dropdown-item" download>Download Sample</a>
                     <div class="dropdown-divider"></div>
 
                     <label for="importFile" class="dropdown-item">Import</label>

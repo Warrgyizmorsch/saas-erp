@@ -193,12 +193,12 @@
                             </div>
                         </div>
                         <div class="dropdown-divider"></div>
-                        <a href="/profile" class="dropdown-item">
+                        <a href="/" class="dropdown-item">
                             <i class="feather-user"></i> Profile Details
                         </a>
-                        <a href="{{ route('user.activity') }}" class="dropdown-item">
+                        <!-- <a href="{{ route('user.activity') }}" class="dropdown-item">
                             <i class="feather-activity"></i> Activity Feed
-                        </a>
+                        </a> -->
                         <a href="javascript:void(0);" class="dropdown-item">
                             <i class="feather-bell"></i> Notifications
                         </a>

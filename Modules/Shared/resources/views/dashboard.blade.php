@@ -49,7 +49,7 @@
                     <h3 class="fw-bold mb-2 text-white">{{ ucfirst($tenant->id) }}</h3>
                     <p class="fs-12 text-white-70 mb-0 d-flex align-items-center gap-1">
                         <i class="feather-external-link"></i>
-                        <a href="http://{{ $domain }}:8000" target="_blank" class="text-white text-decoration-none hover-underline">{{ $domain }}</a>
+                        <a href="/" target="_blank" class="text-white text-decoration-none hover-underline">profile</a>
                     </p>
                 </div>
             </div>

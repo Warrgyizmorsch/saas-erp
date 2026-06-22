@@ -86,9 +86,9 @@ if (!function_exists('renderMenuItem')) {
 
             <a href="{{ route('dashboard') }}" class="b-brand">
 
-                <img src="{{ asset('images/mewar-logo.png') }}" alt="Logo" class="logo logo-lg" style="width: 230px; max-height: 150px; margin: 9px 0px 0px -24px;">
+                <img src="{{ asset('images/WARR LOGO.webp') }}" alt="Logo" class="logo logo-lg" style="width: 230px; max-height: 150px; margin: 9px 0px 0px -24px;">
 
-                <img src="{{ asset('images/logo.png') }}" alt="Small Logo" class="logo logo-sm">
+                <img src="{{ asset('images/WARR LOGO.webp') }}" alt="Small Logo" class="logo logo-sm">
 
             </a>
 

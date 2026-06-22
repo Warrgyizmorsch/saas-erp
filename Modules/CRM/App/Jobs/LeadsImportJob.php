@@ -42,9 +42,19 @@ class LeadsImportJob implements ShouldQueue
             return;
         }
 
+        // Get absolute file path before switching tenancy context
+        $fullPath = Storage::path($importJob->file_path);
+
+        // Initialize tenant context to ensure models created (Leads, Users) have the correct tenant_id
+        if (!empty($importJob->tenant_id)) {
+            $tenant = \App\Models\Tenant::find($importJob->tenant_id);
+            if ($tenant) {
+                tenancy()->initialize($tenant);
+            }
+        }
+
         $importJob->update(['status' => 'processing', 'processed_rows' => 0]);
 
-        $fullPath = Storage::path($importJob->file_path);
         if (!file_exists($fullPath)) {
             Log::error("File not found at: {$fullPath}");
             $importJob->update(['status' => 'failed']);

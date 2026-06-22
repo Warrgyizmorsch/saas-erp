@@ -682,7 +682,7 @@ class LeadController extends Controller
 
         Storage::disk('local')->put($filename, $csv);
 
-        return response()->download(storage_path('app/' . $filename))->deleteFileAfterSend(true);
+        return response()->download(Storage::disk('local')->path($filename))->deleteFileAfterSend(true);
     }
 
     public function import(Request $request)

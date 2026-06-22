@@ -173,7 +173,7 @@
                         @if(Auth::user()->image)
                         <img src="{{ asset('storage/' . Auth::user()->image) }}" alt="profile-img" class="img-fluid user-avtar me-0" style="height: 100%; width: 100%; object-fit: cover;">
                         @else
-                        <img src="/images/blank.jpeg" alt="default_Img" class="img-fluid user-avtar me-0" style="height: 100%; width: 100%; object-fit: cover;" />
+                        <img src="{{url('/images/blank.jpeg')}}" alt="default_Img" class="img-fluid user-avtar me-0" style="height: 100%; width: 100%; object-fit: cover;" />
                         @endif
                     </a>
                     <div class="dropdown-menu dropdown-menu-end nxl-h-dropdown nxl-user-dropdown">

@@ -193,7 +193,7 @@
                             </div>
                         </div>
                         <div class="dropdown-divider"></div>
-                        <a href="/" class="dropdown-item">
+                        <a href="/saas-erp/public" class="dropdown-item">
                             <i class="feather-user"></i> Profile Details
                         </a>
                         <!-- <a href="{{ route('user.activity') }}" class="dropdown-item">

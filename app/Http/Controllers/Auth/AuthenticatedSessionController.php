@@ -36,11 +36,19 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        $tenantId = tenant('id') 
+            ?? ($request->hasSession() ? $request->session()->get('tenant_id') : null) 
+            ?? (Auth::user() ? Auth::user()->tenant_id : null);
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
 
         $request->session()->regenerateToken();
+
+        if ($tenantId) {
+            return redirect('/?tenant=' . $tenantId);
+        }
 
         return redirect('/');
     }
